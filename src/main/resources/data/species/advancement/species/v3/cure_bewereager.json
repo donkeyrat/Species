@@ -3,7 +3,14 @@
   "display": {
     "icon": {
       "id": "minecraft:white_banner",
-      "nbt": "{BlockEntityTag:{Patterns:[{Pattern:'villager',Color:0}]},display:{Name:'{\"translate\":\"block.species.hopeful_banner\",\"color\":\"green\"}'},HideFlags:32}",
+      "components": {
+        "minecraft:banner_patterns": [
+          {
+            "color": "white",
+            "pattern": "species:villager"
+          }
+        ]
+      },
       "count": 1
     },
     "title": {
