@@ -35,10 +35,10 @@ import java.util.function.Function;
 
 public class WraptorCoopGenerator {
     public static final int COOP_STRUCTURES = 7;
-    private static final Function<Integer, ResourceLocation> TEMPLATES = Util.memoize(i -> new ResourceLocation(Species.MOD_ID, "wraptor_coop/coop" + i));
+    private static final Function<Integer, ResourceLocation> TEMPLATES = Util.memoize(i -> ResourceLocation.fromNamespaceAndPath(Species.MOD_ID, "wraptor_coop/coop" + i));
 
     public static void addPieces(StructureTemplateManager manager, BlockPos pos, int height, Rotation rotation, StructurePieceAccessor holder, RandomSource random) {
-        holder.addPiece(new WraptorCoopGenerator.Piece(manager, TEMPLATES.apply(Mth.randomBetweenInclusive(random, 1, COOP_STRUCTURES)), pos, rotation));
+        holder.addPiece(new Piece(manager, TEMPLATES.apply(Mth.randomBetweenInclusive(random, 1, COOP_STRUCTURES)), pos, rotation));
     }
 
     public static class Piece extends TemplateStructurePiece {
@@ -90,8 +90,11 @@ public class WraptorCoopGenerator {
                 for (Mob entity : entities) {
                     entity.setPersistenceRequired();
                     entity.moveTo(pos, 0.0f, 0.0f);
-                    entity.finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.STRUCTURE, null, null);
-                    world.addFreshEntityWithPassengers(entity);
+                    var spawnedEntity = (Mob)entity.getType().create(world.getLevel());
+                    if (spawnedEntity != null) {
+                        spawnedEntity.finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.STRUCTURE, null);
+                        world.addFreshEntityWithPassengers(spawnedEntity);
+                    }
                 }
             }
         }

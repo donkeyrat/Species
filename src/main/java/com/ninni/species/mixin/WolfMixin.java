@@ -1,7 +1,7 @@
 package com.ninni.species.mixin;
 
-import com.ninni.species.server.entity.ai.goal.TransformDuringFullMoonGoal;
 import com.ninni.species.mixin_util.WolfAccess;
+import com.ninni.species.server.entity.ai.goal.TransformDuringFullMoonGoal;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -9,17 +9,25 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import javax.annotation.Nullable;
+
 @Mixin(Wolf.class)
 public abstract class WolfMixin extends TamableAnimal implements NeutralMob, WolfAccess {
+    @Shadow
+    @Final
+    private static EntityDataAccessor<Integer> DATA_COLLAR_COLOR;
+
     private @Unique static final EntityDataAccessor<Boolean> DATA_IS_BEWEREAGER = SynchedEntityData.defineId(Wolf.class, EntityDataSerializers.BOOLEAN);
     private @Unique static final EntityDataAccessor<Boolean> DATA_IS_CURED_BEWEREAGER = SynchedEntityData.defineId(Wolf.class, EntityDataSerializers.BOOLEAN);
 
@@ -28,9 +36,9 @@ public abstract class WolfMixin extends TamableAnimal implements NeutralMob, Wol
     }
 
     @Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor levelAccessor, DifficultyInstance difficultyInstance, MobSpawnType spawnType, @Nullable SpawnGroupData spawnGroupData, @Nullable CompoundTag tag) {
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor levelAccessor, DifficultyInstance difficultyInstance, MobSpawnType spawnType, @Nullable SpawnGroupData spawnGroupData) {
         if (getRandom().nextInt(10) == 0) this.setIsBewereager(true);
-        return super.finalizeSpawn(levelAccessor, difficultyInstance, spawnType, spawnGroupData, tag);
+        return super.finalizeSpawn(levelAccessor, difficultyInstance, spawnType, spawnGroupData);
     }
 
     @Inject(method = "registerGoals", at = @At("TAIL"))
@@ -39,9 +47,9 @@ public abstract class WolfMixin extends TamableAnimal implements NeutralMob, Wol
     }
 
     @Inject(at = @At("TAIL"), method = "defineSynchedData")
-    private void S$defineSynchedData(CallbackInfo ci) {
-        this.entityData.define(DATA_IS_BEWEREAGER, false);
-        this.entityData.define(DATA_IS_CURED_BEWEREAGER, false);
+    private void S$defineSynchedData(SynchedEntityData.Builder builder, CallbackInfo ci) {
+        builder.define(DATA_IS_BEWEREAGER, false);
+        builder.define(DATA_IS_CURED_BEWEREAGER, false);
     }
 
 
@@ -73,5 +81,10 @@ public abstract class WolfMixin extends TamableAnimal implements NeutralMob, Wol
     @Override
     public @Unique void setIsCuredBewereager(boolean isCuredBewereager) {
         this.entityData.set(DATA_IS_CURED_BEWEREAGER, isCuredBewereager);
+    }
+
+    @Override
+    public @Unique void setNewCollarColor(DyeColor color) {
+        this.entityData.set(DATA_COLLAR_COLOR, color.getId());
     }
 }
