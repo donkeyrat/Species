@@ -31,6 +31,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlac
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 public class WraptorCoopGenerator {
@@ -83,17 +84,18 @@ public class WraptorCoopGenerator {
                         }
                 )));
             } else {
-                ArrayList<Mob> entities = new ArrayList<>();
+                List<Mob> entities = new ArrayList<>();
 
-                if ("Wraptor".equals(metadata)) entities.add(SpeciesEntities.WRAPTOR.get().create(world.getLevel()));
+                if ("Wraptor".equals(metadata)) {
+                    entities.add(SpeciesEntities.WRAPTOR.get().create(world.getLevel()));
+                }
 
                 for (Mob entity : entities) {
-                    entity.setPersistenceRequired();
-                    entity.moveTo(pos, 0.0f, 0.0f);
-                    var spawnedEntity = (Mob)entity.getType().create(world.getLevel());
-                    if (spawnedEntity != null) {
-                        spawnedEntity.finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.STRUCTURE, null);
-                        world.addFreshEntityWithPassengers(spawnedEntity);
+                    if (entity != null) {
+                        entity.setPersistenceRequired();
+                        entity.moveTo(pos, 0.0f, 0.0f);
+                        entity.finalizeSpawn(world, world.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.STRUCTURE, null);
+                        world.addFreshEntityWithPassengers(entity);
                     }
                 }
             }

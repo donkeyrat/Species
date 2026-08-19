@@ -32,7 +32,9 @@ public class SpectraliburChamberStructure extends Structure {
             if (!noiseColumn.getBlock(y).isAir() && noiseColumn.getBlock(y + 1).isAir()) break;
             height--;
         }
-        if (height <= seaLevel) return Optional.empty();
+        if (height <= seaLevel) {
+            return Optional.empty();
+        }
         BlockPos blockPos = new BlockPos(x, height, z);
 
         return onTopOfChunkCenter(generationContext, Heightmap.Types.WORLD_SURFACE_WG, (piecesBuilder) -> SpectraliburChamberGenerator.addPieces(generationContext.structureTemplateManager(), blockPos, piecesBuilder));

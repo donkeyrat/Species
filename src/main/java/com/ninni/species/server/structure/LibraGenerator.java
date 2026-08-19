@@ -78,11 +78,8 @@ public class LibraGenerator {
                 for (Mob entity : entities) {
                     entity.setPersistenceRequired();
                     entity.moveTo(blockPos, 0.0f, 0.0f);
-                    var spawnedEntity = (Mob)entity.getType().create(serverLevelAccessor.getLevel());
-                    if (spawnedEntity != null) {
-                        spawnedEntity.finalizeSpawn(serverLevelAccessor, serverLevelAccessor.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.STRUCTURE, null);
-                        serverLevelAccessor.addFreshEntityWithPassengers(spawnedEntity);
-                    }
+                    entity.finalizeSpawn(serverLevelAccessor, serverLevelAccessor.getCurrentDifficultyAt(entity.blockPosition()), MobSpawnType.STRUCTURE, null);
+                    serverLevelAccessor.addFreshEntityWithPassengers(entity);
                 }
             }
         }
