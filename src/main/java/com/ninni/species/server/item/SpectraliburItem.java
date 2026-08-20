@@ -22,6 +22,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -34,7 +35,7 @@ import java.util.List;
 public class SpectraliburItem extends Item {
 
     public SpectraliburItem(Properties properties) {
-        super(properties);
+        super(properties.component(DataComponents.TOOL, createToolProperties()));
     }
 
     public static ItemAttributeModifiers createAttributes() {
@@ -42,6 +43,10 @@ public class SpectraliburItem extends Item {
             .add(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_ID, 8F, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND)
             .add(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_ID, -2.4F, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND)
             .build();
+    }
+
+    public static Tool createToolProperties() {
+        return new Tool(List.of(Tool.Rule.minesAndDrops(List.of(Blocks.COBWEB), 15.0F), Tool.Rule.overrideSpeed(BlockTags.SWORD_EFFICIENT, 1.5F)), 1.0F, 2);
     }
 
     @Override
@@ -131,10 +136,6 @@ public class SpectraliburItem extends Item {
 
     public boolean mineBlock(ItemStack stack, Level level, BlockState state, BlockPos pos, LivingEntity livingEntity) {
         return true;
-    }
-
-    public boolean isCorrectToolForDrops(BlockState p_43298_) {
-        return p_43298_.is(Blocks.COBWEB);
     }
 
     @Override
