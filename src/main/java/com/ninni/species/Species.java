@@ -8,6 +8,7 @@ import com.ninni.species.server.criterion.SpeciesCriteriaTriggers;
 import com.ninni.species.server.events.ForgeEvents;
 import com.ninni.species.server.events.ModEvents;
 import com.ninni.species.server.world.poi.SpeciesPointOfInterestTypes;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -25,10 +26,15 @@ import java.util.List;
 
 @Mod(Species.MOD_ID)
 public class Species {
+
 	public static final String MOD_ID = "species";
 	public static final Logger LOGGER = LogUtils.getLogger();
 	public static final List<Runnable> CALLBACKS = new ArrayList<>();
 	public static final CommonProxy PROXY = (FMLEnvironment.dist == Dist.CLIENT ? new ClientProxy() : new CommonProxy());
+
+	public static ResourceLocation of(String name) {
+		return ResourceLocation.fromNamespaceAndPath(MOD_ID, name);
+	}
 
 	public Species(IEventBus modEventBus, ModContainer modContainer) {
 		modEventBus.addListener(this::clientSetup);
@@ -69,6 +75,7 @@ public class Species {
 			modEventBus.addListener(ClientEvents::registerParticleTypes);
 			modEventBus.addListener(ClientEvents::registerItemColors);
 			modEventBus.addListener(ClientEvents::registerCreativeModeTab);
+			modEventBus.addListener(ClientEvents::registerSkullModels);
 			IEventBus forgeBus = NeoForge.EVENT_BUS;
 			forgeBus.addListener(ClientEvents::clientTick);
 			forgeBus.addListener(ClientEvents::preRenderGuiOverlay);

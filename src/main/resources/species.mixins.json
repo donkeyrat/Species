@@ -1,42 +1,40 @@
 {
-  "required": true,
-  "package": "com.ninni.species.mixin",
-  "compatibilityLevel": "JAVA_17",
-  "minVersion": "0.8",
-  "target": "@env(DEFAULT)",
-  "refmap": "species.refmap.json",
-  "mixins": [
-    "AbstractArrowMixin",
-    "AbstractSkeletonEntityMixin",
-    "AgeableMobMixin",
-    "BlockEntityTypeMixin",
-    "EmeraldsForVillagerTypeItemMixin",
-    "FallingBlockEntityMixin",
-    "FlowerPotBlockMixin",
-    "ItemMixin",
-    "LightningRodMixin",
-    "LivingEntityMixin",
-    "MobMixin",
-    "NameTagMixin",
-    "NoteBlockInstrumentMixin",
-    "NoteBlockMixin",
-    "PlayerMixin",
-    "PoseMixin",
-    "ServerPlayerMixin",
-    "WitherSkeletonEntityMixin",
-    "WolfMixin"
-  ],
-  "client": [
-    "client.AbstractClientPlayerMixin",
-    "client.CustomHeadLayerMixin",
-    "client.EntityRenderDispatcherMixin",
-    "client.InventoryScreenMixin",
-    "client.ItemInHandRendererMixin",
-    "client.PlayerRendererMixin",
-    "client.VillagerProfessionLayerMixin",
-    "client.WolfRendererMixin"
-  ],
-  "injectors": {
-    "defaultRequire": 1
-  }
+	"required": true,
+	"package": "com.ninni.species.mixin",
+	"compatibilityLevel": "JAVA_17",
+	"minVersion": "0.8",
+	"target": "@env(DEFAULT)",
+	"refmap": "species.refmap.json",
+	"mixins": [
+		"AbstractArrowMixin",
+		"AbstractSkeletonEntityMixin",
+		"AgeableMobMixin",
+		"BlockEntityTypeMixin",
+		"EmeraldsForVillagerTypeItemMixin",
+		"FallingBlockEntityMixin",
+		"FlowerPotBlockMixin",
+		"ItemMixin",
+		"LightningRodMixin",
+		"LivingEntityMixin",
+		"MobMixin",
+		"NameTagMixin",
+		"NoteBlockInstrumentMixin",
+		"PlayerMixin",
+		"PoseMixin",
+		"ServerPlayerMixin",
+		"WitherSkeletonEntityMixin",
+		"WolfMixin"
+	],
+	"client": [
+		"client.AbstractClientPlayerMixin",
+		"client.EntityRenderDispatcherMixin",
+		"client.InventoryScreenMixin",
+		"client.ItemInHandRendererMixin",
+		"client.PlayerRendererMixin",
+		"client.VillagerProfessionLayerMixin",
+		"client.WolfRendererMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
 }
