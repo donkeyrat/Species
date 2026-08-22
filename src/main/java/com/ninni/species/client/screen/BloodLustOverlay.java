@@ -20,7 +20,7 @@ import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.gui.GuiLayerManager;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
-@EventBusSubscriber(modid = Species.MOD_ID)
+@EventBusSubscriber(modid = Species.MOD_ID, value = Dist.CLIENT)
 @OnlyIn(Dist.CLIENT)
 public class BloodLustOverlay {
     private static final ResourceLocation SPECIES_ICONS = ResourceLocation.fromNamespaceAndPath(Species.MOD_ID, "textures/gui/icons.png");
