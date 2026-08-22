@@ -5,17 +5,13 @@ import com.ninni.species.registry.*;
 import com.ninni.species.server.entity.mob.update_1.*;
 import com.ninni.species.server.entity.mob.update_2.*;
 import com.ninni.species.server.entity.mob.update_3.*;
-import com.ninni.species.server.item.MobHeadItem;
 import com.ninni.species.server.item.SpectraliburItem;
 import com.ninni.species.server.item.WickedMaskItem;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Position;
-import net.minecraft.core.dispenser.ProjectileDispenseBehavior;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.nbt.CompoundTag;
@@ -28,7 +24,7 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.npc.VillagerTrades;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.DispensibleContainerItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -50,7 +46,6 @@ import net.neoforged.neoforge.event.entity.living.*;
 import net.neoforged.neoforge.event.village.VillagerTradesEvent;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 @EventBusSubscriber(modid = Species.MOD_ID)
 public class ModEvents {
@@ -140,18 +135,6 @@ public class ModEvents {
         if (livingEntity instanceof Player player && (damageSource.getEntity() instanceof Cruncher || (damageSource.getEntity() instanceof Quake && event.getBlockedDamage() > 40))) {
             player.disableShield();
         }
-
-        if (event.getEntity().getUseItem().is(SpeciesItems.RICOSHIELD.get())) {
-            CompoundTag tag = event.getEntity().getUseItem().getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-            if (tag.contains("StoredDamage")) {
-                tag.putFloat("StoredDamage", Math.min(tag.getFloat("StoredDamage") + event.getBlockedDamage(), 40));
-            }
-            else {
-                tag.putFloat("StoredDamage", Math.min(event.getBlockedDamage(), 40));
-            }
-            event.getEntity().level().playSound(null, event.getEntity().blockPosition(), SpeciesSoundEvents.RICOSHIELD_ABSORB.get(), SoundSource.PLAYERS, 1F, tag.getFloat("StoredDamage") * 0.05F);
-            CustomData.set(DataComponents.CUSTOM_DATA, event.getEntity().getUseItem(), tag);
-        }
     }
 
     @SubscribeEvent
@@ -237,10 +220,10 @@ public class ModEvents {
             }
         });
         DispenserBlock.registerBehavior(SpeciesItems.WICKED_MASK.get(), WickedMaskItem.DISPENSE_ITEM_BEHAVIOR);
-        DispenserBlock.registerBehavior(SpeciesItems.WICKED_CANDLE.get(), MobHeadItem.DISPENSE_ITEM_BEHAVIOR);
-        DispenserBlock.registerBehavior(SpeciesItems.QUAKE_HEAD.get(), MobHeadItem.DISPENSE_ITEM_BEHAVIOR);
-        DispenserBlock.registerBehavior(SpeciesItems.GHOUL_HEAD.get(), MobHeadItem.DISPENSE_ITEM_BEHAVIOR);
-        DispenserBlock.registerBehavior(SpeciesItems.BEWEREAGER_HEAD.get(), MobHeadItem.DISPENSE_ITEM_BEHAVIOR);
+        DispenserBlock.registerBehavior(SpeciesItems.WICKED_CANDLE.get(), ArmorItem.DISPENSE_ITEM_BEHAVIOR);
+        DispenserBlock.registerBehavior(SpeciesItems.QUAKE_HEAD.get(), ArmorItem.DISPENSE_ITEM_BEHAVIOR);
+        DispenserBlock.registerBehavior(SpeciesItems.GHOUL_HEAD.get(), ArmorItem.DISPENSE_ITEM_BEHAVIOR);
+        DispenserBlock.registerBehavior(SpeciesItems.BEWEREAGER_HEAD.get(), ArmorItem.DISPENSE_ITEM_BEHAVIOR);
         DispenserBlock.registerBehavior(SpeciesItems.DEEPFISH_BUCKET.get(), dispenseBucket);
     }
 

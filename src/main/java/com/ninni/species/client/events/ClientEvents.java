@@ -14,6 +14,7 @@ import com.ninni.species.client.particles.*;
 import com.ninni.species.client.renderer.block.*;
 import com.ninni.species.client.renderer.entity.*;
 import com.ninni.species.client.renderer.item.HarpoonRenderer;
+import com.ninni.species.client.renderer.item.RicoshieldItemRenderer;
 import com.ninni.species.client.renderer.item.WickedFireballRenderer;
 import com.ninni.species.client.renderer.item.WickedSwapperProjectileRenderer;
 import com.ninni.species.client.screen.BloodLustOverlay;
@@ -27,6 +28,7 @@ import com.ninni.species.server.packet.HarpoonInputPacket;
 import com.ninni.species.server.packet.UpdateSpringlingDataPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.FlameParticle;
+import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.entity.FallingBlockRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.resources.ResourceKey;
@@ -35,10 +37,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.DyedItemColor;
-import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -49,7 +49,6 @@ import net.neoforged.neoforge.client.event.*;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.util.MutableHashedLinkedMap;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -86,6 +85,11 @@ public class ClientEvents {
                 }
             }
         });
+
+        SkullBlockRenderer.SKIN_BY_TYPE.put(SpeciesSkullTypes.GHOUL, Species.of("textures/entity/ghoul/ghoul.png"));
+        SkullBlockRenderer.SKIN_BY_TYPE.put(SpeciesSkullTypes.WICKED, Species.of("textures/entity/wicked/wicked.png"));
+        SkullBlockRenderer.SKIN_BY_TYPE.put(SpeciesSkullTypes.QUAKE, Species.of("textures/entity/quake/quake.png"));
+        SkullBlockRenderer.SKIN_BY_TYPE.put(SpeciesSkullTypes.BEWEREAGER, Species.of("textures/entity/bewereager/bewereager.png"));
 
         Species.CALLBACKS.forEach(Runnable::run);
         Species.CALLBACKS.clear();
@@ -421,8 +425,8 @@ public class ClientEvents {
         event.registerBlockEntityRenderer(SpeciesBlockEntities.SPECLIGHT.get(), SpeclightBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(SpeciesBlockEntities.HOPELIGHT.get(), HopelightBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(SpeciesBlockEntities.CHAINDELIER.get(), ChaindelierBlockEntityRenderer::new);
-        event.registerBlockEntityRenderer(SpeciesBlockEntities.MOB_HEAD.get(), MobHeadBlockEntityRenderer::new);
         event.registerBlockEntityRenderer(SpeciesBlockEntities.BIRTDAY_CAKE.get(), BirtdayCakeBlockEntityRenderer::new);
+        event.registerBlockEntityRenderer(SpeciesBlockEntities.SKULL.get(), SkullBlockRenderer::new);
     }
 
 
@@ -437,6 +441,13 @@ public class ClientEvents {
         event.register(SpeciesEntities.BEWEREAGER.get(), ResourceLocation.fromNamespaceAndPath(Species.MOD_ID, "shaders/post/dog_vision.json"));
         event.register(SpeciesEntities.WICKED.get(), ResourceLocation.fromNamespaceAndPath(Species.MOD_ID, "shaders/post/shadow.json"));
         event.register(SpeciesEntities.QUAKE.get(), ResourceLocation.fromNamespaceAndPath(Species.MOD_ID, "shaders/post/clank.json"));
+    }
+
+    public static void registerSkullModels(EntityRenderersEvent.CreateSkullModels event) {
+        event.registerSkullModel(SpeciesSkullTypes.GHOUL, new GhoulHeadModel(event.getEntityModelSet().bakeLayer(SpeciesEntityModelLayers.GHOUL_HEAD)));
+        event.registerSkullModel(SpeciesSkullTypes.WICKED, new WickedHeadModel(event.getEntityModelSet().bakeLayer(SpeciesEntityModelLayers.WICKED_CANDLE)));
+        event.registerSkullModel(SpeciesSkullTypes.QUAKE, new QuakeHeadModel(event.getEntityModelSet().bakeLayer(SpeciesEntityModelLayers.QUAKE_HEAD)));
+        event.registerSkullModel(SpeciesSkullTypes.BEWEREAGER, new BewereagerHeadModel(event.getEntityModelSet().bakeLayer(SpeciesEntityModelLayers.BEWEREAGER_HEAD)));
     }
 
 }

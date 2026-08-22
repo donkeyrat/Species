@@ -13,10 +13,9 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.function.ToIntFunction;
 
@@ -58,12 +57,12 @@ public class SpeciesBlocks {
 
     //UPDATE 3
 
-    public static final DeferredBlock<Block> GHOUL_HEAD = BLOCKS.register("ghoul_head", () -> new MobHeadBlock(MobHeadBlock.Types.GHOUL, BlockBehaviour.Properties.of().instrument(SpeciesNoteBlockInstrument.GHOUL.get()).strength(1.0F).pushReaction(PushReaction.DESTROY)));
-    public static final DeferredBlock<Block> GHOUL_WALL_HEAD = BLOCKS.register("ghoul_wall_head", () -> new WallMobHeadBlock(MobHeadBlock.Types.GHOUL, BlockBehaviour.Properties.of().dropsLike(GHOUL_HEAD.get()).strength(1.0F).pushReaction(PushReaction.DESTROY)));
+    public static final DeferredBlock<Block> GHOUL_HEAD = BLOCKS.register("ghoul_head", () -> new SpeciesSkullBlock(SpeciesSkullTypes.GHOUL, BlockBehaviour.Properties.of().instrument(SpeciesNoteBlockInstrument.GHOUL.get()).strength(1.0F).pushReaction(PushReaction.DESTROY)));
+    public static final DeferredBlock<Block> GHOUL_WALL_HEAD = BLOCKS.register("ghoul_wall_head", () -> new SpeciesWallSkullBlock(SpeciesSkullTypes.GHOUL, BlockBehaviour.Properties.of().dropsLike(GHOUL_HEAD.get()).strength(1.0F).pushReaction(PushReaction.DESTROY)));
 
     public static final DeferredBlock<Block> KINETIC_CORE = BLOCKS.register("kinetic_core", () -> new KineticCoreBlock(BlockBehaviour.Properties.of().strength(1.5f).instrument(SpeciesNoteBlockInstrument.QUAKE_SYNTH.get()).sound(SoundType.ANVIL).requiresCorrectToolForDrops().noOcclusion()));
-    public static final DeferredBlock<Block> QUAKE_HEAD = BLOCKS.register("quake_head", () -> new MobHeadBlock(MobHeadBlock.Types.QUAKE, BlockBehaviour.Properties.of().instrument(SpeciesNoteBlockInstrument.QUAKE.get()).strength(1.0F).pushReaction(PushReaction.DESTROY)));
-    public static final DeferredBlock<Block> QUAKE_WALL_HEAD = BLOCKS.register("quake_wall_head", () -> new WallMobHeadBlock(MobHeadBlock.Types.QUAKE, BlockBehaviour.Properties.of().dropsLike(QUAKE_HEAD.get()).strength(1.0F).pushReaction(PushReaction.DESTROY)));
+    public static final DeferredBlock<Block> QUAKE_HEAD = BLOCKS.register("quake_head", () -> new SpeciesSkullBlock(SpeciesSkullTypes.QUAKE, BlockBehaviour.Properties.of().instrument(SpeciesNoteBlockInstrument.QUAKE.get()).strength(1.0F).pushReaction(PushReaction.DESTROY)));
+    public static final DeferredBlock<Block> QUAKE_WALL_HEAD = BLOCKS.register("quake_wall_head", () -> new SpeciesWallSkullBlock(SpeciesSkullTypes.QUAKE, BlockBehaviour.Properties.of().dropsLike(QUAKE_HEAD.get()).strength(1.0F).pushReaction(PushReaction.DESTROY)));
 
     public static final DeferredBlock<Block> SPECTRALIBUR = BLOCKS.register("spectralibur", () -> new SpectraliburBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(75.0F, 1200.0F).sound(SoundType.METAL).pushReaction(PushReaction.IGNORE).noOcclusion()));
     public static final DeferredBlock<Block> SPECTRALIBUR_PEDESTAL = BLOCKS.register("spectralibur_pedestal", () -> new SpectraliburPedestalBlock(BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(75.0F, 1200.0F).sound(SoundType.METAL).lightLevel(litBlockEmission(10, SpeciesProperties.ACTIVE)).noOcclusion()));
@@ -71,15 +70,16 @@ public class SpeciesBlocks {
     public static final DeferredBlock<Block> CHAINDELIER = BLOCKS.register("chaindelier", () -> new ChaindelierBlock(BlockBehaviour.Properties.of().requiresCorrectToolForDrops().strength(5.0F, 6.0F).sound(SpeciesSoundEvents.SPECLIGHT).noOcclusion().pushReaction(PushReaction.DESTROY).lightLevel(value -> 13)));
     public static final DeferredBlock<Block> HOPELIGHT = BLOCKS.register("hopelight", () -> new HopelightBlock(BlockBehaviour.Properties.of().instabreak().sound(SpeciesSoundEvents.HOPELIGHT).noOcclusion().noCollission().pushReaction(PushReaction.DESTROY)));
 
-    public static final DeferredBlock<Block> WICKED_CANDLE = BLOCKS.register("wicked_candle", () -> new MobHeadBlock(MobHeadBlock.Types.WICKED, BlockBehaviour.Properties.of().instrument(SpeciesNoteBlockInstrument.WICKED.get()).strength(1.0F).pushReaction(PushReaction.DESTROY)));
-    public static final DeferredBlock<Block> WICKED_WALL_CANDLE = BLOCKS.register("wicked_wall_candle", () -> new WallMobHeadBlock(MobHeadBlock.Types.WICKED, BlockBehaviour.Properties.of().dropsLike(WICKED_CANDLE.get()).strength(1.0F).pushReaction(PushReaction.DESTROY)));
+    public static final DeferredBlock<Block> WICKED_CANDLE = BLOCKS.register("wicked_candle", () -> new SpeciesSkullBlock(SpeciesSkullTypes.WICKED, BlockBehaviour.Properties.of().instrument(SpeciesNoteBlockInstrument.WICKED.get()).strength(1.0F).pushReaction(PushReaction.DESTROY)));
+    public static final DeferredBlock<Block> WICKED_WALL_CANDLE = BLOCKS.register("wicked_wall_candle", () -> new SpeciesWallSkullBlock(SpeciesSkullTypes.WICKED, BlockBehaviour.Properties.of().dropsLike(WICKED_CANDLE.get()).strength(1.0F).pushReaction(PushReaction.DESTROY)));
 
     public static final DeferredBlock<Block> CRANKTRAP = BLOCKS.register("cranktrap", () -> new CranktrapBlock(BlockBehaviour.Properties.of().strength(1.5f).instrument(NoteBlockInstrument.IRON_XYLOPHONE).sound(SpeciesSoundEvents.CRANKTRAP).requiresCorrectToolForDrops().noCollission().noOcclusion()));
-    public static final DeferredBlock<Block> BEWEREAGER_HEAD = BLOCKS.register("bewereager_head", () -> new MobHeadBlock(MobHeadBlock.Types.BEWEREAGER, BlockBehaviour.Properties.of().instrument(SpeciesNoteBlockInstrument.BEWEREAGER.get()).strength(1.0F).pushReaction(PushReaction.DESTROY)));
-    public static final DeferredBlock<Block> BEWEREAGER_WALL_HEAD = BLOCKS.register("bewereager_wall_head", () -> new WallMobHeadBlock(MobHeadBlock.Types.BEWEREAGER, BlockBehaviour.Properties.of().dropsLike(BEWEREAGER_HEAD.get()).strength(1.0F).pushReaction(PushReaction.DESTROY)));
+    public static final DeferredBlock<Block> BEWEREAGER_HEAD = BLOCKS.register("bewereager_head", () -> new SpeciesSkullBlock(SpeciesSkullTypes.BEWEREAGER, BlockBehaviour.Properties.of().instrument(SpeciesNoteBlockInstrument.BEWEREAGER.get()).strength(1.0F).pushReaction(PushReaction.DESTROY)));
+    public static final DeferredBlock<Block> BEWEREAGER_WALL_HEAD = BLOCKS.register("bewereager_wall_head", () -> new SpeciesWallSkullBlock(SpeciesSkullTypes.BEWEREAGER, BlockBehaviour.Properties.of().dropsLike(BEWEREAGER_HEAD.get()).strength(1.0F).pushReaction(PushReaction.DESTROY)));
 
 
-    private static ToIntFunction<BlockState> litBlockEmission(int i, BooleanProperty property) {
-        return (state) -> state.getValue(property) ? i : 0;
+    private static ToIntFunction<BlockState> litBlockEmission(int value, BooleanProperty property) {
+        return state -> state.getValue(property) ? value : 0;
     }
+
 }

@@ -89,13 +89,13 @@ public class SpeciesItems {
     public static final DeferredItem<Item> V3 = ITEMS.registerItem("v3", Item::new, new Item.Properties());
     public static final DeferredItem<Item> GHOUL_SPAWN_EGG = ITEMS.registerItem("ghoul_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.GHOUL.get(), 0xA3908C, 0xBAA3A0, SpeciesDevelopers.SpeciesDeveloperNames.BORNULHU, new Item.Properties().stacksTo(64)));
     public static final DeferredItem<Item> GHOUL_TONGUE = ITEMS.registerItem("ghoul_tongue", Item::new, new Item.Properties().food(new FoodProperties.Builder().nutrition(2).saturationModifier(0.2f).effect(() -> new MobEffectInstance(MobEffects.CONFUSION, 20 * 10, 0), 1).effect(new MobEffectInstance(MobEffects.HUNGER, 20 * 10, 1), 1).build()));
-    public static final DeferredItem<Item> GHOUL_HEAD = ITEMS.registerItem("ghoul_head", (properties) -> new MobHeadItem(SpeciesBlocks.GHOUL_HEAD.get(), SpeciesBlocks.GHOUL_WALL_HEAD.get(), (new Item.Properties()).rarity(Rarity.UNCOMMON), Direction.DOWN));
+    public static final DeferredItem<Item> GHOUL_HEAD = ITEMS.registerItem("ghoul_head", (properties) -> new StandingAndWallBlockItem(SpeciesBlocks.GHOUL_HEAD.get(), SpeciesBlocks.GHOUL_WALL_HEAD.get(), (new Item.Properties()).rarity(Rarity.UNCOMMON), Direction.DOWN));
 
     public static final DeferredItem<Item> QUAKE_SPAWN_EGG = ITEMS.registerItem("quake_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.QUAKE.get(), 0x454646, 0xB77541, SpeciesDevelopers.SpeciesDeveloperNames.NINNI, new Item.Properties().stacksTo(64)));
     public static final DeferredItem<Item> KINETIC_CORE = ITEMS.registerItem("kinetic_core", (properties) -> new BlockItem(SpeciesBlocks.KINETIC_CORE.get(), new Item.Properties().rarity(Rarity.UNCOMMON)));
     public static final DeferredItem<Item> DEFLECTOR_DUMMY = ITEMS.registerItem("deflector_dummy", DeflectorDummyItem::new, new Item.Properties().rarity(Rarity.UNCOMMON).stacksTo(16));
     public static final DeferredItem<Item> RICOSHIELD = ITEMS.registerItem("ricoshield", RicoshieldItem::new, new Item.Properties().rarity(Rarity.UNCOMMON).durability(528));
-    public static final DeferredItem<Item> QUAKE_HEAD = ITEMS.registerItem("quake_head", (properties) -> new MobHeadItem(SpeciesBlocks.QUAKE_HEAD.get(), SpeciesBlocks.QUAKE_WALL_HEAD.get(), (new Item.Properties()).rarity(Rarity.UNCOMMON), Direction.DOWN));
+    public static final DeferredItem<Item> QUAKE_HEAD = ITEMS.registerItem("quake_head", (properties) -> new StandingAndWallBlockItem(SpeciesBlocks.QUAKE_HEAD.get(), SpeciesBlocks.QUAKE_WALL_HEAD.get(), (new Item.Properties()).rarity(Rarity.UNCOMMON), Direction.DOWN));
     public static final DeferredItem<Item> MUSIC_DISK_SPAWNER = ITEMS.registerItem("music_disk_spawner", Item::new, new Item.Properties().rarity(Rarity.RARE).stacksTo(1).jukeboxPlayable(ResourceKey.create(Registries.JUKEBOX_SONG, ResourceLocation.fromNamespaceAndPath("species", "spawner"))));
 
     public static final DeferredItem<Item> SPECTRE_SPAWN_EGG = ITEMS.registerItem("spectre_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.SPECTRE.get(), 0x182C39, 0x35f8ff, SpeciesDevelopers.SpeciesDeveloperNames.REDA, new Item.Properties().stacksTo(64)));
@@ -114,13 +114,13 @@ public class SpeciesItems {
     public static final DeferredItem<Item> WICKED_DOPE = ITEMS.registerItem("wicked_dope", (properties) -> new WickedDopeItem());
     public static final DeferredItem<Item> WICKED_MASK = ITEMS.registerItem("wicked_mask", (properties) -> new WickedMaskItem());
     public static final DeferredItem<Item> WICKED_TREAT = ITEMS.registerItem("wicked_treat", (properties) -> new WickedTreatItem());
-    public static final DeferredItem<Item> WICKED_CANDLE = ITEMS.registerItem("wicked_candle", (properties) -> new MobHeadItem(SpeciesBlocks.WICKED_CANDLE.get(), SpeciesBlocks.WICKED_WALL_CANDLE.get(), (new Item.Properties()).rarity(Rarity.UNCOMMON), Direction.DOWN));
+    public static final DeferredItem<Item> WICKED_CANDLE = ITEMS.registerItem("wicked_candle", (properties) -> new StandingAndWallBlockItem(SpeciesBlocks.WICKED_CANDLE.get(), SpeciesBlocks.WICKED_WALL_CANDLE.get(), (new Item.Properties()).rarity(Rarity.UNCOMMON), Direction.DOWN));
 
     public static final DeferredItem<Item> BEWEREAGER_SPAWN_EGG = ITEMS.registerItem("bewereager_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.BEWEREAGER.get(), 0x8D383F, 0x5D4B4E, SpeciesDevelopers.SpeciesDeveloperNames.NOON, new Item.Properties().stacksTo(64)));
     public static final DeferredItem<Item> WEREFANG = ITEMS.registerItem("werefang", Item::new, new Item.Properties());
     public static final DeferredItem<Item> CRANKBOW = ITEMS.registerItem("crankbow", (properties) -> new CrankbowItem());
     public static final DeferredItem<Item> CRANKTRAP = ITEMS.registerItem("cranktrap", (properties) -> new BlockItem(SpeciesBlocks.CRANKTRAP.get(), new Item.Properties()));
-    public static final DeferredItem<Item> BEWEREAGER_HEAD = ITEMS.registerItem("bewereager_head", (properties) -> new MobHeadItem(SpeciesBlocks.BEWEREAGER_HEAD.get(), SpeciesBlocks.BEWEREAGER_WALL_HEAD.get(), (new Item.Properties()).rarity(Rarity.UNCOMMON), Direction.DOWN));
+    public static final DeferredItem<Item> BEWEREAGER_HEAD = ITEMS.registerItem("bewereager_head", (properties) -> new StandingAndWallBlockItem(SpeciesBlocks.BEWEREAGER_HEAD.get(), SpeciesBlocks.BEWEREAGER_WALL_HEAD.get(), (new Item.Properties()).rarity(Rarity.UNCOMMON), Direction.DOWN));
 
     public static final DeferredItem<Item> LEAF_HANGER_SPAWN_EGG = ITEMS.registerItem("leaf_hanger_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.LEAF_HANGER.get(), 0x43994E, 0x5C4A45, SpeciesDevelopers.SpeciesDeveloperNames.YAPETTO, new Item.Properties().stacksTo(64)));
     public static final DeferredItem<Item> CLIFF_HANGER_SPAWN_EGG = ITEMS.registerItem("cliff_hanger_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.CLIFF_HANGER.value(), 0x8B7648, 0x48484B, SpeciesDevelopers.SpeciesDeveloperNames.YAPETTO, new Item.Properties().stacksTo(64)));
