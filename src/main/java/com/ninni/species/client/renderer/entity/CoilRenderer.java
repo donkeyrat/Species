@@ -113,6 +113,7 @@ public class CoilRenderer extends EntityRenderer<Coil> {
             Vec3 forward = direction.cross(right).normalize().scale(0.2);
 
             poseStack.pushPose();
+            poseStack.translate(0, 0.001F, 0);
 
             int segments = Math.min(24, (int) (distance * 2));
             List<Vec3> curve = new ArrayList<>();
