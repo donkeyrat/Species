@@ -23,8 +23,8 @@ import java.util.List;
 
 public class MonsterMealitem extends Item {
 
-    public MonsterMealitem() {
-        super(new Properties().food(new FoodProperties.Builder().nutrition(3).saturationModifier(1.2F).alwaysEdible().build()));
+    public MonsterMealitem(Properties properties) {
+        super(properties);
     }
 
     @Override

@@ -21,8 +21,8 @@ import java.util.List;
 
 public class WickedDopeItem extends Item {
 
-    public WickedDopeItem() {
-        super(new Properties().food(new FoodProperties.Builder().nutrition(3).saturationModifier(2).alwaysEdible().build()));
+    public WickedDopeItem(Properties properties) {
+        super(properties);
     }
 
     @Override

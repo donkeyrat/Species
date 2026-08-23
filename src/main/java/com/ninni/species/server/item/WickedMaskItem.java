@@ -61,8 +61,8 @@ public class WickedMaskItem extends Item implements Equipable, HasImportantInter
         }
     }
 
-    public WickedMaskItem() {
-        super(new Properties().stacksTo(1));
+    public WickedMaskItem(Properties properties) {
+        super(properties);
     }
 
     @Override

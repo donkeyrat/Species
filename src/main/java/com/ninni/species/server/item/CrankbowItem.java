@@ -48,12 +48,13 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public class CrankbowItem extends ProjectileWeaponItem {
+
     public static final String TAG_SHOTS_FIRED = "Speed";
     public static final String TAG_COOLDOWN = "Cooldown";
     public static final String TAG_USING = "IsUsing";
 
-    public CrankbowItem() {
-        super(new Properties().stacksTo(1).durability(865));
+    public CrankbowItem(Item.Properties properties) {
+        super(properties);
     }
 
     @Override

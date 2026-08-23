@@ -35,6 +35,7 @@ public interface SpeciesTags {
     TagKey<Block> MAMMUTILATION_REMNANT_INVALID_BLOCKS = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Species.MOD_ID, "mammutilation_remnant_invalid_blocks"));
     TagKey<Block> MAMMUTILATION_BODY_BLOCKS = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Species.MOD_ID, "mammutilation_body_blocks"));
     TagKey<Block> CLIFF_HANGER_SPAWNABLE_ON = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Species.MOD_ID, "cliff_hanger_spawnable_on"));
+    TagKey<Block> COILABLE = TagKey.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(Species.MOD_ID, "coilable"));
 
     //biomeTags
     TagKey<Biome> WRAPTOR_COOP_HAS_STRUCTURE = TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(Species.MOD_ID, "wraptor_coop_has_structure"));

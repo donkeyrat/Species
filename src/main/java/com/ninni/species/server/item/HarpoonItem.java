@@ -1,6 +1,5 @@
 package com.ninni.species.server.item;
 
-import com.ninni.species.registry.SpeciesNetwork;
 import com.ninni.species.registry.SpeciesSoundEvents;
 import com.ninni.species.server.entity.mob.update_3.Harpoon;
 import com.ninni.species.server.packet.HarpoonSyncPacket;
