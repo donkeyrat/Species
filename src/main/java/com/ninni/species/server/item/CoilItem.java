@@ -1,6 +1,7 @@
 package com.ninni.species.server.item;
 
 import com.ninni.species.registry.SpeciesSoundEvents;
+import com.ninni.species.registry.SpeciesTags;
 import com.ninni.species.server.entity.mob.update_3.Coil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -17,6 +18,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
@@ -29,28 +31,26 @@ public class CoilItem extends Item {
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
-        BlockPos blockPos = context.getClickedPos();
+        BlockPos clickedPos = context.getClickedPos();
         Direction direction = context.getClickedFace();
-        ItemStack stack = context.getItemInHand();
-        BlockState state = level.getBlockState(blockPos);
-        Block block = state.getBlock();
+        BlockState state = level.getBlockState(clickedPos);
 
-        boolean knot = block instanceof FenceBlock
-                || (block instanceof LightningRodBlock && state.getValue(LightningRodBlock.FACING).getAxis().isVertical())
-                || (block instanceof EndRodBlock && state.getValue(EndRodBlock.FACING).getAxis().isVertical())
-                || (block instanceof ChainBlock && state.getValue(ChainBlock.AXIS).isVertical());
+        boolean knot = state.is(SpeciesTags.COILABLE);
+        if (state.hasProperty(BlockStateProperties.FACING)) knot = state.getValue(BlockStateProperties.FACING).getAxis().isVertical();
+        if (state.hasProperty(BlockStateProperties.AXIS)) knot = state.getValue(BlockStateProperties.AXIS).isVertical();
 
         Vec3 pos;
         if (knot) {
-            pos = Vec3.atBottomCenterOf(blockPos).add(0, 0.25, 0);
+            pos = Vec3.atBottomCenterOf(clickedPos).add(0, 0.25, 0);
         } else {
-            Vec3 blockCenter = Vec3.atCenterOf(blockPos);
+            Vec3 blockCenter = Vec3.atCenterOf(clickedPos);
             Vec3 normal = Vec3.atLowerCornerOf(direction.getNormal());
             Vec3 offset = normal.scale(0.5);
             pos = blockCenter.add(offset).add(0, -0.125, 0);
         }
 
         int rot = direction == Direction.UP ? -90 : direction == Direction.DOWN ? 90 : 0;
+        ItemStack stack = context.getItemInHand();
         if (!stack.has(DataComponents.CUSTOM_DATA)) {
             Coil coil = new Coil(level, true, pos, null, null);
             coil.setKnot(knot);
@@ -61,7 +61,7 @@ public class CoilItem extends Item {
 
             CompoundTag tag = new CompoundTag();
             tag.putUUID("EndPointUUID", coil.getUUID());
-            tag.put("EndPointPos", NbtUtils.writeBlockPos(blockPos));
+            tag.put("EndPointPos", NbtUtils.writeBlockPos(clickedPos));
             tag.putInt("CooldownTicks", 400);
             CustomData.set(DataComponents.CUSTOM_DATA, stack, tag);
         } else {
@@ -83,7 +83,7 @@ public class CoilItem extends Item {
                 stack.remove(DataComponents.CUSTOM_DATA);
                 stack.shrink(1);
             } else {
-                setStart(stack, level, blockPos, knot, direction);
+                setStart(stack, level, clickedPos, knot, direction);
             }
         }
 
