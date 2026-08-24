@@ -47,7 +47,6 @@ public class PetEffectItem extends Item implements HasImportantInteraction {
                 entity.addEffect(effect);
             }
         });
-        contents.getAllEffects().forEach(entity::addEffect);
 
         player.getCooldowns().addCooldown(stack.getItem(), stack.getOrDefault(SpeciesDataComponents.COOLDOWN, 0));
         stack.consume(1, player);
@@ -69,8 +68,6 @@ public class PetEffectItem extends Item implements HasImportantInteraction {
         list.add(CommonComponents.EMPTY);
 
         PotionContents contents = stack.get(DataComponents.POTION_CONTENTS);
-        if (contents != null) {
-            contents.addPotionTooltip(list::add, 1.0F, context.tickRate());
-        }
+        if (contents != null) contents.addPotionTooltip(list::add, 1, context.tickRate());
     }
 }

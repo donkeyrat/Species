@@ -192,11 +192,27 @@ public class SpeciesItems {
     public static final DeferredItem<Item> WICKED_SWAPPER = ITEMS.registerItem("wicked_swapper", WickedSwapperItem::new,
         new Item.Properties().stacksTo(16)
     );
-    public static final DeferredItem<Item> MONSTER_MEAL = ITEMS.registerItem("monster_meal", MonsterMealitem::new,
-        new Item.Properties().food(SpeciesFoodProperties.MONSTER_MEAL)
+    public static final DeferredItem<Item> MONSTER_MEAL = ITEMS.register("monster_meal",
+        () -> new MonsterMealitem(new Item.Properties().component(DataComponents.POTION_CONTENTS, new PotionContents(
+            Optional.empty(),
+            Optional.empty(),
+            List.of(
+                new MobEffectInstance(SpeciesStatusEffects.IRON_WILL, 30 * 20),
+                new MobEffectInstance(SpeciesStatusEffects.TANKED, 20 * 20),
+                new MobEffectInstance(SpeciesStatusEffects.SNATCHED, 10 * 20),
+                new MobEffectInstance(SpeciesStatusEffects.COMBUSTION, 180 * 20)
+            )
+        )).food(SpeciesFoodProperties.MONSTER_MEAL))
     );
-    public static final DeferredItem<Item> SMOKE_BOMB = ITEMS.registerItem("smoke_bomb", SmokeBombItem::new,
-        new Item.Properties().stacksTo(16)
+    public static final DeferredItem<Item> SMOKE_BOMB = ITEMS.register("smoke_bomb",
+        () -> new SmokeBombItem(new Item.Properties().component(DataComponents.POTION_CONTENTS, new PotionContents(
+            Optional.empty(),
+            Optional.empty(),
+            List.of(
+                new MobEffectInstance(MobEffects.INVISIBILITY, 20 * 15, 0, true, true),
+                new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 20 * 2, 2, true, true)
+            )
+        )).component(SpeciesDataComponents.COOLDOWN, 40 * 20).stacksTo(16))
     );
     public static final DeferredItem<Item> WICKED_DOPE = ITEMS.registerItem("wicked_dope", WickedDopeItem::new,
         new Item.Properties().food(SpeciesFoodProperties.WICKED_DOPE)

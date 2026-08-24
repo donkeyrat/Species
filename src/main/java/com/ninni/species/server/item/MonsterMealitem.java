@@ -4,6 +4,8 @@ import com.ninni.species.registry.SpeciesSoundEvents;
 import com.ninni.species.registry.SpeciesStatusEffects;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerLevel;
@@ -16,6 +18,7 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,45 +32,30 @@ public class MonsterMealitem extends Item {
 
     @Override
     public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
-        if (level instanceof ServerLevel) {
-            int i = level.random.nextInt(4);
-            Holder<MobEffect> effect;
-            int durationInSeconds;
-            switch (i) {
-                default -> {
-                    effect = SpeciesStatusEffects.COMBUSTION;
-                    durationInSeconds = 180;
-                }
-                case 1 -> {
-                    effect = SpeciesStatusEffects.IRON_WILL;
-                    durationInSeconds = 30;
-                }
-                case 2 -> {
-                    effect = SpeciesStatusEffects.TANKED;
-                    durationInSeconds = 20;
-                }
-                case 3 -> {
-                    effect = SpeciesStatusEffects.SNATCHED;
-                    durationInSeconds = 10;
-                }
-            }
-            entity.addEffect(new MobEffectInstance(effect, 20 * durationInSeconds, 0));
-            level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), SpeciesSoundEvents.MONSTER_MEAL_APPLY.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+        List<MobEffectInstance> effects = stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).customEffects();
+        MobEffectInstance effect = effects.get(level.getRandom().nextInt(effects.size()));
+        if (effect.getEffect().value().isInstantenous()) {
+            effect.getEffect().value().applyInstantenousEffect(entity, entity, entity, effect.getAmplifier(), 1);
+        } else {
+            entity.addEffect(effect);
+        }
+
+        if (level instanceof ServerLevel serverLevel) {
+            serverLevel.playSound(null, entity.getX(), entity.getY(), entity.getZ(), SpeciesSoundEvents.MONSTER_MEAL_APPLY.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
         }
         return super.finishUsingItem(stack, level, entity);
     }
 
-
     @Override
     public void appendHoverText(ItemStack itemStack, TooltipContext context, List<Component> list, TooltipFlag tooltipFlag) {
-        list.add(Component.literal(""));
+        list.add(CommonComponents.EMPTY);
         list.add(Component.translatable("item.species.whenEaten").withStyle(ChatFormatting.DARK_PURPLE));
-        list.add(Component.literal(" ").append(Component.translatable("item.species.monster_meal.desc.effect").withStyle(Style.EMPTY.withColor(0xe72a8b))));
-        super.appendHoverText(itemStack, context, list, tooltipFlag);
+        list.add(CommonComponents.SPACE.copy().append(Component.translatable("item.species.monster_meal.desc.effect").withStyle(Style.EMPTY.withColor(0xe72a8b))));
     }
 
     @Override
     public SoundEvent getEatingSound() {
         return SpeciesSoundEvents.WICKED_WAX_EAT.get();
     }
+
 }

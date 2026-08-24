@@ -38,6 +38,7 @@ import net.minecraft.world.phys.AABB;
 import java.util.List;
 
 public class WickedMaskItem extends Item implements Equipable, HasImportantInteraction {
+
     public static final DispenseItemBehavior DISPENSE_ITEM_BEHAVIOR = new DefaultDispenseItemBehavior() {
         protected ItemStack execute(BlockSource blockSource, ItemStack stack) {
             return WickedMaskItem.dispenseMask(blockSource, stack) ? stack : super.execute(blockSource, stack);

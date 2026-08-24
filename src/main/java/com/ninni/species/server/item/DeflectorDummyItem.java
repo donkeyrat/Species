@@ -6,6 +6,7 @@ import com.ninni.species.server.entity.mob.update_3.DeflectorDummy;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
@@ -28,50 +29,45 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class DeflectorDummyItem extends Item {
-    public DeflectorDummyItem(Properties p_40503_) {
-        super(p_40503_);
+
+    public DeflectorDummyItem(Properties properties) {
+        super(properties);
     }
 
-    public InteractionResult useOn(UseOnContext useOnContext) {
-        Direction direction = useOnContext.getClickedFace();
-        if (direction == Direction.DOWN) {
-            return InteractionResult.FAIL;
-        } else {
-            Level level = useOnContext.getLevel();
-            BlockPlaceContext blockplacecontext = new BlockPlaceContext(useOnContext);
-            BlockPos blockpos = blockplacecontext.getClickedPos();
-            ItemStack itemstack = useOnContext.getItemInHand();
-            Vec3 vec3 = Vec3.atBottomCenterOf(blockpos);
-            AABB aabb = SpeciesEntities.DEFLECTOR_DUMMY.get().getDimensions().makeBoundingBox(vec3.x(), vec3.y(), vec3.z());
-            if (level.noCollision(null, aabb) && level.getEntities(null, aabb).isEmpty()) {
-                if (level instanceof ServerLevel serverlevel) {
-                    Consumer<DeflectorDummy> consumer = EntityType.createDefaultStackConfig(serverlevel, itemstack, useOnContext.getPlayer());
-                    DeflectorDummy dummy = SpeciesEntities.DEFLECTOR_DUMMY.get().create(serverlevel, consumer, blockpos, MobSpawnType.SPAWN_EGG, true, true);
-                    if (dummy == null) {
-                        return InteractionResult.FAIL;
-                    }
+    public InteractionResult useOn(UseOnContext context) {
+        Direction direction = context.getClickedFace();
+        if (direction == Direction.DOWN) return InteractionResult.FAIL;
 
-                    float f = (float)Mth.floor((Mth.wrapDegrees(useOnContext.getRotation() - 180.0F) + 22.5F) / 45.0F) * 45.0F;
-                    dummy.moveTo(dummy.getX(), dummy.getY(), dummy.getZ(), f, 0.0F);
-                    serverlevel.addFreshEntityWithPassengers(dummy);
-                    level.playSound(null, dummy.getX(), dummy.getY(), dummy.getZ(), SpeciesSoundEvents.DEFLECTOR_DUMMY_PLACE.get(), SoundSource.BLOCKS, 0.75F, 0.8F);
-                    dummy.gameEvent(GameEvent.ENTITY_PLACE, useOnContext.getPlayer());
-                }
+        Level level = context.getLevel();
+        BlockPlaceContext blockContext = new BlockPlaceContext(context);
+        BlockPos pos = blockContext.getClickedPos();
+        ItemStack stack = context.getItemInHand();
+        Vec3 center = Vec3.atBottomCenterOf(pos);
+        AABB box = SpeciesEntities.DEFLECTOR_DUMMY.get().getDimensions().makeBoundingBox(center.x, center.y, center.z);
+        if (!level.noCollision(null, box)) return InteractionResult.FAIL;
+        if (!level.getEntities(null, box).isEmpty()) return InteractionResult.FAIL;
 
-                itemstack.shrink(1);
-                return InteractionResult.sidedSuccess(level.isClientSide);
-            } else {
-                return InteractionResult.FAIL;
-            }
+        if (level instanceof ServerLevel serverlevel) {
+            Consumer<DeflectorDummy> consumer = EntityType.createDefaultStackConfig(serverlevel, stack, context.getPlayer());
+            DeflectorDummy dummy = SpeciesEntities.DEFLECTOR_DUMMY.get().create(serverlevel, consumer, pos, MobSpawnType.SPAWN_EGG, true, true);
+            if (dummy == null) return InteractionResult.FAIL;
+
+            float yRot = (float)Mth.floor((Mth.wrapDegrees(context.getRotation() - 180) + 22.5F) / 45) * 45;
+            dummy.moveTo(dummy.getX(), dummy.getY(), dummy.getZ(), yRot, 0);
+            serverlevel.addFreshEntityWithPassengers(dummy);
+            level.playSound(null, dummy.getX(), dummy.getY(), dummy.getZ(), SpeciesSoundEvents.DEFLECTOR_DUMMY_PLACE.get(), SoundSource.BLOCKS, 0.75F, 0.8F);
+            dummy.gameEvent(GameEvent.ENTITY_PLACE, context.getPlayer());
         }
+
+        stack.consume(1, context.getPlayer());
+        return InteractionResult.sidedSuccess(level.isClientSide);
     }
 
     @Override
     public void appendHoverText(ItemStack itemStack, TooltipContext context, List<Component> list, TooltipFlag tooltipFlag) {
-        list.add(Component.literal(""));
+        list.add(CommonComponents.EMPTY);
         list.add(Component.translatable("item.species.deflector_dummy.desc.powered").withStyle(ChatFormatting.GRAY));
-        list.add(Component.literal(" ").append(Component.translatable("item.species.deflector_dummy.desc.damage").withStyle(style -> style.withColor(0xE21447))));
-
-        super.appendHoverText(itemStack, context, list, tooltipFlag);
+        list.add(CommonComponents.SPACE.copy().append(Component.translatable("item.species.deflector_dummy.desc.damage").withColor(0xE21447)));
     }
+
 }
