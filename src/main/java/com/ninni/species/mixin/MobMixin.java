@@ -24,11 +24,11 @@ public abstract class MobMixin extends LivingEntity {
 
     @Inject(method = "checkAndHandleImportantInteractions", at = @At("HEAD"), cancellable = true)
     private void S$checkAndHandleImportantInteractions(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
-        InteractionResult interactionResult;
-        ItemStack itemStack = player.getItemInHand(hand);
+        InteractionResult result;
+        ItemStack stack = player.getItemInHand(hand);
 
-        if (itemStack.getItem() instanceof HasImportantInteraction && (interactionResult = itemStack.interactLivingEntity(player, this, hand)).consumesAction()) {
-            cir.setReturnValue(interactionResult);
+        if (stack.getItem() instanceof HasImportantInteraction && (result = stack.interactLivingEntity(player, this, hand)).consumesAction()) {
+            cir.setReturnValue(result);
         }
     }
 
@@ -39,4 +39,5 @@ public abstract class MobMixin extends LivingEntity {
             cir.setReturnValue(InteractionResult.SUCCESS);
         }
     }
+
 }

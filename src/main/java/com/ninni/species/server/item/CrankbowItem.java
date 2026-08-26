@@ -261,7 +261,7 @@ public class CrankbowItem extends ProjectileWeaponItem {
 
         ArrowItem arrowitem = (ArrowItem)(stack1.getItem() instanceof ArrowItem ? stack1.getItem() : Items.ARROW);
         AbstractArrow abstractarrow = arrowitem.createArrow(level, stack1, livingEntity, stack);
-        if (abstractarrow instanceof AbstractArrowAccess access) access.setTgnoreImmunityFrame(true);
+        if (abstractarrow instanceof AbstractArrowAccess access) access.setIgnoreImmunityFrames(true);
 
         Vec3 vec31 = livingEntity.getUpVector(1.0F);
         Quaternionf quaternionf = (new Quaternionf()).setAngleAxis((z * 0.017453292F), vec31.x, vec31.y, vec31.z);

@@ -10,19 +10,21 @@ import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(Player.class)
 public abstract class PlayerMixin extends LivingEntity implements PlayerAccess {
-    private @Unique int harpoonId;
 
-    protected PlayerMixin(EntityType<? extends LivingEntity> entityType, Level level) {
-        super(entityType, level);
+    @Unique private int harpoonId;
+
+    protected PlayerMixin(EntityType<? extends LivingEntity> type, Level level) {
+        super(type, level);
     }
 
-
+    @Override
     public int getHarpoonId() {
-        return harpoonId;
+        return this.harpoonId;
     }
 
     @Override
     public void setHarpoonId(int id) {
         this.harpoonId = id;
     }
+
 }

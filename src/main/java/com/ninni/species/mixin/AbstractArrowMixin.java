@@ -20,19 +20,20 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-
 @Mixin(AbstractArrow.class)
 public abstract class AbstractArrowMixin extends Projectile implements AbstractArrowAccess {
+
     @Shadow public AbstractArrow.Pickup pickup;
     @Shadow protected abstract ItemStack getPickupItem();
-    @Unique private boolean ignoresImmunityFrame;
 
-    protected AbstractArrowMixin(EntityType<? extends Projectile> p_37248_, Level p_37249_) {
-        super(p_37248_, p_37249_);
+    @Unique private boolean ignoresImmunityFrames;
+
+    protected AbstractArrowMixin(EntityType<? extends Projectile> type, Level level) {
+        super(type, level);
     }
 
     @Inject(at = @At("HEAD"), method = "tryPickup", cancellable = true)
-    private void S$tryPickup(Player player, CallbackInfoReturnable<Boolean> cir) {
+    private void tryPickup(Player player, CallbackInfoReturnable<Boolean> cir) {
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof CrankbowItem)) return;
         if (CrankbowItem.getContentWeight(stack) >= CrankbowItem.getMaxWeight(player, stack)) return;
@@ -48,33 +49,33 @@ public abstract class AbstractArrowMixin extends Projectile implements AbstractA
     }
 
     @Inject(method = "onHitEntity", at = @At("TAIL"))
-    private void S$onHitEntity(EntityHitResult result, CallbackInfo ci) {
-        if (this.ignoresImmunityFrame) {
-            Entity entity = result.getEntity();
-            if (entity instanceof LivingEntity living) {
-                living.hurtMarked = true;
-                living.invulnerableTime = 0;
-            }
+    private void onHitEntity(EntityHitResult result, CallbackInfo ci) {
+        if (!this.ignoresImmunityFrames) return;
+        Entity entity = result.getEntity();
+        if (entity instanceof LivingEntity living) {
+            living.hurtMarked = true;
+            living.invulnerableTime = 0;
         }
     }
 
     @Inject(at = @At("TAIL"), method = "readAdditionalSaveData")
-    private void S$readAdditionalSaveData(CompoundTag tag, CallbackInfo ci) {
-        this.ignoresImmunityFrame = tag.getBoolean("IgnoresImmunityFrame");
+    private void readAdditionalSaveData(CompoundTag tag, CallbackInfo ci) {
+        this.ignoresImmunityFrames = tag.getBoolean("ignores_immunity_frames");
     }
 
     @Inject(at = @At("TAIL"), method = "addAdditionalSaveData")
-    private void S$addAdditionalSaveData(CompoundTag tag, CallbackInfo ci) {
-        tag.putBoolean("IgnoresImmunityFrame", this.ignoresImmunityFrame);
+    private void addAdditionalSaveData(CompoundTag tag, CallbackInfo ci) {
+        tag.putBoolean("ignores_immunity_frames", this.ignoresImmunityFrames);
     }
 
     @Override
-    public boolean ignoresImmunityFrame() {
-        return ignoresImmunityFrame;
+    public boolean shouldIgnoreImmunityFrames() {
+        return this.ignoresImmunityFrames;
     }
 
     @Override
-    public void setTgnoreImmunityFrame(boolean ignore) {
-        this.ignoresImmunityFrame = ignore;
+    public void setIgnoreImmunityFrames(boolean ignore) {
+        this.ignoresImmunityFrames = ignore;
     }
+
 }
