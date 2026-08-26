@@ -62,6 +62,7 @@ public class Species {
 		SpeciesPaintingVariants.addPaintings();
 		SpeciesRecipeSerializers.RECIPE_SERIALIZERS.register(modEventBus);
 		SpeciesDataComponents.DATA_COMPONENTS.register(modEventBus);
+		SpeciesEnchantmentEffectComponents.ENCHANTMENT_EFFECT_COMPONENTS.register(modEventBus);
 		SpeciesMenus.MENUS.register(modEventBus);
 		SpeciesCriterion.TRIGGER_TYPES.register(modEventBus);
 

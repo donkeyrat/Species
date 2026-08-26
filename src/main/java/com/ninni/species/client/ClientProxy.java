@@ -24,24 +24,11 @@ public class ClientProxy extends CommonProxy {
     }
 
     public void clientSetup() {
-        ItemProperties.register(SpeciesItems.CRANKBOW.get(),
-                ResourceLocation.fromNamespaceAndPath(Species.MOD_ID, "pull"),
-                (stack, level, entity, seed) -> {
-                    if (!(entity instanceof Player)) return -1.0F;
-
-                    var tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-                    if (!tag.getBoolean(CrankbowItem.TAG_USING)) return -1.0F;
-
-                    int cooldown = tag.getInt(CrankbowItem.TAG_COOLDOWN);
-                    int maxCooldown = CrankbowItem.getShootingCooldown(stack, level.registryAccess());
-                    float progress = 1.0f - ((float) cooldown / Math.max(1, maxCooldown));
-
-                    if (progress < 0.05F) return 0.0F;
-                    else if (progress < 0.20F) return 0.15F;
-                    else if (progress < 0.35F) return 0.3F;
-                    else if (progress < 0.5F) return 0.4F;
-                    else return 0.6F;
-                });
+        ItemProperties.register(
+            SpeciesItems.CRANKBOW.get(),
+            Species.of("pull"),
+            CrankbowItem::getProperty
+        );
 
         ItemProperties.register(SpeciesItems.RICOSHIELD.get(), ResourceLocation.fromNamespaceAndPath(Species.MOD_ID, "blocking"), (stack, level, player, i) -> {
             return player != null && player.isUsingItem() && player.getUseItem() == stack ? 1.0F : 0.0F;

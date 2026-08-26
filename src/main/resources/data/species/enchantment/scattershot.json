@@ -3,6 +3,10 @@
   "description": {
     "translate": "enchantment.species.scattershot"
   },
+  "effects": {
+    "species:crankbow_scattershot": {}
+  },
+
   "max_cost": {
     "base": 48,
     "per_level_above_first": 18
