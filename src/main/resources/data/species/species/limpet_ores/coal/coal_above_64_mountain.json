@@ -1,0 +1,9 @@
+{
+  "path": "species:coal",
+  "item": "minecraft:coal",
+  "block": "minecraft:coal_ore",
+  "max_count": 24,
+  "location": "#minecraft:is_mountain",
+  "spawn_weight": 20,
+  "min_spawn_height": 64
+}

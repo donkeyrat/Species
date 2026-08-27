@@ -1,0 +1,17 @@
+{
+	"neoforge:conditions": [
+		{
+			"type": "neoforge:mod_loaded",
+			"modid": "caverns_and_chasms"
+		}
+	],
+
+	"item": "caverns_and_chasms:spinel",
+	"max_count": 6,
+
+	"block": "caverns_and_chasms:spinel_ore",
+	"max_spawn_height": 64,
+	"min_spawn_height": -32,
+
+	"spawn_weight": 50
+}

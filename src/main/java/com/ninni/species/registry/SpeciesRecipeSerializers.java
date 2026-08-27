@@ -1,7 +1,7 @@
 package com.ninni.species.registry;
 
 import com.ninni.species.Species;
-import com.ninni.species.server.data.MobHeadFireworkStarRecipe;
+import com.ninni.species.server.recipe.MobHeadFireworkStarRecipe;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;

@@ -1,7 +1,7 @@
 package com.ninni.species.server.entity.mob.update_2;
 
+import com.ninni.species.Species;
 import com.ninni.species.registry.*;
-import com.ninni.species.registry.SpeciesCriterion;
 import com.ninni.species.server.packet.SendSpringlingPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -23,10 +23,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.camel.Camel;
-import net.minecraft.world.entity.animal.goat.Goat;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.piglin.Piglin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -35,10 +32,14 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.entity.PartEntity;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
+@EventBusSubscriber(modid = Species.MOD_ID)
 public class Springling extends TamableAnimal implements PlayerRideable {
     public static final EntityDataAccessor<Integer> MAX_EXTENDED_AMOUNT = SynchedEntityData.defineId(Springling.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Float> EXTENDED_AMOUNT = SynchedEntityData.defineId(Springling.class, EntityDataSerializers.FLOAT);
@@ -48,6 +49,13 @@ public class Springling extends TamableAnimal implements PlayerRideable {
     public int currentQuantizedStep;
     private final SpringlingHead[] subEntities;
     public final SpringlingHead head;
+
+    @SubscribeEvent
+    public static void onBreakSpeed(PlayerEvent.BreakSpeed event) {
+        if (event.getEntity().getVehicle() instanceof Springling) {
+            event.setNewSpeed(event.getOriginalSpeed() * 5.0F);
+        }
+    }
 
     public Springling(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);

@@ -1,0 +1,9 @@
+{
+  "entity_type": "minecraft:drowned",
+  "item": {
+    "id": "minecraft:copper_ingot",
+    "Count": 1
+  },
+  "min_tries": 10,
+  "max_tries": 20
+}

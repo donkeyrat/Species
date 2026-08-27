@@ -1,7 +1,10 @@
 package com.ninni.species.registry;
 
 import com.ninni.species.Species;
+import com.ninni.species.server.LimpetOres;
 import com.ninni.species.server.entity.mob.update_2.Cruncher;
+import net.minecraft.core.Holder;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.syncher.EntityDataSerializer;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -13,6 +16,10 @@ public class SpeciesEntityDataSerializers {
 
     public static final DeferredHolder<EntityDataSerializer<?>, EntityDataSerializer<Cruncher.CruncherState>> CRUNCHER_STATE = ENTITY_DATA_SERIALIZERS.register("cruncher_state",
         () -> EntityDataSerializer.forValueType(Cruncher.CruncherState.STREAM_CODEC)
+    );
+
+    public static final DeferredHolder<EntityDataSerializer<?>, EntityDataSerializer<Holder<LimpetOres>>> LIMPET_ORE_DATA = ENTITY_DATA_SERIALIZERS.register("limpet_ore",
+        () -> EntityDataSerializer.forValueType(ByteBufCodecs.holderRegistry(SpeciesRegistries.LIMPET_ORES))
     );
 
 }

@@ -8,11 +8,61 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.SpawnPlacementTypes;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
+@EventBusSubscriber(modid = Species.MOD_ID)
 public class SpeciesEntities {
 
+    @SubscribeEvent
+    public static void registerEntityAttributes(EntityAttributeCreationEvent event) {
+        event.put(WRAPTOR.get(), Wraptor.createWraptorAttributes().build());
+        event.put(DEEPFISH.get(), Deepfish.createDeepfishAttributes().build());
+        event.put(STACKATICK.get(), Stackatick.createAttributes().build());
+        event.put(BIRT.get(), Birt.createBirtAttributes().build());
+        event.put(LIMPET.get(), Limpet.createLimpetAttributes().build());
+        event.put(TREEPER.get(), Treeper.createAttributes().build());
+        event.put(TROOPER.get(), Trooper.createAttributes().build());
+        event.put(GOOBER.get(), Goober.createAttributes().build());
+        event.put(CRUNCHER.get(), Cruncher.createAttributes().build());
+        event.put(MAMMUTILATION.get(), Mammutilation.createAttributes().build());
+        event.put(SPRINGLING.get(), Springling.createAttributes().build());
+        event.put(GHOUL.get(), Ghoul.createAttributes().build());
+        event.put(QUAKE.get(), Quake.createAttributes().build());
+        event.put(DEFLECTOR_DUMMY.get(), DeflectorDummy.createAttributes().build());
+        event.put(SPECTRE.get(), Spectre.createAttributes().build());
+        event.put(WICKED.get(), Wicked.createAttributes().build());
+        event.put(BEWEREAGER.get(), Bewereager.createAttributes().build());
+        event.put(LEAF_HANGER.get(), LeafHanger.createAttributes().build());
+        event.put(CLIFF_HANGER.get(), CliffHanger.createAttributes().build());
+    }
+
+    @SubscribeEvent
+    public static void registerSpawnPlacements(RegisterSpawnPlacementsEvent event) {
+        event.register(WRAPTOR.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Wraptor::canSpawn, RegisterSpawnPlacementsEvent.Operation.OR);
+        event.register(DEEPFISH.get(), SpawnPlacementTypes.IN_WATER, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Deepfish::canSpawn, RegisterSpawnPlacementsEvent.Operation.OR);
+        event.register(STACKATICK.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.WORLD_SURFACE_WG, Stackatick::canSpawn, RegisterSpawnPlacementsEvent.Operation.OR);
+        event.register(BIRT.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.WORLD_SURFACE_WG, Birt::canSpawn, RegisterSpawnPlacementsEvent.Operation.OR);
+        event.register(LIMPET.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Limpet::canSpawn, RegisterSpawnPlacementsEvent.Operation.OR);
+        event.register(TREEPER.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Treeper::canSpawn, RegisterSpawnPlacementsEvent.Operation.OR);
+        event.register(GOOBER.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.WORLD_SURFACE_WG, Goober::canSpawn, RegisterSpawnPlacementsEvent.Operation.OR);
+        event.register(CRUNCHER.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.WORLD_SURFACE_WG, Cruncher::canSpawn, RegisterSpawnPlacementsEvent.Operation.OR);
+        event.register(MAMMUTILATION.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.WORLD_SURFACE, Mammutilation::canSpawn, RegisterSpawnPlacementsEvent.Operation.OR);
+        event.register(SPRINGLING.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.WORLD_SURFACE, Springling::canSpawn, RegisterSpawnPlacementsEvent.Operation.OR);
+        event.register(GHOUL.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Ghoul::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.OR);
+        event.register(QUAKE.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Quake::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.OR);
+        event.register(WICKED.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Wicked::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.OR);
+        event.register(BEWEREAGER.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Bewereager::checkMonsterSpawnRules, RegisterSpawnPlacementsEvent.Operation.OR);
+        event.register(CLIFF_HANGER.get(), SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, CliffHanger::canSpawn, RegisterSpawnPlacementsEvent.Operation.OR);
+        event.register(LEAF_HANGER.get(), SpawnPlacementTypes.IN_WATER, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, LeafHanger::canSpawn, RegisterSpawnPlacementsEvent.Operation.OR);
+    }
+    
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(BuiltInRegistries.ENTITY_TYPE, Species.MOD_ID);
 
     public static final DeferredHolder<EntityType<?>, EntityType<Wraptor>> WRAPTOR = register("wraptor",

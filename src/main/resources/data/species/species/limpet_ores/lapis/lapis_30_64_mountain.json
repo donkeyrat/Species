@@ -1,0 +1,10 @@
+{
+  "path": "species:lapis",
+  "item": "minecraft:lapis_lazuli",
+  "block": "minecraft:lapis_ore",
+  "max_count": 16,
+  "location": "#minecraft:is_mountain",
+  "spawn_weight": 20,
+  "max_spawn_height": 64,
+  "min_spawn_height": 30
+}

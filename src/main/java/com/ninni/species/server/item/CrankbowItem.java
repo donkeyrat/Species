@@ -4,7 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.ninni.species.access.CrankingEntity;
 import com.ninni.species.access.ImmunityFrameIgnoringEntity;
-import com.ninni.species.registry.*;
+import com.ninni.species.registry.SpeciesEnchantmentEffectComponents;
+import com.ninni.species.registry.SpeciesItems;
+import com.ninni.species.registry.SpeciesParticles;
+import com.ninni.species.registry.SpeciesSoundEvents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.Holder;
@@ -57,7 +60,7 @@ public class CrankbowItem extends ProjectileWeaponItem {
         super(properties);
     }
 
-    public static float getProperty(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
+    public static float getPullProperty(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
         if (level == null || entity == null) return 0;
         if (!entity.isUsingItem()) return 0;
         if (entity.getUseItem() != stack) return 0;

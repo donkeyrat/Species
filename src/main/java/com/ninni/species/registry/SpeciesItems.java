@@ -3,26 +3,69 @@ package com.ninni.species.registry;
 import com.ninni.species.Species;
 import com.ninni.species.SpeciesDevelopers;
 import com.ninni.species.server.item.*;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.entity.npc.VillagerTrades;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.component.DyedItemColor;
+import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.material.Fluids;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.BasicItemListing;
+import net.neoforged.neoforge.event.TagsUpdatedEvent;
+import net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent;
+import net.neoforged.neoforge.event.village.VillagerTradesEvent;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.List;
 import java.util.Optional;
 
+@EventBusSubscriber(modid = Species.MOD_ID)
 public class SpeciesItems {
+
+    @SubscribeEvent
+    public static void registerBrewingRecipes(RegisterBrewingRecipesEvent event) {
+        PotionBrewing.Builder builder = event.getBuilder();
+
+        builder.addMix(Potions.AWKWARD, GHOUL_TONGUE.get(), SpeciesPotions.BLOODLUST);
+    }
+
+    @SubscribeEvent
+    public static void onVillagerTraderInit(VillagerTradesEvent event) {
+        VillagerProfession type = event.getType();
+        Int2ObjectMap<List<VillagerTrades.ItemListing>> trades = event.getTrades();
+        if (type == VillagerProfession.CLERIC) {
+            trades.get(4).add(new BasicItemListing(
+                new ItemStack(GHOUL_TONGUE.get()),
+                ItemStack.EMPTY,
+                new ItemStack(Items.EMERALD, 3),
+                12, 8, 0.2F
+            ));
+        }
+    }
+
+    @SubscribeEvent
+    public static void onTagsUpdated(TagsUpdatedEvent event) {
+        //DispenserBlock.registerBehavior(BIRT_EGG.get(), new ProjectileDispenseBehavior(BIRT_EGG.get()));
+        DispenserBlock.registerBehavior(DEFLECTOR_DUMMY.get(), SpeciesDispenserBehaviour.DISPENSE_DEFLECTOR_DUMMY_BEHAVIOUR);
+        DispenserBlock.registerBehavior(WICKED_MASK.get(), WickedMaskItem.DISPENSE_ITEM_BEHAVIOR);
+        DispenserBlock.registerBehavior(WICKED_CANDLE.get(), ArmorItem.DISPENSE_ITEM_BEHAVIOR);
+        DispenserBlock.registerBehavior(QUAKE_HEAD.get(), ArmorItem.DISPENSE_ITEM_BEHAVIOR);
+        DispenserBlock.registerBehavior(GHOUL_HEAD.get(), ArmorItem.DISPENSE_ITEM_BEHAVIOR);
+        DispenserBlock.registerBehavior(BEWEREAGER_HEAD.get(), ArmorItem.DISPENSE_ITEM_BEHAVIOR);
+        DispenserBlock.registerBehavior(DEEPFISH_BUCKET.get(), SpeciesDispenserBehaviour.DISPENSE_BUCKET_BEHAVIOUR);
+    }
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Species.MOD_ID);
 

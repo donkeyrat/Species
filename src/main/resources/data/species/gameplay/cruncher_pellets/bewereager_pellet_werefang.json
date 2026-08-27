@@ -1,9 +1,0 @@
-{
-  "type": "species:bewereager",
-  "item": {
-    "id": "species:werefang",
-    "Count": 1
-  },
-  "minTries": 4,
-  "maxTries": 12
-}

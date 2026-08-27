@@ -1,9 +1,8 @@
 package com.ninni.species.server.entity.mob.update_3;
 
-import com.ninni.species.Species;
+import com.ninni.species.client.events.ClientEvents;
 import com.ninni.species.client.screen.ScreenShakeEvent;
 import com.ninni.species.registry.*;
-import com.ninni.species.registry.SpeciesCriterion;
 import com.ninni.species.server.entity.util.SpeciesPose;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -43,6 +42,7 @@ import java.util.stream.Collectors;
 import static net.minecraft.world.entity.EntitySelector.NO_CREATIVE_OR_SPECTATOR;
 
 public class Quake extends Monster {
+
     public static final EntityDataAccessor<Float> STORED_DAMAGE = SynchedEntityData.defineId(Quake.class, EntityDataSerializers.FLOAT);
     public static final EntityDataAccessor<Integer> ATTACK_TIMER = SynchedEntityData.defineId(Quake.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Integer> RECHARGE_TIMER = SynchedEntityData.defineId(Quake.class, EntityDataSerializers.INT);
@@ -178,7 +178,7 @@ public class Quake extends Monster {
         }
 
 
-        Species.PROXY.screenShake(new ScreenShakeEvent(this.position(), Math.min(80, (int)this.getStoredDamage()), 0.75F, 40, true));
+        ClientEvents.SCREEN_SHAKE_EVENTS.add(new ScreenShakeEvent(this.position(), Math.min(80, (int)this.getStoredDamage()), 0.75F, 40, true));
 
         this.setStoredDamage(0);
     }

@@ -2,19 +2,16 @@ package com.ninni.species.server.item;
 
 import com.ninni.species.Species;
 import com.ninni.species.registry.*;
-import com.ninni.species.server.entity.mob.update_2.Cruncher;
-import com.ninni.species.server.entity.mob.update_3.Quake;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.TooltipFlag;
@@ -24,6 +21,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 import static net.minecraft.world.entity.EntitySelector.NO_CREATIVE_OR_SPECTATOR;
@@ -33,6 +31,10 @@ public class RicoshieldItem extends ShieldItem {
 
     public RicoshieldItem(Properties properties) {
         super(properties);
+    }
+
+    public static float getBlockingProperty(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
+        return entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1 : 0;
     }
 
     @SubscribeEvent

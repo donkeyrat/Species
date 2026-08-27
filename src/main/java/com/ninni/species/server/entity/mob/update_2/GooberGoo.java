@@ -1,9 +1,9 @@
 package com.ninni.species.server.entity.mob.update_2;
 
 import com.google.common.collect.Maps;
+import com.ninni.species.registry.SpeciesDataMaps;
 import com.ninni.species.registry.SpeciesEntities;
 import com.ninni.species.registry.SpeciesItems;
-import com.ninni.species.server.data.GooberGooManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -42,63 +42,55 @@ public class GooberGoo extends ThrowableItemProjectile {
     }
 
     @Override
-    protected void onHitBlock(BlockHitResult blockHitResult) {
-        super.onHitBlock(blockHitResult);
+    protected void onHitBlock(BlockHitResult result) {
+        super.onHitBlock(result);
 
-        Level world = this.level();
-        BlockPos blockPos = blockHitResult.getBlockPos();
+        Level level = this.level();
+        if (level.isClientSide) return;
+
+        BlockPos pos = result.getBlockPos();
         Map<BlockPos, BlockState> posBlockStateMap = Maps.newHashMap();
 
         int yRange = 2;
         int xRadius = UniformInt.of(4, 7).sample(this.random);
         int zRadius = UniformInt.of(4, 7).sample(this.random);
 
-        if (!this.level().isClientSide) {
-            for (GooberGooManager.GooberGooData data : GooberGooManager.DATA) {
-                for (int y = -yRange; y <= yRange; y++) {
-                    for (int x = -xRadius; x <= xRadius; x++) {
-                        for (int z = -zRadius; z <= zRadius; z++) {
+        for (int y = -yRange; y <= yRange; y++) {
+            for (int x = -xRadius; x <= xRadius; x++) {
+                for (int z = -zRadius; z <= zRadius; z++) {
+                    BlockPos placePos = BlockPos.containing(pos.getX() + x, pos.getY() + y, pos.getZ() + z);
+                    int distance = Math.max(1, Math.round(Mth.sqrt((float) pos.distSqr(placePos))));
+                    if (x * x + z * z > xRadius * zRadius && this.random.nextInt(distance) != 0) continue;
 
-                            BlockPos placePos = BlockPos.containing(blockPos.getX() + x, blockPos.getY() + y, blockPos.getZ() + z);
-                            BlockState state = world.getBlockState(placePos);
-                            BlockState aboveState = world.getBlockState(placePos.above());
+                    BlockState state = level.getBlockState(placePos);
+                    Block newBlock = state.getBlock().builtInRegistryHolder().getData(SpeciesDataMaps.Blocks.GOOBER_GOO_CONVERSION);
+                    if (newBlock == null) continue;
 
-                            int distance = Math.max(1, Math.round(Mth.sqrt((float) blockPos.distSqr(placePos))));
-
-                            if (x * x + z * z > xRadius * zRadius && this.random.nextInt(distance) != 0) continue;
-
-                            Block input = data.input();
-                            Block output = data.output();
-
-                            boolean aboveStateFlag = aboveState.isAir() || aboveState.canBeReplaced();
-
-                            if (state.is(input) && aboveStateFlag) {
-
-                                if (state.getBlock() instanceof DoublePlantBlock && state.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.UPPER) continue;
-
-                                posBlockStateMap.put(placePos, output.defaultBlockState());
-                            }
-                        }
+                    BlockState aboveState = level.getBlockState(placePos.above());
+                    if (aboveState.isAir() || aboveState.canBeReplaced()) {
+//                        if (state.getBlock() instanceof DoublePlantBlock && state.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.UPPER) continue;
+//                        posBlockStateMap.put(placePos, block.defaultBlockState());
+                        level.setBlock(placePos, newBlock.defaultBlockState(), 2);
                     }
                 }
             }
+        }
 
-            for (BlockPos position : posBlockStateMap.keySet()) {
-                BlockState state = this.level().getBlockState(position);
-                BlockState output = posBlockStateMap.get(position);
-                if (this.random.nextFloat() < 0.35F) {
-                    this.level().levelEvent(2005, position, 0);
-                }
-                if (state.getBlock() instanceof DoublePlantBlock && state.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.LOWER) {
-                    BlockState aboveState = world.getBlockState(position.above());
-                    if (aboveState.getBlock() instanceof DoublePlantBlock && aboveState.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.UPPER) {
-                        world.removeBlock(position.above(), false);
-                    }
-                    DoublePlantBlock.placeAt(this.level(), output, position, 2);
-                    continue;
-                }
-                world.setBlock(position, output, 2);
+        for (BlockPos position : posBlockStateMap.keySet()) {
+            BlockState state = this.level().getBlockState(position);
+            BlockState output = posBlockStateMap.get(position);
+            if (this.random.nextFloat() < 0.35F) {
+                this.level().levelEvent(2005, position, 0);
             }
+            if (state.getBlock() instanceof DoublePlantBlock && state.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.LOWER) {
+                BlockState aboveState = level.getBlockState(position.above());
+                if (aboveState.getBlock() instanceof DoublePlantBlock && aboveState.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.UPPER) {
+                    level.removeBlock(position.above(), false);
+                }
+                DoublePlantBlock.placeAt(this.level(), output, position, 2);
+                continue;
+            }
+            level.setBlock(position, output, 2);
         }
     }
 

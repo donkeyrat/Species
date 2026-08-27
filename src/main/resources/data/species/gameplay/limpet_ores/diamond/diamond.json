@@ -1,8 +1,0 @@
-{
-  "id": "species:diamond",
-  "item": "minecraft:diamond",
-  "block": "minecraft:diamond_ore",
-  "maxCount": 6,
-  "spawnWeight": 35,
-  "maxSpawnHeight": 16
-}

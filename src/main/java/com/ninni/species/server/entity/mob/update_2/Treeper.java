@@ -1,13 +1,9 @@
 package com.ninni.species.server.entity.mob.update_2;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.ninni.species.Species;
+import com.ninni.species.client.events.ClientEvents;
 import com.ninni.species.client.screen.ScreenShakeEvent;
-import com.ninni.species.registry.SpeciesItems;
-import com.ninni.species.registry.SpeciesParticles;
-import com.ninni.species.registry.SpeciesSoundEvents;
-import com.ninni.species.registry.SpeciesTags;
-import com.ninni.species.registry.SpeciesCriterion;
+import com.ninni.species.registry.*;
 import com.ninni.species.server.entity.ai.goal.TreeperPlantGoal;
 import com.ninni.species.server.entity.ai.goal.TreeperUprootGoal;
 import com.ninni.species.server.entity.mob.update_3.Quake;
@@ -236,7 +232,7 @@ public class Treeper extends AgeableMob {
         this.setPose(Pose.STANDING);
         this.setPlanted(false);
         this.resetLastPoseChangeTick((this.level()).getGameTime());
-        Species.PROXY.screenShake(new ScreenShakeEvent(this.position(), 80, 0.75F, 10, true));
+        ClientEvents.SCREEN_SHAKE_EVENTS.add(new ScreenShakeEvent(this.position(), 80, 0.75F, 10, true));
     }
 
     public long getPoseTime() {

@@ -1,0 +1,13 @@
+{
+	"values": {
+		"minecraft:short_grass": "species:alphacene_grass",
+		"minecraft:tall_grass": "species:alphacene_tall_grass",
+		"minecraft:grass_block": "species:alphacene_grass_block",
+		"minecraft:moss_block": "species:alphacene_moss_block",
+		"minecraft:moss_carpet": "species:alphacene_moss_carpet",
+		"minecraft:brown_mushroom_block": "species:alphacene_mushroom_block",
+		"minecraft:red_mushroom_block": "species:alphacene_mushroom_block",
+		"minecraft:brown_mushroom": "species:alphacene_mushroom",
+		"minecraft:red_mushroom": "species:alphacene_mushroom"
+	}
+}

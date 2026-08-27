@@ -1,0 +1,9 @@
+{
+  "entity_type": "minecraft:zombified_piglin",
+  "item": {
+    "id": "minecraft:gold_nugget",
+    "Count": 1
+  },
+  "min_tries": 10,
+  "max_tries": 20
+}

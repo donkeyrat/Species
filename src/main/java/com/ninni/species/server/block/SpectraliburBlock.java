@@ -1,7 +1,7 @@
 package com.ninni.species.server.block;
 
 import com.mojang.serialization.MapCodec;
-import com.ninni.species.Species;
+import com.ninni.species.client.events.ClientEvents;
 import com.ninni.species.client.screen.ScreenShakeEvent;
 import com.ninni.species.registry.SpeciesBlockEntities;
 import com.ninni.species.registry.SpeciesBlocks;
@@ -17,18 +17,19 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.*;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -131,7 +132,7 @@ public class SpectraliburBlock extends BaseEntityBlock {
                     if (position > 9) {
                         if (world.getDifficulty() == Difficulty.EASY) world.getEntitiesOfClass(Spectre.class, new AABB(pos).inflate(12)).forEach(LivingEntity::kill);
                         if (world.getDifficulty() == Difficulty.PEACEFUL) player.displayClientMessage(Component.translatable("item.species.spectralibur.peaceful").withStyle(Style.EMPTY.withColor(0x7CF2F5)), true);
-                        Species.PROXY.screenShake(new ScreenShakeEvent(pos.getCenter(), 14, 1F, 10, false));
+                        ClientEvents.SCREEN_SHAKE_EVENTS.add(new ScreenShakeEvent(pos.getCenter(), 14, 1F, 10, false));
                     }
                     if (position <= 9) {
                         int wave = Math.min((int) position, 9);

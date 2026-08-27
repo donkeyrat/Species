@@ -19,15 +19,15 @@ public abstract class AbstractClientPlayerMixin {
 
     @Inject(at = @At("HEAD"), method = "capeTexture", cancellable = true)
     private void getCapeLocation(CallbackInfoReturnable<ResourceLocation> cir) {
-        if (SpeciesDevelopers.developerUUIDS.containsKey(this.model.id())) {
-            cir.setReturnValue(SpeciesDevelopers.developerUUIDS.get(this.model.id()).getCapeTexture());
+        if (SpeciesDevelopers.DEVELOPER_UUIDS.containsKey(this.model.id())) {
+            cir.setReturnValue(SpeciesDevelopers.DEVELOPER_UUIDS.get(this.model.id()).getCapeTexture());
         }
     }
 
     @Inject(at = @At("HEAD"), method = "elytraTexture", cancellable = true)
     private void getElytraLocation(CallbackInfoReturnable<ResourceLocation> cir) {
-        if (SpeciesDevelopers.developerUUIDS.containsKey(this.model.id())) {
-            cir.setReturnValue(SpeciesDevelopers.developerUUIDS.get(this.model.id()).getCapeTexture());
+        if (SpeciesDevelopers.DEVELOPER_UUIDS.containsKey(this.model.id())) {
+            cir.setReturnValue(SpeciesDevelopers.DEVELOPER_UUIDS.get(this.model.id()).getCapeTexture());
         }
     }
 

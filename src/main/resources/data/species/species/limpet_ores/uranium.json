@@ -1,0 +1,15 @@
+{
+	"neoforge:conditions": [
+		{
+			"type": "neoforge:mod_loaded",
+			"modid": "alexscaves"
+		}
+	],
+	"item": "alexscaves:uranium",
+	"max_count": 8,
+
+	"location": "alexscaves:toxic_caves",
+	"block": "alexscaves:radrock_uranium_ore",
+
+	"spawn_weight": 10
+}

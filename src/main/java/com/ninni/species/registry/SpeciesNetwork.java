@@ -22,8 +22,6 @@ public class SpeciesNetwork {
         registrar.playToClient(BlockEntitySyncPacket.TYPE, BlockEntitySyncPacket.STREAM_CODEC, BlockEntitySyncPacket::handle);
         registrar.playToServer(HarpoonInputPacket.TYPE, HarpoonInputPacket.STREAM_CODEC, HarpoonInputPacket::handle);
         registrar.playToClient(HarpoonSyncPacket.TYPE, HarpoonSyncPacket.STREAM_CODEC, HarpoonSyncPacket::handle);
-        registrar.playBidirectional(GooberGooSyncPacket.TYPE, GooberGooSyncPacket.STREAM_CODEC, GooberGooSyncPacket::handle);
-        registrar.playBidirectional(CruncherPelletSyncPacket.TYPE, CruncherPelletSyncPacket.STREAM_CODEC, CruncherPelletSyncPacket::handle);
         registrar.playToServer(UpdateBirtdayCakeDataPacket.TYPE, UpdateBirtdayCakeDataPacket.STREAM_CODEC, UpdateBirtdayCakeDataPacket::handle);
     }
 

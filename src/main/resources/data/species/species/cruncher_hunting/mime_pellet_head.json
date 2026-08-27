@@ -1,0 +1,16 @@
+{
+  "neoforge:conditions": [
+    {
+      "entity_type": "neoforge:mod_loaded",
+      "modid": "caverns_and_chasms"
+    }
+  ],
+
+  "entity_type": "caverns_and_chasms:mime",
+  "item": {
+    "id": "caverns_and_chasms:mime_head",
+    "Count": 1
+  },
+  "min_tries": 8,
+  "max_tries": 12
+}

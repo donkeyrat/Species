@@ -1,0 +1,8 @@
+{
+	"item": "minecraft:amethyst_shard",
+	"block": "minecraft:amethyst_block",
+	"max_count": 8,
+	"spawn_weight": 10,
+	"max_spawn_height": 30,
+	"min_spawn_height": 16
+}

@@ -2,6 +2,7 @@ package com.ninni.species.client.events;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.ninni.species.Species;
+import com.ninni.species.access.HarpooningEntity;
 import com.ninni.species.client.inventory.BirtdayCakeScreen;
 import com.ninni.species.client.model.mob.update_1.*;
 import com.ninni.species.client.model.mob.update_2.*;
@@ -18,7 +19,6 @@ import com.ninni.species.client.renderer.item.WickedFireballRenderer;
 import com.ninni.species.client.renderer.item.WickedSwapperProjectileRenderer;
 import com.ninni.species.client.screen.BloodLustOverlay;
 import com.ninni.species.client.screen.ScreenShakeEvent;
-import com.ninni.species.access.HarpooningEntity;
 import com.ninni.species.registry.*;
 import com.ninni.species.server.entity.mob.update_2.Springling;
 import com.ninni.species.server.entity.mob.update_3.Harpoon;
@@ -35,7 +35,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.phys.Vec3;
@@ -43,9 +46,9 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.*;
-import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
@@ -101,6 +104,7 @@ public class ClientEvents {
         event.register(SpeciesMenus.BIRTDAY_CAKE.get(), BirtdayCakeScreen::new);
     }
 
+    @SubscribeEvent
     public static void clientTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         //Code taken and modified from Alex
@@ -145,7 +149,7 @@ public class ClientEvents {
         }
     }
 
-
+    @SubscribeEvent
     public static void computeCameraAngles(ViewportEvent.ComputeCameraAngles event) {
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
@@ -195,6 +199,7 @@ public class ClientEvents {
     }
 
 
+    @SubscribeEvent
     public static void preRenderGuiOverlay(RenderGuiLayerEvent.Pre event) {
         Player player = Minecraft.getInstance().player;
 
@@ -204,7 +209,7 @@ public class ClientEvents {
         }
     }
 
-
+    @SubscribeEvent
     public static void postRenderGuiOverlay(RenderGuiLayerEvent.Post event) {
         Player player = Minecraft.getInstance().player;
 
