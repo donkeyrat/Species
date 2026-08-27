@@ -80,7 +80,7 @@ public class Springling extends TamableAnimal implements PlayerRideable {
         this.goalSelector.addGoal(1, new BreedGoal(this, 1));
         this.goalSelector.addGoal(1, new PanicGoal(this, 2.0));
         this.goalSelector.addGoal(2, new SpringlingFollowOwnerGoal(this, 1.25, 5.0f, 2.0f));
-        this.goalSelector.addGoal(3, new TemptGoal(this, 1.2, Ingredient.of(SpeciesTags.SPRINGLING_BREED_ITEMS), false));
+        this.goalSelector.addGoal(3, new TemptGoal(this, 1.2, Ingredient.of(SpeciesTags.Items.SPRINGLING_BREED_ITEMS), false));
         this.goalSelector.addGoal(4, new WaterAvoidingRandomStrollGoal(this, 0.8));
         this.goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 6.0f));
         this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
@@ -143,7 +143,7 @@ public class Springling extends TamableAnimal implements PlayerRideable {
             return super.mobInteract(player, interactionHand);
         }
 
-        if (!this.isTame() && itemStack.is(SpeciesTags.SPRINGLING_TAMING_ITEMS) && !this.isBaby()) {
+        if (!this.isTame() && itemStack.is(SpeciesTags.Items.SPRINGLING_TAMING_ITEMS) && !this.isBaby()) {
 
             if (!player.getAbilities().instabuild) itemStack.shrink(1);
             if (!this.isSilent()) {
@@ -224,7 +224,7 @@ public class Springling extends TamableAnimal implements PlayerRideable {
 
     @Override
     public boolean isFood(ItemStack itemStack) {
-        return itemStack.is(SpeciesTags.SPRINGLING_BREED_ITEMS);
+        return itemStack.is(SpeciesTags.Items.SPRINGLING_BREED_ITEMS);
     }
 
     @Override

@@ -14,6 +14,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class SpeciesSoundEvents {
+
     public static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(BuiltInRegistries.SOUND_EVENT, Species.MOD_ID);
 
     public static final DeferredHolder<SoundEvent, SoundEvent> WRAPTOR_DEATH = register("entity.wraptor.death");
@@ -160,7 +161,7 @@ public class SpeciesSoundEvents {
     public static final DeferredHolder<SoundEvent, SoundEvent> GHOUL_ANGRY = register("entity.ghoul.angry");
     public static final DeferredHolder<SoundEvent, SoundEvent> BLOODLUST_FEED = register("effect.bloodlust.feed");
     public static final DeferredHolder<SoundEvent, SoundEvent> BLOODLUST_REMOVED = register("effect.bloodlust.removed");
-    public static final Holder.Reference<SoundEvent> NOTE_BLOCK_IMITATE_GHOUL = registerForHolder("block.note_block.imitate.ghoul");
+    public static final DeferredHolder<SoundEvent, SoundEvent> NOTE_BLOCK_IMITATE_GHOUL = register("block.note_block.imitate.ghoul");
 
     public static final DeferredHolder<SoundEvent, SoundEvent> QUAKE_SHIELD = register("entity.quake.shield");
     public static final DeferredHolder<SoundEvent, SoundEvent> QUAKE_HURT = register("entity.quake.hurt");
@@ -172,8 +173,8 @@ public class SpeciesSoundEvents {
     public static final DeferredHolder<SoundEvent, SoundEvent> QUAKE_FINISHES_UNSCREWING = register("entity.quake.finishes_unscrewing");
     public static final DeferredHolder<SoundEvent, SoundEvent> QUAKE_STEP = register("entity.quake.step");
     public static final DeferredHolder<SoundEvent, SoundEvent> QUAKE_RECHARGE = register("entity.quake.recharge");
-    public static final Holder.Reference<SoundEvent> NOTE_BLOCK_QUAKE_SYNTH = registerForHolder("block.note_block.quake_synth");
-    public static final Holder.Reference<SoundEvent> NOTE_BLOCK_IMITATE_QUAKE = registerForHolder("block.note_block.imitate.quake");
+    public static final DeferredHolder<SoundEvent, SoundEvent> NOTE_BLOCK_QUAKE_SYNTH = register("block.note_block.quake_synth");
+    public static final DeferredHolder<SoundEvent, SoundEvent> NOTE_BLOCK_IMITATE_QUAKE = register("block.note_block.imitate.quake");
     public static final DeferredHolder<SoundEvent, SoundEvent> DEFLECTOR_DUMMY_PLACE = register("entity.deflector_dummy.place");
     public static final DeferredHolder<SoundEvent, SoundEvent> DEFLECTOR_DUMMY_BREAK = register("entity.deflector_dummy.break");
     public static final DeferredHolder<SoundEvent, SoundEvent> DEFLECTOR_DUMMY_HURT = register("entity.deflector_dummy.hurt");
@@ -207,7 +208,7 @@ public class SpeciesSoundEvents {
     public static final DeferredHolder<SoundEvent, SoundEvent> SMOKE_BOMB_USE = register("item.smoke_bomb.use");
     public static final DeferredHolder<SoundEvent, SoundEvent> WICKED_DOPE_BOOST = register("item.wicked_dope.boost");
     public static final DeferredHolder<SoundEvent, SoundEvent> WICKED_DOPE_FAIL = register("item.wicked_dope.fail");
-    public static final Holder.Reference<SoundEvent> NOTE_BLOCK_IMITATE_WICKED = registerForHolder("block.note_block.imitate.wicked");
+    public static final DeferredHolder<SoundEvent, SoundEvent> NOTE_BLOCK_IMITATE_WICKED = register("block.note_block.imitate.wicked");
 
     public static final DeferredHolder<SoundEvent, SoundEvent> SPECTRE_IDLE = register("entity.spectre.idle");
     public static final DeferredHolder<SoundEvent, SoundEvent> SPECTRE_HURT = register("entity.spectre.hurt");
@@ -255,7 +256,7 @@ public class SpeciesSoundEvents {
     public static final DeferredHolder<SoundEvent, SoundEvent> BEWEREAGER_TRANSFORM = register("entity.bewereager.transform");
     public static final DeferredHolder<SoundEvent, SoundEvent> BEWEREAGER_TRANSFORM_START = register("entity.bewereager.transform_start");
     public static final DeferredHolder<SoundEvent, SoundEvent> BEWEREAGER_SPEED = register("entity.bewereager.speed");
-    public static final Holder.Reference<SoundEvent> NOTE_BLOCK_IMITATE_BEWEREAGER = registerForHolder("block.note_block.imitate.bewereager");
+    public static final DeferredHolder<SoundEvent, SoundEvent> NOTE_BLOCK_IMITATE_BEWEREAGER = register("block.note_block.imitate.bewereager");
     public static final DeferredHolder<SoundEvent, SoundEvent> CRANKTRAP_OPEN = register("block.cranktrap.open");
     public static final DeferredHolder<SoundEvent, SoundEvent> CRANKTRAP_CLOSE = register("block.cranktrap.close");
     public static final DeferredHolder<SoundEvent, SoundEvent> CRANKBOW_PULL = register("item.crankbow.pull");
@@ -295,29 +296,24 @@ public class SpeciesSoundEvents {
     public static final DeferredHolder<SoundEvent, SoundEvent> HARPOON_ZIPLINING = register("item.harpoon.ziplining");
     public static final DeferredHolder<SoundEvent, SoundEvent> HARPOON_PULL = register("item.harpoon.pull");
 
-    public static final SoundType WRAPTOR_EGG_BLOCK = new DeferredSoundType(1.0F, 1.5F, SpeciesSoundEvents.WRAPTOR_EGG_BREAK, () -> SoundEvents.SHROOMLIGHT_STEP, () -> SoundEvents.SHROOMLIGHT_PLACE, () -> SoundEvents.SHROOMLIGHT_HIT, () -> SoundEvents.SHROOMLIGHT_FALL);
-    public static final SoundType BIRTDAY_CAKE = register("birtday_cake", 1F, 1.0F);
+    public static final SoundType WRAPTOR_EGG_BLOCK = new DeferredSoundType(1, 1.5F, SpeciesSoundEvents.WRAPTOR_EGG_BREAK, () -> SoundEvents.SHROOMLIGHT_STEP, () -> SoundEvents.SHROOMLIGHT_PLACE, () -> SoundEvents.SHROOMLIGHT_HIT, () -> SoundEvents.SHROOMLIGHT_FALL);
+    public static final SoundType BIRTDAY_CAKE = register("birtday_cake", 1, 1);
     public static final SoundType FROZEN_HAIR = register("frozen_hair", 0.8F, 1);
     public static final SoundType FROZEN_MEAT = register("frozen_meat", 0.8F, 1);
     public static final SoundType ALPHACENE_GRASS = register("alphacene_grass", 0.8F, 1.6F);
     public static final SoundType ALPHACENE_MOSS = register("alphacene_moss", 0.8F, 1.6F);
     public static final SoundType ALPHACENE_FOLIAGE = register("alphacene_foliage", 0.8F, 1.6F);
-    public static final SoundType HOPELIGHT = new DeferredSoundType(1.0F, 1.0F, SpeciesSoundEvents.HOPELIGHT_BREAK, () -> SoundEvents.EMPTY, SpeciesSoundEvents.HOPELIGHT_PLACE, () -> SoundEvents.EMPTY, () -> SoundEvents.EMPTY);
-    public static final SoundType SPECLIGHT = register("speclight", 0.7F, 1.0F);
-    public static final SoundType CRANKTRAP = register("cranktrap", 1F, 1F);
+    public static final SoundType HOPELIGHT = new DeferredSoundType(1, 1, SpeciesSoundEvents.HOPELIGHT_BREAK, () -> SoundEvents.EMPTY, SpeciesSoundEvents.HOPELIGHT_PLACE, () -> SoundEvents.EMPTY, () -> SoundEvents.EMPTY);
+    public static final SoundType SPECLIGHT = register("speclight", 0.7F, 1);
+    public static final SoundType CRANKTRAP = register("cranktrap", 1, 1);
 
-
-
-    private static SoundType register(String name, float volume, float pitch) {
+    public static SoundType register(String name, float volume, float pitch) {
         return new DeferredSoundType(volume, pitch, register("block." + name + ".break"), register("block." + name + ".step"), register("block." + name + ".place"), register("block." + name + ".hit"), register("block." + name + ".fall"));
     }
 
-    private static Holder.Reference<SoundEvent> registerForHolder(String name) {
-        return Registry.registerForHolder(BuiltInRegistries.SOUND_EVENT, ResourceLocation.fromNamespaceAndPath(Species.MOD_ID, name), SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(Species.MOD_ID, name)));
-    }
-
-    private static DeferredHolder<SoundEvent, SoundEvent> register(String name) {
-        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(Species.MOD_ID, name);
+    public static DeferredHolder<SoundEvent, SoundEvent> register(String name) {
+        ResourceLocation id = Species.of(name);
         return SOUND_EVENTS.register(name, () -> SoundEvent.createVariableRangeEvent(id));
     }
+
 }

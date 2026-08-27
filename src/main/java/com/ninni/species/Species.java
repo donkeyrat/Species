@@ -59,7 +59,6 @@ public class Species {
 		SpeciesPointOfInterestTypes.POI_TYPES.register(modEventBus);
 		SpeciesTreeDecorators.TREE_DECORATOR_TYPE.register(modEventBus);
 		SpeciesVillagerTypes.VILLAGER_TYPES.register(modEventBus);
-		SpeciesPaintingVariants.addPaintings();
 		SpeciesRecipeSerializers.RECIPE_SERIALIZERS.register(modEventBus);
 		SpeciesDataComponents.DATA_COMPONENTS.register(modEventBus);
 		SpeciesEnchantmentEffectComponents.ENCHANTMENT_EFFECT_COMPONENTS.register(modEventBus);

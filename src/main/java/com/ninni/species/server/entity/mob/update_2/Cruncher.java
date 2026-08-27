@@ -279,7 +279,7 @@ public class Cruncher extends Animal implements InventoryCarrier, HasCustomInven
             this.openCustomInventoryScreen(player);
             return InteractionResult.SUCCESS;
         }
-        if (itemStack.is(SpeciesTags.CRUNCHER_EATS) && this.getStunnedTicks() > 0) {
+        if (itemStack.is(SpeciesTags.Items.CRUNCHER_EATS) && this.getStunnedTicks() > 0) {
 
             itemStack.shrink(1);
 

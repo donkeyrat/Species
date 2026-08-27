@@ -186,7 +186,7 @@ public class ModEvents {
         }
 
         //Spectralibur
-        if (source.getEntity() instanceof Player player && player.getMainHandItem().getItem() instanceof SpectraliburItem && !(attacked.getType().is(SpeciesTags.SOULLESS))) {
+        if (source.getEntity() instanceof Player player && player.getMainHandItem().getItem() instanceof SpectraliburItem && !(attacked.getType().is(SpeciesTags.EntityTypes.SOULLESS))) {
             if (amount > attacked.getHealth()) {
 
                 //Storing souls in Spectralibur

@@ -302,7 +302,7 @@ public class Limpet extends PathfinderMob {
                 this.playSound(this.getOreBlockState().getSoundType().getBreakSound(), 1, (float) this.getCrackedStage() * 0.3f + 1f);
                 this.playSound(SpeciesSoundEvents.LIMPET_BREAK.get(), 0.6f, this.getCrackedStage() + 1.5f);
                 this.setCrackedStage(0);
-                if (EnchantmentHelper.hasTag(stack, SpeciesTags.PREVENT_LIMPET_ORE_DROPS)) {
+                if (EnchantmentHelper.hasTag(stack, SpeciesTags.Enchantments.PREVENT_LIMPET_ORE_DROPS)) {
                     if (hasOre) LimpetOreManager.setNoOre(this);
                     else this.setHasShell(false);
                     if (player instanceof ServerPlayer serverPlayer) SpeciesCriterion.SILK_TOUCH_BREAK_LIMPET.get().trigger(serverPlayer);
@@ -364,6 +364,6 @@ public class Limpet extends PathfinderMob {
 
     @SuppressWarnings("unused")
     public static boolean canSpawn(EntityType<? extends PathfinderMob> entityType, ServerLevelAccessor levelAccessor, MobSpawnType spawnType, BlockPos blockPos, RandomSource randomSource) {
-        return levelAccessor.getBrightness(LightLayer.BLOCK, blockPos) == 0 && levelAccessor.getBrightness(LightLayer.SKY, blockPos) == 0 && levelAccessor.getBlockState(blockPos.below()).is(SpeciesTags.LIMPET_SPAWNABLE_ON) && levelAccessor.getBlockState(blockPos.below()).isValidSpawn(levelAccessor, blockPos, entityType);
+        return levelAccessor.getBrightness(LightLayer.BLOCK, blockPos) == 0 && levelAccessor.getBrightness(LightLayer.SKY, blockPos) == 0 && levelAccessor.getBlockState(blockPos.below()).is(SpeciesTags.Blocks.LIMPET_SPAWNABLE_ON) && levelAccessor.getBlockState(blockPos.below()).isValidSpawn(levelAccessor, blockPos, entityType);
     }
 }

@@ -26,7 +26,7 @@ public class YouthPotion extends Item implements HasImportantInteraction {
 
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity entity, InteractionHand hand) {
-        if (!(entity instanceof AgeableMob ageable) || entity.getType().is(SpeciesTags.ALWAYS_ADULT)) {
+        if (!(entity instanceof AgeableMob ageable) || entity.getType().is(SpeciesTags.EntityTypes.ALWAYS_ADULT)) {
             return super.interactLivingEntity(stack, player, entity, hand);
         }
 

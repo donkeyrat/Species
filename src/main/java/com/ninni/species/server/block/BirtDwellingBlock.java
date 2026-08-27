@@ -80,7 +80,7 @@ public class BirtDwellingBlock extends BaseEntityBlock {
     public void playerDestroy(Level level, Player player, BlockPos blockPos, BlockState blockState, @Nullable BlockEntity blockEntity, ItemStack itemStack) {
         super.playerDestroy(level, player, blockPos, blockState, blockEntity, itemStack);
         if (!level.isClientSide && blockEntity instanceof BirtDwellingBlockEntity birtDwellingBlockEntity) {
-            if (!EnchantmentHelper.hasTag(itemStack, SpeciesTags.PREVENT_BIRT_SPAWNS_WHEN_MINING)) {
+            if (!EnchantmentHelper.hasTag(itemStack, SpeciesTags.Enchantments.PREVENT_BIRT_SPAWNS_WHEN_MINING)) {
                 birtDwellingBlockEntity.angerBirts(player, blockState, BirtDwellingBlockEntity.BirtState.EMERGENCY);
                 level.updateNeighbourForOutputSignal(blockPos, this);
                 this.angerNearbyBirts(level, blockPos);

@@ -55,7 +55,7 @@ public abstract class AgeableMobMixin extends PathfinderMob {
     // TODO replace with item action probably
     @Override
     public InteractionResult interactAt(Player player, Vec3 vec3, InteractionHand interactionHand) {
-        if (this.getType().is(SpeciesTags.ALWAYS_ADULT)) return super.interactAt(player, vec3, interactionHand);
+        if (this.getType().is(SpeciesTags.EntityTypes.ALWAYS_ADULT)) return super.interactAt(player, vec3, interactionHand);
         if (player.getItemInHand(interactionHand).is(SpeciesItems.YOUTH_POTION.get()) && this.isBaby() && !this.drankYouthPotion) {
             this.drankYouthPotion = true;
             this.playSound(SpeciesSoundEvents.YOUTH_POTION_STUMPED.get(), 1, 1);

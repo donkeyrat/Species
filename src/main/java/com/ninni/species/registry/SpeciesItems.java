@@ -61,7 +61,11 @@ public class SpeciesItems {
         new Item.Properties().stacksTo(1)
     );
     public static final DeferredItem<Item> BIRTDAY_CAKE_SLICE = ITEMS.registerItem("birtday_cake_slice", BirtdayCakeSliceItem::new, new Item.Properties().food(new FoodProperties.Builder().alwaysEdible().nutrition(4).saturationModifier(0.6f).effect(() -> new MobEffectInstance(SpeciesStatusEffects.BIRTD, 20 * 10, 0), 1).build()));
-    public static final DeferredItem<Item> MUSIC_DISC_DIAL = ITEMS.registerItem("music_disc_dial", Item::new, new Item.Properties().rarity(Rarity.RARE).stacksTo(1).jukeboxPlayable(ResourceKey.create(Registries.JUKEBOX_SONG, ResourceLocation.fromNamespaceAndPath("species", "dial"))));
+    public static final DeferredItem<Item> MUSIC_DISC_DIAL = ITEMS.registerItem("music_disc_dial", Item::new,
+        new Item.Properties()
+            .rarity(Rarity.RARE).stacksTo(1)
+            .jukeboxPlayable(SpeciesJukeboxSongs.DIAL)
+    );
 
     public static final DeferredItem<Item> LIMPET_SPAWN_EGG = ITEMS.registerItem("limpet_spawn_egg",properties ->
         new SpeciesSpawnEggItem(SpeciesEntities.LIMPET.get(), 0xA5C1D2, 0xFBF236, SpeciesDevelopers.SpeciesDeveloperNames.GLADOS, properties)
@@ -72,7 +76,7 @@ public class SpeciesItems {
     public static final DeferredItem<Item> MUSIC_DISC_LAPIDARIAN = ITEMS.registerItem("music_disc_lapidarian", Item::new,
         new Item.Properties()
             .rarity(Rarity.RARE).stacksTo(1)
-            .jukeboxPlayable(ResourceKey.create(Registries.JUKEBOX_SONG, Species.of("lapidarian")))
+            .jukeboxPlayable(SpeciesJukeboxSongs.LAPIDARIAN)
     );
 
     public static final DeferredItem<BlockItem> BONE_BARK = ITEMS.registerSimpleBlockItem(SpeciesBlocks.BONE_BARK);
@@ -160,9 +164,8 @@ public class SpeciesItems {
     );
     public static final DeferredItem<Item> MUSIC_DISK_SPAWNER = ITEMS.registerItem("music_disk_spawner", Item::new,
         new Item.Properties()
-            .rarity(Rarity.RARE)
-            .stacksTo(1)
-            .jukeboxPlayable(ResourceKey.create(Registries.JUKEBOX_SONG, Species.of("spawner")))
+            .rarity(Rarity.RARE).stacksTo(1)
+            .jukeboxPlayable(SpeciesJukeboxSongs.SPAWNER)
     );
 
     public static final DeferredItem<Item> SPECTRE_SPAWN_EGG = ITEMS.registerItem("spectre_spawn_egg",

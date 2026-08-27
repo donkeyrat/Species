@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.function.ToIntFunction;
 
 public class SpeciesBlocks {
+
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Species.MOD_ID);
 
     //UPDATE 1

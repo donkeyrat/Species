@@ -74,7 +74,7 @@ public class Stackatick extends TamableAnimal {
         this.goalSelector.addGoal(0, new SitWhenOrderedToGoal(this));
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new BreedGoal(this, 1));
-        this.goalSelector.addGoal(2, new TemptGoal(this, 1, Ingredient.of(SpeciesTags.STACKATICK_TEMPT_ITEMS), false));
+        this.goalSelector.addGoal(2, new TemptGoal(this, 1, Ingredient.of(SpeciesTags.Items.STACKATICK_TEMPT_ITEMS), false));
         this.goalSelector.addGoal(3, new RandomStrollGoal(this, 1));
         this.goalSelector.addGoal(4, new StackatickFollowOwnerGoal(this, 1.25, 5.0f, 2.0f, false));
         this.goalSelector.addGoal(4, new FollowParentGoal(this, 1));
@@ -96,7 +96,7 @@ public class Stackatick extends TamableAnimal {
         }
 
         if (!this.isBaby() && !itemStack.is(SpeciesItems.WICKED_MASK.get())) {
-            if (!this.isTame() && itemStack.is(SpeciesTags.STACKATICK_TAME_ITEMS)) {
+            if (!this.isTame() && itemStack.is(SpeciesTags.Items.STACKATICK_TAME_ITEMS)) {
                 if (!player.getAbilities().instabuild) itemStack.shrink(1);
                 if (!this.isSilent()) {
                     this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SpeciesSoundEvents.STACKATICK_EAT.get(), this.getSoundSource(), 1.0f, 1.0f + (this.random.nextFloat() - this.random.nextFloat()) * 0.2f);
@@ -288,7 +288,7 @@ public class Stackatick extends TamableAnimal {
     }
 
     public boolean isComfy() {
-        return this.level().getBlockState( this.getOnPos()).is(SpeciesTags.STACKATICK_IS_COMFY_ON) || this.isDyed();
+        return this.level().getBlockState( this.getOnPos()).is(SpeciesTags.Blocks.STACKATICK_IS_COMFY_ON) || this.isDyed();
     }
 
 
@@ -358,7 +358,7 @@ public class Stackatick extends TamableAnimal {
 
     @Override
     public boolean isFood(ItemStack itemStack) {
-        return itemStack.is(SpeciesTags.STACKATICK_BREED_ITEMS);
+        return itemStack.is(SpeciesTags.Items.STACKATICK_BREED_ITEMS);
     }
 
     static class StackatickLookControl extends LookControl {

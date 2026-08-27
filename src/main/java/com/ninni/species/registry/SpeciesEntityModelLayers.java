@@ -1,50 +1,49 @@
 package com.ninni.species.registry;
 
+import com.ninni.species.Species;
 import net.minecraft.client.model.geom.ModelLayerLocation;
-import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-
-import static com.ninni.species.Species.MOD_ID;
 
 @OnlyIn(Dist.CLIENT)
 public interface SpeciesEntityModelLayers {
 
-    ModelLayerLocation WRAPTOR = main("wraptor");
-    ModelLayerLocation DEEPFISH = main("deepfish");
-    ModelLayerLocation STACKATICK = main("stackatick");
-    ModelLayerLocation BIRT = main("birt");
-    ModelLayerLocation LIMPET = main("limpet");
-    ModelLayerLocation TREEPER = main("treeper");
-    ModelLayerLocation TROOPER = main("trooper");
-    ModelLayerLocation GOOBER = main("goober");
-    ModelLayerLocation GOOBER_GOO = main("goober_goo");
-    ModelLayerLocation CRUNCHER = main("cruncher");
-    ModelLayerLocation MAMMUTILATION = main("mammutilation");
-    ModelLayerLocation SPRINGLING = main("springling");
-    ModelLayerLocation GHOUL = main("ghoul");
-    ModelLayerLocation GHOUL_HEAD = main("ghoul_head");
-    ModelLayerLocation QUAKE = main("quake");
-    ModelLayerLocation QUAKE_HEAD = main("quake_head");
-    ModelLayerLocation DEFLECTOR_DUMMY = main("deflector_dummy");
-    ModelLayerLocation BEWEREAGER = main("bewereager");
-    ModelLayerLocation SPECTRE = main("spectre");
-    ModelLayerLocation SABLE_SPECTRE = main("sable_spectre");
-    ModelLayerLocation JOUSTING_SPECTRE = main("jousting_spectre");
-    ModelLayerLocation WICKED = main("wicked");
-    ModelLayerLocation WICKED_FIREBALL = main("wicked_fireball");
-    ModelLayerLocation WICKED_CANDLE = main("wicked_candle");
-    ModelLayerLocation BEWEREAGER_HEAD = main("bewereager_head");
-    ModelLayerLocation LEAF_HANGER = main("leaf_hanger");
-    ModelLayerLocation CLIFF_HANGER = main("cliff_hanger");
-    ModelLayerLocation COIL_KNOT = main("coil_knot");
-    ModelLayerLocation COIL = main("coil");
+    ModelLayerLocation WRAPTOR = registerMain("wraptor");
+    ModelLayerLocation DEEPFISH = registerMain("deepfish");
+    ModelLayerLocation STACKATICK = registerMain("stackatick");
+    ModelLayerLocation BIRT = registerMain("birt");
+    ModelLayerLocation LIMPET = registerMain("limpet");
+    ModelLayerLocation TREEPER = registerMain("treeper");
+    ModelLayerLocation TROOPER = registerMain("trooper");
+    ModelLayerLocation GOOBER = registerMain("goober");
+    ModelLayerLocation GOOBER_GOO = registerMain("goober_goo");
+    ModelLayerLocation CRUNCHER = registerMain("cruncher");
+    ModelLayerLocation MAMMUTILATION = registerMain("mammutilation");
+    ModelLayerLocation SPRINGLING = registerMain("springling");
+    ModelLayerLocation GHOUL = registerMain("ghoul");
+    ModelLayerLocation GHOUL_HEAD = registerMain("ghoul_head");
+    ModelLayerLocation QUAKE = registerMain("quake");
+    ModelLayerLocation QUAKE_HEAD = registerMain("quake_head");
+    ModelLayerLocation DEFLECTOR_DUMMY = registerMain("deflector_dummy");
+    ModelLayerLocation BEWEREAGER = registerMain("bewereager");
+    ModelLayerLocation SPECTRE = registerMain("spectre");
+    ModelLayerLocation SABLE_SPECTRE = registerMain("sable_spectre");
+    ModelLayerLocation JOUSTING_SPECTRE = registerMain("jousting_spectre");
+    ModelLayerLocation WICKED = registerMain("wicked");
+    ModelLayerLocation WICKED_FIREBALL = registerMain("wicked_fireball");
+    ModelLayerLocation WICKED_CANDLE = registerMain("wicked_candle");
+    ModelLayerLocation BEWEREAGER_HEAD = registerMain("bewereager_head");
+    ModelLayerLocation LEAF_HANGER = registerMain("leaf_hanger");
+    ModelLayerLocation CLIFF_HANGER = registerMain("cliff_hanger");
+    ModelLayerLocation COIL_KNOT = registerMain("coil_knot");
+    ModelLayerLocation COIL = registerMain("coil");
 
-    private static ModelLayerLocation register(String id, String name) {
-        return new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(MOD_ID, id), name);
+    private static ModelLayerLocation registerMain(String name) {
+        return register(name, "main");
     }
 
-    private static ModelLayerLocation main(String id) {
-        return register(id, "main");
+    private static ModelLayerLocation register(String name, String layer) {
+        return new ModelLayerLocation(Species.of(name), layer);
     }
+
 }

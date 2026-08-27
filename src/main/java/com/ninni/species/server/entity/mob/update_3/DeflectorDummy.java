@@ -92,7 +92,7 @@ public class DeflectorDummy extends ArmorStand {
 
         //List entities nearby and choose the cause of the attack
         for (LivingEntity target : list) {
-            if (!(target.getType().is(SpeciesTags.CANT_BE_DAMAGED_BY_DUMMY))) {
+            if (!(target.getType().is(SpeciesTags.EntityTypes.CANT_BE_DAMAGED_BY_DUMMY))) {
                 if ((attacker instanceof LivingEntity livingAttacker)) {
                     damage(target, livingAttacker, amount);
                 } else if (attacker instanceof Projectile projectile && projectile.getOwner() instanceof LivingEntity projectileOwner) {

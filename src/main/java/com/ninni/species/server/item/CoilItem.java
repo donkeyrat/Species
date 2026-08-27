@@ -35,7 +35,7 @@ public class CoilItem extends Item {
         Direction direction = context.getClickedFace();
         BlockState state = level.getBlockState(clickedPos);
 
-        boolean knot = state.is(SpeciesTags.COILABLE);
+        boolean knot = state.is(SpeciesTags.Blocks.COILABLE);
         if (state.hasProperty(BlockStateProperties.FACING)) knot = state.getValue(BlockStateProperties.FACING).getAxis().isVertical();
         if (state.hasProperty(BlockStateProperties.AXIS)) knot = state.getValue(BlockStateProperties.AXIS).isVertical();
 

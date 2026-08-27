@@ -169,7 +169,7 @@ public class Quake extends Monster {
                 if (killedMobs.size() >= 10) SpeciesCriterion.KILL_TEN_MOBS_WITH_QUAKE.get().trigger(serverPlayer);
 
                 HashSet<EntityType<?>> killedMobTypes = killedMobs.stream().map(Mob::getType).collect(Collectors.toCollection(HashSet::new));
-                Set<EntityType<?>> requiredMobTypes = BuiltInRegistries.ENTITY_TYPE.stream().filter(type -> type.is(SpeciesTags.PREHISTORIC)).collect(Collectors.toSet());
+                Set<EntityType<?>> requiredMobTypes = BuiltInRegistries.ENTITY_TYPE.stream().filter(type -> type.is(SpeciesTags.EntityTypes.PREHISTORIC)).collect(Collectors.toSet());
 
                 System.out.println(requiredMobTypes);
 

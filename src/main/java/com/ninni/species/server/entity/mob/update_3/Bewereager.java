@@ -90,7 +90,7 @@ public class Bewereager extends Monster implements OwnableEntity {
     protected void registerGoals() {
         super.registerGoals();
         this.targetSelector.addGoal(0, new HurtByTargetGoal(this));
-        this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, LivingEntity.class, true, (livingEntity) -> livingEntity.getType().is(SpeciesTags.ATTACKED_BY_BEWEREAGER) && !this.isSplitting()));
+        this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, LivingEntity.class, true, (livingEntity) -> livingEntity.getType().is(SpeciesTags.EntityTypes.ATTACKED_BY_BEWEREAGER) && !this.isSplitting()));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true, !this.isSplitting()));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IronGolem.class, true, !this.isSplitting()));
         this.goalSelector.addGoal(0, new FloatGoal(this));
