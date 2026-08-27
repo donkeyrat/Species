@@ -20,88 +20,78 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@OnlyIn(Dist.CLIENT)
 @Mixin(PlayerRenderer.class)
 public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
 
-    public PlayerRendererMixin(EntityRendererProvider.Context p_174289_, PlayerModel<AbstractClientPlayer> p_174290_, float p_174291_) {
-        super(p_174289_, p_174290_, p_174291_);
+    public PlayerRendererMixin(EntityRendererProvider.Context context, PlayerModel<AbstractClientPlayer> model, float shadowRadius) {
+        super(context, model, shadowRadius);
     }
 
-    @Inject(at = @At("HEAD"), method = "getArmPose", cancellable = true)
-    private static void S$getArmPose(AbstractClientPlayer player, InteractionHand hand, CallbackInfoReturnable<HumanoidModel.ArmPose> cir) {
+    @Inject(method = "getArmPose", at = @At("HEAD"), cancellable = true)
+    private static void getArmPose(AbstractClientPlayer player, InteractionHand hand, CallbackInfoReturnable<HumanoidModel.ArmPose> cir) {
         ItemStack stack = player.getItemInHand(hand);
         if (!player.swinging && stack.getItem() instanceof CrankbowItem && player.isUsingItem() && stack.has(DataComponents.CHARGED_PROJECTILES)) {
             cir.setReturnValue(HumanoidModel.ArmPose.CROSSBOW_HOLD);
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "renderLeftHand", cancellable = true)
-    private void renderLeftHand(PoseStack poseStack, MultiBufferSource bufferSource, int i, AbstractClientPlayer player, CallbackInfo ci) {
-        ItemStack headItem = player.getItemBySlot(EquipmentSlot.HEAD);
+    @Inject(method = "renderLeftHand", at = @At("HEAD"), cancellable = true)
+    private void renderLeftHand(PoseStack poseStack, MultiBufferSource buffer, int light, AbstractClientPlayer player, CallbackInfo ci) {
         LivingEntity disguise = ((LivingEntityAccess)player).getDisguisedEntity();
-        if (disguise != null) {
-            EntityRenderDispatcher entityrenderdispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
-            EntityRenderer<? super LivingEntity> renderer = entityrenderdispatcher.getRenderer(disguise);
-            if (headItem.is(SpeciesItems.WICKED_MASK.get())) {
-                ci.cancel();
-                if (renderer instanceof HumanoidMobRenderer humanoidMobRenderer) {
-                    HumanoidModel model = (HumanoidModel)humanoidMobRenderer.getModel();
-                    this.renderHand(poseStack, bufferSource, i, player, model.leftArm, null, ci);
-                }
-            }
+        if (disguise == null) return;
+
+        ItemStack headItem = player.getItemBySlot(EquipmentSlot.HEAD);
+        if (!headItem.is(SpeciesItems.WICKED_MASK.get())) return;
+
+        ci.cancel();
+        EntityRenderer<? super LivingEntity> renderer = Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(disguise);
+        if (renderer instanceof HumanoidMobRenderer humanoidRenderer) {
+            HumanoidModel model = (HumanoidModel)humanoidRenderer.getModel();
+            this.renderHand(poseStack, buffer, light, player, model.leftArm, null, ci);
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "renderRightHand", cancellable = true)
-    private void renderRightHand(PoseStack poseStack, MultiBufferSource bufferSource, int i, AbstractClientPlayer player, CallbackInfo ci) {
-        ItemStack headItem = player.getItemBySlot(EquipmentSlot.HEAD);
+    @Inject(method = "renderRightHand", at = @At("HEAD"), cancellable = true)
+    private void renderRightHand(PoseStack poseStack, MultiBufferSource buffer, int light, AbstractClientPlayer player, CallbackInfo ci) {
         LivingEntity disguise = ((LivingEntityAccess)player).getDisguisedEntity();
-        if (disguise != null) {
-            EntityRenderDispatcher entityrenderdispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
-            EntityRenderer<? super LivingEntity> renderer = entityrenderdispatcher.getRenderer(disguise);
-            if (headItem.is(SpeciesItems.WICKED_MASK.get())) {
-                ci.cancel();
-                if (renderer instanceof HumanoidMobRenderer humanoidMobRenderer) {
-                    HumanoidModel model = (HumanoidModel)humanoidMobRenderer.getModel();
-                    this.renderHand(poseStack, bufferSource, i, player, model.rightArm, null, ci);
-                }
-            }
+        if (disguise == null) return;
+
+        ItemStack headItem = player.getItemBySlot(EquipmentSlot.HEAD);
+        if (!headItem.is(SpeciesItems.WICKED_MASK.get())) return;
+
+        ci.cancel();
+        EntityRenderer<? super LivingEntity> renderer = Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(disguise);
+        if (renderer instanceof HumanoidMobRenderer humanoidRenderer) {
+            HumanoidModel model = (HumanoidModel)humanoidRenderer.getModel();
+            this.renderHand(poseStack, buffer, light, player, model.rightArm, null, ci);
         }
     }
 
-    @Inject(at = @At("HEAD"), method = "renderHand", cancellable = true)
-    private void renderHand(PoseStack poseStack, MultiBufferSource bufferSource, int i, AbstractClientPlayer player, ModelPart modelPart, ModelPart modelPart1, CallbackInfo ci) {
-        ItemStack headItem = player.getItemBySlot(EquipmentSlot.HEAD);
-
+    @Inject(method = "renderHand", at = @At("HEAD"), cancellable = true)
+    private void renderHand(PoseStack poseStack, MultiBufferSource buffer, int light, AbstractClientPlayer player, ModelPart rendererArm, ModelPart rendererArmwear, CallbackInfo ci) {
         LivingEntity disguise = ((LivingEntityAccess)player).getDisguisedEntity();
-        if (disguise != null) {
-            EntityRenderDispatcher entityrenderdispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
-            EntityRenderer<? super LivingEntity> renderer = entityrenderdispatcher.getRenderer(disguise);
+        if (disguise == null) return;
 
-            if (headItem.is(SpeciesItems.WICKED_MASK.get())) {
-                ci.cancel();
+        ItemStack headItem = player.getItemBySlot(EquipmentSlot.HEAD);
+        if (!headItem.is(SpeciesItems.WICKED_MASK.get())) return;
 
-                if (renderer instanceof HumanoidMobRenderer humanoidMobRenderer) {
-
-                    EntityModel model = humanoidMobRenderer.getModel();
-                    model.attackTime = 0.0F;
-                    model.setupAnim(disguise, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
-                    modelPart.xRot = 0.0F;
-                    modelPart.render(poseStack, bufferSource.getBuffer(RenderType.entitySolid(renderer.getTextureLocation(disguise))), i, OverlayTexture.NO_OVERLAY);
-                    if (modelPart1 != null) {
-                        modelPart1.xRot = 0.0F;
-                        modelPart1.render(poseStack, bufferSource.getBuffer(RenderType.entitySolid(renderer.getTextureLocation(disguise))), i, OverlayTexture.NO_OVERLAY);
-                    }
-              }
+        ci.cancel();
+        EntityRenderer<? super LivingEntity> renderer = Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(disguise);
+        if (renderer instanceof HumanoidMobRenderer humanoidRenderer) {
+            EntityModel model = humanoidRenderer.getModel();
+            model.attackTime = 0.0F;
+            model.setupAnim(disguise, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+            rendererArm.xRot = 0.0F;
+            rendererArm.render(poseStack, buffer.getBuffer(RenderType.entitySolid(renderer.getTextureLocation(disguise))), light, OverlayTexture.NO_OVERLAY);
+            if (rendererArmwear != null) {
+                rendererArmwear.xRot = 0.0F;
+                rendererArmwear.render(poseStack, buffer.getBuffer(RenderType.entitySolid(renderer.getTextureLocation(disguise))), light, OverlayTexture.NO_OVERLAY);
             }
         }
     }

@@ -28,35 +28,35 @@ import java.awt.*;
 
 @Mixin(VillagerProfessionLayer.class)
 public abstract class VillagerProfessionLayerMixin<T extends LivingEntity & VillagerDataHolder, M extends EntityModel<T> & VillagerHeadModel> extends RenderLayer<T, M> {
-    @Shadow protected abstract ResourceLocation getResourceLocation(String p_117669_, ResourceLocation p_117670_);
+
+    @Shadow protected abstract ResourceLocation getResourceLocation(String folder, ResourceLocation location);
     @Shadow @Final private static Int2ObjectMap<ResourceLocation> LEVEL_LOCATIONS;
 
     public VillagerProfessionLayerMixin(RenderLayerParent<T, M> p_117346_) {
         super(p_117346_);
     }
 
-    @Inject(method = "render", at = @At("HEAD"), cancellable = true)
-    private void S$render(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, T villager, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
-        VillagerData villagerData = villager.getVillagerData();
-        VillagerType villagerType = villagerData.getType();
-        VillagerProfession villagerProfession = villagerData.getProfession();
+    @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;FFFFFF)V", at = @At("HEAD"), cancellable = true)
+    private void render(PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, T villager, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
+        VillagerData data = villager.getVillagerData();
+        VillagerType type = data.getType();
+        VillagerProfession profession = data.getProfession();
+        if (villager.isInvisible()) return;
+        if (type != SpeciesVillagerTypes.CURED_BEWEREAGER.get()) return;
 
-        if (!villager.isInvisible() && villagerType == SpeciesVillagerTypes.CURED_BEWEREAGER.get()) {
-            ci.cancel();
-            M m = this.getParentModel();
-            (m).hatVisible(true);
-            ResourceLocation typeLocation = this.getResourceLocation("type", BuiltInRegistries.VILLAGER_TYPE.getKey(villagerType));
-            renderColoredCutoutModel(m, typeLocation, poseStack, bufferSource, packedLight, villager, -1);
-            (m).hatVisible(true);
-            if (villagerProfession != VillagerProfession.NONE && !villager.isBaby()) {
-                ResourceLocation professionLocation = this.getResourceLocation("profession", BuiltInRegistries.VILLAGER_PROFESSION.getKey(villagerProfession));
-                renderColoredCutoutModel(m, professionLocation, poseStack, bufferSource, packedLight, villager, -1);
-                if (villagerProfession != VillagerProfession.NITWIT) {
-                    ResourceLocation professionLevelLocation = this.getResourceLocation("profession_level", LEVEL_LOCATIONS.get(Mth.clamp(villagerData.getLevel(), 1, LEVEL_LOCATIONS.size())));
-                    renderColoredCutoutModel(m, professionLevelLocation, poseStack, bufferSource, packedLight, villager, -1);
-                }
-            }
+        ci.cancel();
+        M model = this.getParentModel();
+        model.hatVisible(true);
+        ResourceLocation typeLocation = this.getResourceLocation("type", BuiltInRegistries.VILLAGER_TYPE.getKey(type));
+        renderColoredCutoutModel(model, typeLocation, poseStack, bufferSource, packedLight, villager, -1);
+        model.hatVisible(true);
+        if (villager.isBaby()) return;
 
-        }
+        ResourceLocation professionLocation = this.getResourceLocation("profession", BuiltInRegistries.VILLAGER_PROFESSION.getKey(profession));
+        renderColoredCutoutModel(model, professionLocation, poseStack, bufferSource, packedLight, villager, -1);
+        if (profession == VillagerProfession.NITWIT) return;
+
+        ResourceLocation professionLevelLocation = this.getResourceLocation("profession_level", LEVEL_LOCATIONS.get(Mth.clamp(data.getLevel(), 1, LEVEL_LOCATIONS.size())));
+        renderColoredCutoutModel(model, professionLevelLocation, poseStack, bufferSource, packedLight, villager, -1);
     }
 }
