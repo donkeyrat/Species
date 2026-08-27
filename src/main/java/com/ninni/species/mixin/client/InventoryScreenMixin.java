@@ -1,6 +1,6 @@
 package com.ninni.species.mixin.client;
 
-import com.ninni.species.mixin_util.EntityRenderDispatcherAccess;
+import com.ninni.species.access.InventoryRenderingEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
@@ -28,13 +28,13 @@ public abstract class InventoryScreenMixin extends EffectRenderingInventoryScree
     @Inject(method = "renderEntityInInventory", at = @At("HEAD"))
     private static void onRenderInventoryStart(GuiGraphics guiGraphics, float x, float y, float scale, Vector3f translate, Quaternionf pose, Quaternionf cameraOrientation, LivingEntity entity, CallbackInfo ci) {
         EntityRenderDispatcher dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
-        ((EntityRenderDispatcherAccess) dispatcher).setIsRenderingInventoryEntity(true);
+        ((InventoryRenderingEntity) dispatcher).setIsRenderingInventoryEntity(true);
     }
 
     @Inject(method = "renderEntityInInventory", at = @At("RETURN"))
     private static void onRenderInventoryEnd(GuiGraphics guiGraphics, float x, float y, float scale, Vector3f translate, Quaternionf pose, Quaternionf cameraOrientation, LivingEntity entity, CallbackInfo ci) {
         EntityRenderDispatcher dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
-        ((EntityRenderDispatcherAccess) dispatcher).setIsRenderingInventoryEntity(false);
+        ((InventoryRenderingEntity) dispatcher).setIsRenderingInventoryEntity(false);
     }
 
 }

@@ -1,6 +1,6 @@
 package com.ninni.species.mixin;
 
-import com.ninni.species.mixin_util.PlayerAccess;
+import com.ninni.species.access.HarpooningEntity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(Player.class)
-public abstract class PlayerMixin extends LivingEntity implements PlayerAccess {
+public abstract class PlayerMixin extends LivingEntity implements HarpooningEntity {
 
     @Unique private int harpoonId;
 

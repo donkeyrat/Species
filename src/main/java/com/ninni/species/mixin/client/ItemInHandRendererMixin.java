@@ -2,7 +2,7 @@ package com.ninni.species.mixin.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import com.ninni.species.mixin_util.LivingEntityAccess;
+import com.ninni.species.access.DisguisingEntity;
 import com.ninni.species.registry.SpeciesItems;
 import com.ninni.species.server.item.CrankbowItem;
 import com.ninni.species.server.item.SpectraliburItem;
@@ -38,7 +38,7 @@ public abstract class ItemInHandRendererMixin {
 
     @Inject(at = @At("TAIL"), method = "renderArmWithItem")
     private void renderDisguisedArms(AbstractClientPlayer player, float v, float v1, InteractionHand hand, float v2, ItemStack stack, float v3, PoseStack poseStack, MultiBufferSource bufferSource, int i, CallbackInfo ci) {
-        LivingEntity disguise = ((LivingEntityAccess)player).getDisguisedEntity();
+        LivingEntity disguise = ((DisguisingEntity)player).getDisguisedEntity();
         boolean isMainHand = hand == InteractionHand.MAIN_HAND;
         HumanoidArm arm = isMainHand ? player.getMainArm().getOpposite() : player.getMainArm();
         if (player.isScoping()) return;

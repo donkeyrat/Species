@@ -1,6 +1,6 @@
 package com.ninni.species.mixin;
 
-import com.ninni.species.mixin_util.WolfAccess;
+import com.ninni.species.access.BewereagerableEntity;
 import com.ninni.species.server.entity.ai.goal.TransformDuringFullMoonGoal;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -22,12 +22,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Wolf.class)
-public abstract class WolfMixin extends TamableAnimal implements NeutralMob, WolfAccess {
+public abstract class WolfMixin extends TamableAnimal implements NeutralMob, BewereagerableEntity {
 
     @Shadow @Final private static EntityDataAccessor<Integer> DATA_COLLAR_COLOR;
 
     @Unique private static final EntityDataAccessor<Boolean> DATA_IS_BEWEREAGER = SynchedEntityData.defineId(Wolf.class, EntityDataSerializers.BOOLEAN);
-    @Unique private static final EntityDataAccessor<Boolean> DATA_IS_CURED_BEWEREAGER = SynchedEntityData.defineId(Wolf.class, EntityDataSerializers.BOOLEAN);
+    @Unique private static final EntityDataAccessor<Boolean> DATA_IS_CURED = SynchedEntityData.defineId(Wolf.class, EntityDataSerializers.BOOLEAN);
 
     protected WolfMixin(EntityType<? extends TamableAnimal> type, Level level) {
         super(type, level);
@@ -35,7 +35,7 @@ public abstract class WolfMixin extends TamableAnimal implements NeutralMob, Wol
 
     @Inject(method = "finalizeSpawn", at = @At("HEAD"))
     public void finalizeSpawn(ServerLevelAccessor l, DifficultyInstance d, MobSpawnType s, SpawnGroupData g, CallbackInfoReturnable<SpawnGroupData> cir) {
-        if (this.getRandom().nextInt(10) == 0) this.setIsBewereager(true); // TODO replace with gamerule?
+        if (this.getRandom().nextInt(10) == 0) this.setBewereager(true); // TODO replace with gamerule?
     }
 
     @Inject(method = "registerGoals", at = @At("TAIL"))
@@ -46,43 +46,43 @@ public abstract class WolfMixin extends TamableAnimal implements NeutralMob, Wol
     @Inject(method = "defineSynchedData", at = @At("TAIL"))
     private void defineSynchedData(SynchedEntityData.Builder builder, CallbackInfo ci) {
         builder.define(DATA_IS_BEWEREAGER, false);
-        builder.define(DATA_IS_CURED_BEWEREAGER, false);
+        builder.define(DATA_IS_CURED, false);
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
     private void addAdditionalSaveData(CompoundTag tag, CallbackInfo ci) {
-        tag.putBoolean("is_bewereager", this.getIsBewereager());
-        tag.putBoolean("is_cured_bewereager", this.getIsCuredBewereager());
+        tag.putBoolean("is_bewereager", this.isBewereager());
+        tag.putBoolean("is_cured", this.isCured());
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
     private void readAdditionalSaveData(CompoundTag compoundTag, CallbackInfo ci) {
-        this.setIsBewereager(compoundTag.getBoolean("is_bewereager"));
-        this.setIsCuredBewereager(compoundTag.getBoolean("is_cured_bewereager"));
+        this.setBewereager(compoundTag.getBoolean("is_bewereager"));
+        this.setCured(compoundTag.getBoolean("is_cured"));
     }
 
     @Override
-    public boolean getIsBewereager() {
+    public boolean isBewereager() {
         return this.entityData.get(DATA_IS_BEWEREAGER);
     }
 
     @Override
-    public void setIsBewereager(boolean isBewereager) {
+    public void setBewereager(boolean isBewereager) {
         this.entityData.set(DATA_IS_BEWEREAGER, isBewereager);
     }
 
     @Override
-    public boolean getIsCuredBewereager() {
-        return this.entityData.get(DATA_IS_CURED_BEWEREAGER);
+    public boolean isCured() {
+        return this.entityData.get(DATA_IS_CURED);
     }
 
     @Override
-    public void setIsCuredBewereager(boolean isCuredBewereager) {
-        this.entityData.set(DATA_IS_CURED_BEWEREAGER, isCuredBewereager);
+    public void setCured(boolean setCured) {
+        this.entityData.set(DATA_IS_CURED, setCured);
     }
 
     @Override
-    public void setNewCollarColor(DyeColor color) {
+    public void setCollarColor(DyeColor color) {
         this.entityData.set(DATA_COLLAR_COLOR, color.getId());
     }
 

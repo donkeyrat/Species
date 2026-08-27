@@ -4,13 +4,12 @@ import com.ninni.species.CommonProxy;
 import com.ninni.species.Species;
 import com.ninni.species.client.events.ClientEvents;
 import com.ninni.species.client.screen.ScreenShakeEvent;
-import com.ninni.species.mixin_util.PlayerAccess;
+import com.ninni.species.access.HarpooningEntity;
 import com.ninni.species.registry.SpeciesItems;
 import com.ninni.species.server.item.CrankbowItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.component.CustomData;
@@ -50,7 +49,7 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void harpoonSync(int id) {
         Player player = Minecraft.getInstance().player;
-        if (player instanceof PlayerAccess playerAccess) {
+        if (player instanceof HarpooningEntity playerAccess) {
             playerAccess.setHarpoonId(id);
         }
     }

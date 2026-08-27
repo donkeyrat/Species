@@ -14,12 +14,11 @@ import com.ninni.species.client.particles.*;
 import com.ninni.species.client.renderer.block.*;
 import com.ninni.species.client.renderer.entity.*;
 import com.ninni.species.client.renderer.item.HarpoonRenderer;
-import com.ninni.species.client.renderer.item.RicoshieldItemRenderer;
 import com.ninni.species.client.renderer.item.WickedFireballRenderer;
 import com.ninni.species.client.renderer.item.WickedSwapperProjectileRenderer;
 import com.ninni.species.client.screen.BloodLustOverlay;
 import com.ninni.species.client.screen.ScreenShakeEvent;
-import com.ninni.species.mixin_util.PlayerAccess;
+import com.ninni.species.access.HarpooningEntity;
 import com.ninni.species.registry.*;
 import com.ninni.species.server.entity.mob.update_2.Springling;
 import com.ninni.species.server.entity.mob.update_3.Harpoon;
@@ -140,7 +139,7 @@ public class ClientEvents {
             float z = (forward ? 1 : 0) - (back ? 1 : 0);
             float y = (jumpKeyDown ? 1 : 0) - (sneakKeyDown ? 1 : 0);
 
-            if (mc.player.isUsingItem() && mc.player.getUseItem().is(SpeciesItems.HARPOON.get()) && mc.player instanceof PlayerAccess playerAccess) {
+            if (mc.player.isUsingItem() && mc.player.getUseItem().is(SpeciesItems.HARPOON.get()) && mc.player instanceof HarpooningEntity playerAccess) {
                 PacketDistributor.sendToServer(new HarpoonInputPacket(playerAccess.getHarpoonId(), x, y, z));
             }
         }
@@ -162,7 +161,7 @@ public class ClientEvents {
         float targetPitch = 0.0F;
         float targetRoll = 0.0F;
 
-        if (player instanceof PlayerAccess access) {
+        if (player instanceof HarpooningEntity access) {
             Entity harpoonEntity = mc.level.getEntity(access.getHarpoonId());
             if (harpoonEntity instanceof Harpoon harpoon && harpoon.isAnchored() && harpoon.getAnchorPos() != null) {
 

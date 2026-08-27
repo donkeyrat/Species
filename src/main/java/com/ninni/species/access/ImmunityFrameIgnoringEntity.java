@@ -1,6 +1,8 @@
-package com.ninni.species.mixin_util;
+package com.ninni.species.access;
 
-public interface AbstractArrowAccess {
+public interface ImmunityFrameIgnoringEntity {
+
     boolean shouldIgnoreImmunityFrames();
     void setIgnoreImmunityFrames(boolean ignore);
+
 }

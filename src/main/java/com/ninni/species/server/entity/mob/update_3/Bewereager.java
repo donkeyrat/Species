@@ -1,6 +1,6 @@
 package com.ninni.species.server.entity.mob.update_3;
 
-import com.ninni.species.mixin_util.WolfAccess;
+import com.ninni.species.access.BewereagerableEntity;
 import com.ninni.species.registry.*;
 import com.ninni.species.registry.SpeciesCriterion;
 import com.ninni.species.server.entity.ai.goal.BewereagerAttackGoal;
@@ -444,9 +444,9 @@ public class Bewereager extends Monster implements OwnableEntity {
                 wolf.setTame(true, false);
                 wolf.setOrderedToSit(true);
             }
-            if (wolf instanceof WolfAccess wolfAccess) {
-                wolfAccess.setNewCollarColor(this.getCollarColor());
-                wolfAccess.setIsBewereager(true);
+            if (wolf instanceof BewereagerableEntity wolfAccess) {
+                wolfAccess.setCollarColor(this.getCollarColor());
+                wolfAccess.setBewereager(true);
             }
             this.addTransformingParticles();
             this.level().addFreshEntity(wolf);
@@ -475,10 +475,10 @@ public class Bewereager extends Monster implements OwnableEntity {
                 wolf.setOwnerUUID(this.getOwnerUUID());
                 wolf.setTame(true, false);
             }
-            if (wolf instanceof WolfAccess wolfAccess) {
-                wolfAccess.setNewCollarColor(this.getCollarColor());
-                wolfAccess.setIsBewereager(false);
-                wolfAccess.setIsCuredBewereager(true);
+            if (wolf instanceof BewereagerableEntity wolfAccess) {
+                wolfAccess.setCollarColor(this.getCollarColor());
+                wolfAccess.setBewereager(false);
+                wolfAccess.setCured(true);
             }
             this.addTransformingParticles();
             this.level().addFreshEntity(wolf);

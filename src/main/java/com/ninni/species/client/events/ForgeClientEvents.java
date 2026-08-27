@@ -4,8 +4,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import com.ninni.species.Species;
-import com.ninni.species.mixin_util.EntityRenderDispatcherAccess;
-import com.ninni.species.mixin_util.LivingEntityAccess;
+import com.ninni.species.access.DisguisingEntity;
+import com.ninni.species.access.InventoryRenderingEntity;
+import com.ninni.species.access.TankingAndSnatchingEntity;
 import com.ninni.species.registry.SpeciesItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EndermanModel;
@@ -35,7 +36,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderLivingEvent;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import static net.minecraft.client.renderer.entity.LivingEntityRenderer.getOverlayCoords;
@@ -48,9 +48,9 @@ public class ForgeClientEvents {
     public static void onRenderLivingSpecialPre(RenderLivingEvent.Pre<?, ?> event) {
         LivingEntity entity = event.getEntity();
 
-        if (Minecraft.getInstance().getEntityRenderDispatcher() instanceof EntityRenderDispatcherAccess access && access.getRenderingInventoryEntity()) {
+        if (Minecraft.getInstance().getEntityRenderDispatcher() instanceof InventoryRenderingEntity access && access.getRenderingInventoryEntity()) {
             if (entity.getItemBySlot(EquipmentSlot.HEAD).is(SpeciesItems.WICKED_MASK.get())) {
-                LivingEntity disguise = ((LivingEntityAccess) entity).getDisguisedEntity();
+                LivingEntity disguise = ((DisguisingEntity) entity).getDisguisedEntity();
                 if (disguise != null) {
                     float maxDisguise = Math.max(disguise.getBbHeight(), disguise.getBbWidth());
                     float maxPlayer = Math.max(1.8F, 0.6F);
@@ -67,7 +67,7 @@ public class ForgeClientEvents {
     public static void livingEntityRenderer(RenderLivingEvent.Pre<LivingEntity, EntityModel<LivingEntity>> event) {
         LivingEntity entity = event.getEntity();
         ItemStack headItem = entity.getItemBySlot(EquipmentSlot.HEAD);
-        LivingEntity disguise = ((LivingEntityAccess) entity).getDisguisedEntity();
+        LivingEntity disguise = ((DisguisingEntity) entity).getDisguisedEntity();
 
         CompoundTag tag = headItem.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         if (headItem.is(SpeciesItems.WICKED_MASK.get()) && tag.contains("id") && disguise != null && !(entity instanceof Player player && player.isSpectator())) {
@@ -220,7 +220,7 @@ public class ForgeClientEvents {
 
         }
 
-        if (((LivingEntityAccess) entity).hasTanked()) event.getPoseStack().scale(1.35F, 1.125F, 1.35F);
-        if (((LivingEntityAccess) entity).hasSnatched()) event.getPoseStack().scale(0.85F, 1.125F, 0.85F);
+        if (((TankingAndSnatchingEntity) entity).hasTanked()) event.getPoseStack().scale(1.35F, 1.125F, 1.35F);
+        if (((TankingAndSnatchingEntity) entity).hasSnatched()) event.getPoseStack().scale(0.85F, 1.125F, 0.85F);
     }
 }

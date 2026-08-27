@@ -2,7 +2,7 @@ package com.ninni.species.server.entity.mob.update_2;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
-import com.ninni.species.mixin_util.FallingBlockEntityAccess;
+import com.ninni.species.access.AccessibleFallingBlockEntity;
 import com.ninni.species.registry.SpeciesBlocks;
 import com.ninni.species.registry.SpeciesEntities;
 import com.ninni.species.server.block.entity.CruncherPelletBlockEntity;
@@ -46,7 +46,7 @@ public class CruncherPellet extends FallingBlockEntity {
 
     public CruncherPellet(Level level, double d, double e, double f, BlockState blockState, CruncherPelletManager.CruncherPelletData data) {
         this(SpeciesEntities.CRUNCHER_PELLET.get(), level);
-        if (this instanceof FallingBlockEntityAccess access) {
+        if (this instanceof AccessibleFallingBlockEntity access) {
             access.setBlockState(blockState);
         }
         this.blocksBuilding = true;
@@ -112,7 +112,7 @@ public class CruncherPellet extends FallingBlockEntity {
                     if (bl3 && bl5) {
                         if (this.getBlockState().hasProperty(BlockStateProperties.WATERLOGGED) && this.level().getFluidState(blockPos).getType() == Fluids.WATER) {
 
-                            if (this instanceof FallingBlockEntityAccess access) {
+                            if (this instanceof AccessibleFallingBlockEntity access) {
                                 access.setBlockState(this.getBlockState().setValue(BlockStateProperties.WATERLOGGED, true));
                             }
                         }

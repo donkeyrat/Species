@@ -1,6 +1,6 @@
 package com.ninni.species.mixin.client;
 
-import com.ninni.species.mixin_util.WolfAccess;
+import com.ninni.species.access.BewereagerableEntity;
 import net.minecraft.client.renderer.entity.WolfRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.Wolf;
@@ -20,7 +20,7 @@ public class WolfRendererMixin {
 
     @Inject(at = @At("HEAD"), method = "getTextureLocation(Lnet/minecraft/world/entity/animal/Wolf;)Lnet/minecraft/resources/ResourceLocation;", cancellable = true)
     private void S$getTextureLocation(Wolf wolf, CallbackInfoReturnable<ResourceLocation> cir) {
-        if (wolf instanceof WolfAccess wolfAccess && wolfAccess.getIsCuredBewereager()) cir.setReturnValue(BEWEREAGER_LOCATION);
+        if (wolf instanceof BewereagerableEntity wolfAccess && wolfAccess.isCured()) cir.setReturnValue(BEWEREAGER_LOCATION);
     }
 
 }

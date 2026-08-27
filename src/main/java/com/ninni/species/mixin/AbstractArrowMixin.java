@@ -1,6 +1,6 @@
 package com.ninni.species.mixin;
 
-import com.ninni.species.mixin_util.AbstractArrowAccess;
+import com.ninni.species.access.ImmunityFrameIgnoringEntity;
 import com.ninni.species.server.item.CrankbowItem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AbstractArrow.class)
-public abstract class AbstractArrowMixin extends Projectile implements AbstractArrowAccess {
+public abstract class AbstractArrowMixin extends Projectile implements ImmunityFrameIgnoringEntity {
 
     @Shadow public AbstractArrow.Pickup pickup;
     @Shadow protected abstract ItemStack getPickupItem();

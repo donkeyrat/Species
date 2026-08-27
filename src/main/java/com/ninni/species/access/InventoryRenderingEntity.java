@@ -1,6 +1,8 @@
-package com.ninni.species.mixin_util;
+package com.ninni.species.access;
 
-public interface EntityRenderDispatcherAccess {
+public interface InventoryRenderingEntity {
+
     boolean getRenderingInventoryEntity();
     void setIsRenderingInventoryEntity(boolean isRenderingInventoryEntity);
+
 }

@@ -1,7 +1,7 @@
 package com.ninni.species.mixin.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.ninni.species.mixin_util.LivingEntityAccess;
+import com.ninni.species.access.DisguisingEntity;
 import com.ninni.species.registry.SpeciesItems;
 import com.ninni.species.server.item.CrankbowItem;
 import net.minecraft.client.Minecraft;
@@ -43,7 +43,7 @@ public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractC
 
     @Inject(method = "renderLeftHand", at = @At("HEAD"), cancellable = true)
     private void renderLeftHand(PoseStack poseStack, MultiBufferSource buffer, int light, AbstractClientPlayer player, CallbackInfo ci) {
-        LivingEntity disguise = ((LivingEntityAccess)player).getDisguisedEntity();
+        LivingEntity disguise = ((DisguisingEntity)player).getDisguisedEntity();
         if (disguise == null) return;
 
         ItemStack headItem = player.getItemBySlot(EquipmentSlot.HEAD);
@@ -59,7 +59,7 @@ public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractC
 
     @Inject(method = "renderRightHand", at = @At("HEAD"), cancellable = true)
     private void renderRightHand(PoseStack poseStack, MultiBufferSource buffer, int light, AbstractClientPlayer player, CallbackInfo ci) {
-        LivingEntity disguise = ((LivingEntityAccess)player).getDisguisedEntity();
+        LivingEntity disguise = ((DisguisingEntity)player).getDisguisedEntity();
         if (disguise == null) return;
 
         ItemStack headItem = player.getItemBySlot(EquipmentSlot.HEAD);
@@ -75,7 +75,7 @@ public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractC
 
     @Inject(method = "renderHand", at = @At("HEAD"), cancellable = true)
     private void renderHand(PoseStack poseStack, MultiBufferSource buffer, int light, AbstractClientPlayer player, ModelPart rendererArm, ModelPart rendererArmwear, CallbackInfo ci) {
-        LivingEntity disguise = ((LivingEntityAccess)player).getDisguisedEntity();
+        LivingEntity disguise = ((DisguisingEntity)player).getDisguisedEntity();
         if (disguise == null) return;
 
         ItemStack headItem = player.getItemBySlot(EquipmentSlot.HEAD);

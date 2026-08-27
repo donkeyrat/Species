@@ -1,12 +1,12 @@
 package com.ninni.species.mixin.client;
 
-import com.ninni.species.mixin_util.EntityRenderDispatcherAccess;
+import com.ninni.species.access.InventoryRenderingEntity;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(EntityRenderDispatcher.class)
-public abstract class EntityRenderDispatcherMixin implements EntityRenderDispatcherAccess {
+public abstract class EntityRenderDispatcherMixin implements InventoryRenderingEntity {
 
     @Unique private boolean isRenderingInventoryEntity = false;
 

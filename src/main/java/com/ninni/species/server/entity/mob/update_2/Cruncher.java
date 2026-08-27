@@ -3,7 +3,7 @@ package com.ninni.species.server.entity.mob.update_2;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import com.ninni.species.client.inventory.CruncherInventoryMenu;
-import com.ninni.species.mixin_util.ServerPlayerAccess;
+import com.ninni.species.access.ContainerCountingEntity;
 import com.ninni.species.registry.*;
 import com.ninni.species.registry.SpeciesCriterion;
 import com.ninni.species.server.data.CruncherPelletManager;
@@ -327,7 +327,7 @@ public class Cruncher extends Animal implements InventoryCarrier, HasCustomInven
         if (!this.level().isClientSide && player instanceof ServerPlayer serverPlayer) {
             if (serverPlayer.containerMenu != serverPlayer.inventoryMenu) serverPlayer.closeContainer();
 
-            if (serverPlayer instanceof ServerPlayerAccess serverPlayerAccess) {
+            if (serverPlayer instanceof ContainerCountingEntity serverPlayerAccess) {
                 serverPlayerAccess.getNextContainerCounter();
 
                 PacketDistributor.sendToPlayer(serverPlayer, new OpenCruncherScreenPacket(this.getId(), this.inventory.getContainerSize(), serverPlayerAccess.getContainerCounter()));

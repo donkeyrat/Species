@@ -2,8 +2,8 @@ package com.ninni.species.server.item;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.ninni.species.access.CrankingEntityAccess;
-import com.ninni.species.mixin_util.AbstractArrowAccess;
+import com.ninni.species.access.CrankingEntity;
+import com.ninni.species.access.ImmunityFrameIgnoringEntity;
 import com.ninni.species.registry.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -107,7 +107,7 @@ public class CrankbowItem extends ProjectileWeaponItem {
         ChargedProjectiles projectiles = getProjectiles(entity, stack);
         if (projectiles.isEmpty()) {
             if (entity instanceof Player player) player.stopUsingItem();
-            if (entity instanceof CrankingEntityAccess cranking) cranking.setShotsFired(0);
+            if (entity instanceof CrankingEntity cranking) cranking.setShotsFired(0);
         }
 
         PullingSounds sounds = getPullingSounds(stack);
@@ -117,7 +117,7 @@ public class CrankbowItem extends ProjectileWeaponItem {
             if (level instanceof ServerLevel serverLevel) {
                 shoot(serverLevel, entity, entity.getUsedItemHand(), stack, projectiles.getItems(), 1f, 1f, false, null);
             }
-            if (entity instanceof CrankingEntityAccess cranking) cranking.addShotsFired();
+            if (entity instanceof CrankingEntity cranking) cranking.addShotsFired();
         }
     }
 
@@ -127,7 +127,7 @@ public class CrankbowItem extends ProjectileWeaponItem {
 
     @Override
     public void releaseUsing(ItemStack stack, Level level, LivingEntity entity, int timeLeft) {
-        int shots = entity instanceof CrankingEntityAccess cranking ?  cranking.getShotsFired() : 0;
+        int shots = entity instanceof CrankingEntity cranking ?  cranking.getShotsFired() : 0;
         if (entity instanceof Player player) player.getCooldowns().addCooldown(this, shots * 8);
 
         if (shots > 7) entity.playSound(SpeciesSoundEvents.CRANKBOW_STOP.get());
@@ -148,7 +148,7 @@ public class CrankbowItem extends ProjectileWeaponItem {
         ChargedProjectiles projectiles = getProjectiles(entity, weapon);
         if (projectiles.isEmpty()) return;
 
-        int shots = entity instanceof CrankingEntityAccess cranking ?  cranking.getShotsFired() : 0;
+        int shots = entity instanceof CrankingEntity cranking ?  cranking.getShotsFired() : 0;
         ItemStack projectileStack = projectiles.getItems().getFirst();
         float v = shots / 20f;
         float velocity = v + 1.15f;
@@ -190,7 +190,7 @@ public class CrankbowItem extends ProjectileWeaponItem {
     }
 
     public static int getShootingCooldown(LivingEntity entity, ItemStack stack, RandomSource random) {
-        int shots = entity instanceof CrankingEntityAccess cranking ?  cranking.getShotsFired() : 0;
+        int shots = entity instanceof CrankingEntity cranking ?  cranking.getShotsFired() : 0;
 //        int level = stack.getEnchantmentLevel(random.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(SpeciesEnchantments.QUICK_CRANK));
 //        int i = level == 0 ? 3 : Math.max(1, 4 - level);
         int i = 3; // TODO fix this maybe idk
@@ -261,7 +261,7 @@ public class CrankbowItem extends ProjectileWeaponItem {
 
         ArrowItem arrowitem = (ArrowItem)(stack1.getItem() instanceof ArrowItem ? stack1.getItem() : Items.ARROW);
         AbstractArrow abstractarrow = arrowitem.createArrow(level, stack1, livingEntity, stack);
-        if (abstractarrow instanceof AbstractArrowAccess access) access.setIgnoreImmunityFrames(true);
+        if (abstractarrow instanceof ImmunityFrameIgnoringEntity access) access.setIgnoreImmunityFrames(true);
 
         Vec3 vec31 = livingEntity.getUpVector(1.0F);
         Quaternionf quaternionf = (new Quaternionf()).setAngleAxis((z * 0.017453292F), vec31.x, vec31.y, vec31.z);

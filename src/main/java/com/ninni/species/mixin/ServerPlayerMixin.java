@@ -1,6 +1,6 @@
 package com.ninni.species.mixin;
 
-import com.ninni.species.mixin_util.ServerPlayerAccess;
+import com.ninni.species.access.ContainerCountingEntity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerListener;
@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(ServerPlayer.class)
-public class ServerPlayerMixin implements ServerPlayerAccess {
+public class ServerPlayerMixin implements ContainerCountingEntity {
 
     @Shadow private int containerCounter;
     @Shadow @Final private ContainerSynchronizer containerSynchronizer;
