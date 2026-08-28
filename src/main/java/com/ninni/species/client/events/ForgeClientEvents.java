@@ -50,7 +50,7 @@ public class ForgeClientEvents {
 
         if (Minecraft.getInstance().getEntityRenderDispatcher() instanceof InventoryRenderingEntity access && access.getRenderingInventoryEntity()) {
             if (entity.getItemBySlot(EquipmentSlot.HEAD).is(SpeciesItems.WICKED_MASK.get())) {
-                LivingEntity disguise = ((DisguisingEntity) entity).getDisguisedEntity();
+                Entity disguise = ((DisguisingEntity) entity).getDisguisedEntity();
                 if (disguise != null) {
                     float maxDisguise = Math.max(disguise.getBbHeight(), disguise.getBbWidth());
                     float maxPlayer = Math.max(1.8F, 0.6F);
@@ -66,161 +66,161 @@ public class ForgeClientEvents {
     @SubscribeEvent
     public static void livingEntityRenderer(RenderLivingEvent.Pre<LivingEntity, EntityModel<LivingEntity>> event) {
         LivingEntity entity = event.getEntity();
-        ItemStack headItem = entity.getItemBySlot(EquipmentSlot.HEAD);
-        LivingEntity disguise = ((DisguisingEntity) entity).getDisguisedEntity();
-
-        CompoundTag tag = headItem.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-        if (headItem.is(SpeciesItems.WICKED_MASK.get()) && tag.contains("id") && disguise != null && !(entity instanceof Player player && player.isSpectator())) {
-            event.setCanceled(true);
-            EntityRenderDispatcher dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
-            EntityRenderer<?> baseRenderer = dispatcher.getRenderer(disguise);
-
-
-            if (baseRenderer instanceof LivingEntityRenderer renderer && disguise != null && !disguise.isRemoved() && disguise.getType() != null && !entity.hasEffect(MobEffects.INVISIBILITY)) {
-                EntityModel model = renderer.getModel();
-                if (model == null) return;
-
-                PoseStack poseStack = event.getPoseStack();
-                MultiBufferSource buffer = event.getMultiBufferSource();
-                int light = event.getPackedLight();
-                float partialTicks = event.getPartialTick();
-
-                poseStack.pushPose();
-
-                model.attackTime = entity.getAttackAnim(partialTicks);
-                disguise.hurtTime = entity.hurtTime;
-                disguise.swingingArm = entity.swingingArm;
-                disguise.tickCount = entity.tickCount;
-                disguise.setPose(entity.getPose());
-                if (disguise instanceof Mob mobDisguise && entity instanceof Mob mobEntity) {
-                    mobDisguise.setLeftHanded(mobEntity.isLeftHanded());
-                } else if (disguise instanceof Mob mobDisguise && entity instanceof Player player) {
-                    mobDisguise.setLeftHanded(player.getMainArm() == HumanoidArm.LEFT);
-                }
-                if (disguise instanceof EnderMan enderMan) {
-                    ItemStack mainHand = entity.getMainHandItem();
-                    if (!mainHand.isEmpty() && mainHand.getItem() instanceof BlockItem blockItem) {
-                        enderMan.setCarriedBlock(blockItem.getBlock().defaultBlockState());
-                    } else {
-                        enderMan.setCarriedBlock(Blocks.AIR.defaultBlockState());
-                    }
-                    if (model instanceof EndermanModel<?> endermanModel) {
-                        endermanModel.carrying = !enderMan.getCarriedBlock().is(Blocks.AIR);
-                    }
-                }
-
-                boolean sitting = entity.isPassenger() && entity.getVehicle() != null && entity.getVehicle().shouldRiderSit();
-                model.riding = sitting;
-                model.young = disguise.isBaby();
-
-                float bodyRot = Mth.rotLerp(partialTicks, entity.yBodyRotO, entity.yBodyRot);
-                float headRot = Mth.rotLerp(partialTicks, entity.yHeadRotO, entity.yHeadRot);
-                float netHeadYaw = headRot - bodyRot;
-                float headPitch = Mth.lerp(partialTicks, entity.xRotO, entity.getXRot());
-
-                if (isEntityUpsideDown(disguise) || isEntityUpsideDown(entity)) {
-                    headPitch *= -1.0F;
-                    netHeadYaw *= -1.0F;
-                }
-
-                if (entity.hasPose(Pose.SLEEPING)) {
-                    Direction bedDir = entity.getBedOrientation();
-                    if (bedDir != null) {
-
-                        float offset = entity.getEyeHeight(Pose.STANDING) - 0.1F;
-                        poseStack.translate(-bedDir.getStepX() * offset, 0.0F, -bedDir.getStepZ() * offset);
-
-                        poseStack.mulPose(Axis.YN.rotationDegrees(bedDir.toYRot() - 90));
-                    }
-                }
-
-                float animProgress = disguise.tickCount + partialTicks;
-
-                try {
-                    Class<?> c = Class.forName("net.minecraft.client.renderer.entity.LivingEntityRenderer");
-                    Method method = c.getDeclaredMethod("setupRotations", LivingEntity.class, PoseStack.class, float.class, float.class, float.class, float.class);
-                    method.setAccessible(true);
-                    method.invoke(renderer, disguise, poseStack, animProgress, bodyRot, partialTicks, 1f);
-                }
-                catch (Exception ignored) {}
-
-                poseStack.scale(-1.0F, -1.0F, 1.0F);
-
-                try {
-                    Class<?> c = Class.forName("net.minecraft.client.renderer.entity.LivingEntityRenderer");
-                    Method method = c.getDeclaredMethod("scale", LivingEntity.class, PoseStack.class, float.class);
-                    method.setAccessible(true);
-                    method.invoke(renderer, disguise, poseStack, partialTicks);
-                }
-                catch (Exception ignored) {}
-                poseStack.translate(0.0F, -1.501F, 0.0F);
-
-                float walkSpeed = entity.walkAnimation.speed(partialTicks);
-                float walkPos = entity.walkAnimation.position(partialTicks);
-
-                if (entity instanceof ArmorStand) {
-                    headPitch = 0;
-                    netHeadYaw = 0;
-                    animProgress = 0;
-                }
-
-                model.prepareMobModel(disguise, walkPos, walkSpeed, partialTicks);
-                model.setupAnim(disguise, walkPos, walkSpeed, animProgress, netHeadYaw, headPitch);
-
-                boolean bodyVisible = true;
-                try {
-                    Class<?> c = Class.forName("net.minecraft.client.renderer.entity.LivingEntityRenderer");
-                    Method method = c.getDeclaredMethod("isBodyVisible", LivingEntity.class);
-                    method.setAccessible(true);
-                    bodyVisible = (boolean)method.invoke(renderer, entity);
-                }
-                catch (Exception ignored) {}
-
-                Minecraft mc = Minecraft.getInstance();
-                boolean invisible = !bodyVisible && !entity.isInvisibleTo(mc.player);
-                boolean glowing = mc.shouldEntityAppearGlowing(entity);
-
-                RenderType type = RenderType.SOLID;
-                try {
-                    Class<?> c = Class.forName("net.minecraft.client.renderer.entity.LivingEntityRenderer");
-                    Method method = c.getDeclaredMethod("getRenderType", LivingEntity.class, boolean.class, boolean.class, boolean.class);
-                    method.setAccessible(true);
-                    type = (RenderType) method.invoke(renderer, disguise, bodyVisible, invisible, glowing);
-                }
-                catch (Exception ignored) {}
-
-                if (type != null) {
-                    VertexConsumer consumer = buffer.getBuffer(type);
-                    float whiteOverlayProgress = 0;
-                    try {
-                        Class<?> c = Class.forName("net.minecraft.client.renderer.entity.LivingEntityRenderer");
-                        Method method = c.getDeclaredMethod("getWhiteOverlayProgress", LivingEntity.class, float.class);
-                        method.setAccessible(true);
-                        whiteOverlayProgress = (float) method.invoke(renderer, entity, partialTicks);
-                    }
-                    catch (Exception ignored) {}
-
-                    int overlay = getOverlayCoords(entity, whiteOverlayProgress);
-                    try {
-                        model.renderToBuffer(poseStack, consumer, light, overlay, FastColor.ARGB32.colorFromFloat(invisible ? 0.15F : 1.0F, 1.0F, 1.0F, 1.0F));
-                    } catch (Exception ignored) {}
-                }
-
-                if (!entity.isSpectator()) {
-                    for (Object layer : renderer.layers) {
-                           try {
-                               ((RenderLayer)layer).render(poseStack, buffer, light, disguise, walkPos, walkSpeed, partialTicks, animProgress, netHeadYaw, headPitch);
-                           } catch (Exception ignored) {}
-                    }
-                }
-
-                poseStack.popPose();
-            }
-
-
-        }
+        if (entity.hasEffect(MobEffects.INVISIBILITY)) return;
 
         if (((TankingAndSnatchingEntity) entity).hasTanked()) event.getPoseStack().scale(1.35F, 1.125F, 1.35F);
         if (((TankingAndSnatchingEntity) entity).hasSnatched()) event.getPoseStack().scale(0.85F, 1.125F, 0.85F);
+
+        Entity disguise = ((DisguisingEntity) entity).getDisguisedEntity();
+        if (disguise == null || disguise.isRemoved()) return;
+
+        event.setCanceled(true);
+        EntityRenderDispatcher dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
+        EntityRenderer<?> baseRenderer = dispatcher.getRenderer(disguise);
+
+        if (baseRenderer instanceof LivingEntityRenderer renderer) {
+            EntityModel model = renderer.getModel();
+            if (model == null) return;
+
+            PoseStack poseStack = event.getPoseStack();
+            MultiBufferSource buffer = event.getMultiBufferSource();
+            int light = event.getPackedLight();
+            float partialTicks = event.getPartialTick();
+
+            poseStack.pushPose();
+
+            model.attackTime = entity.getAttackAnim(partialTicks);
+            disguise.tickCount = entity.tickCount;
+            disguise.setPose(entity.getPose());
+            if (disguise instanceof Mob mobDisguise && entity instanceof Mob mobEntity) {
+                mobDisguise.setLeftHanded(mobEntity.isLeftHanded());
+            } else if (disguise instanceof Mob mobDisguise && entity instanceof Player player) {
+                mobDisguise.setLeftHanded(player.getMainArm() == HumanoidArm.LEFT);
+            }
+            if (disguise instanceof EnderMan enderMan) {
+                ItemStack mainHand = entity.getMainHandItem();
+                if (!mainHand.isEmpty() && mainHand.getItem() instanceof BlockItem blockItem) {
+                    enderMan.setCarriedBlock(blockItem.getBlock().defaultBlockState());
+                } else {
+                    enderMan.setCarriedBlock(Blocks.AIR.defaultBlockState());
+                }
+                if (model instanceof EndermanModel<?> endermanModel) {
+                    endermanModel.carrying = !enderMan.getCarriedBlock().is(Blocks.AIR);
+                }
+            }
+
+            boolean sitting = entity.isPassenger() && entity.getVehicle() != null && entity.getVehicle().shouldRiderSit();
+            model.riding = sitting;
+
+            float bodyRot = Mth.rotLerp(partialTicks, entity.yBodyRotO, entity.yBodyRot);
+            float headRot = Mth.rotLerp(partialTicks, entity.yHeadRotO, entity.yHeadRot);
+            float netHeadYaw = headRot - bodyRot;
+            float headPitch = Mth.lerp(partialTicks, entity.xRotO, entity.getXRot());
+
+            if (entity instanceof LivingEntity livingEntity) {
+                livingEntity.hurtTime = entity.hurtTime;
+                livingEntity.swingingArm = entity.swingingArm;
+                model.young = livingEntity.isBaby();
+                if (isEntityUpsideDown(livingEntity) || isEntityUpsideDown(entity)) {
+                    headPitch *= -1.0F;
+                    netHeadYaw *= -1.0F;
+                }
+            }
+
+            if (entity.hasPose(Pose.SLEEPING)) {
+                Direction bedDir = entity.getBedOrientation();
+                if (bedDir != null) {
+
+                    float offset = entity.getEyeHeight(Pose.STANDING) - 0.1F;
+                    poseStack.translate(-bedDir.getStepX() * offset, 0.0F, -bedDir.getStepZ() * offset);
+
+                    poseStack.mulPose(Axis.YN.rotationDegrees(bedDir.toYRot() - 90));
+                }
+            }
+
+            float animProgress = disguise.tickCount + partialTicks;
+
+            try {
+                Class<?> c = Class.forName("net.minecraft.client.renderer.entity.LivingEntityRenderer");
+                Method method = c.getDeclaredMethod("setupRotations", LivingEntity.class, PoseStack.class, float.class, float.class, float.class, float.class);
+                method.setAccessible(true);
+                method.invoke(renderer, disguise, poseStack, animProgress, bodyRot, partialTicks, 1f);
+            }
+            catch (Exception ignored) {}
+
+            poseStack.scale(-1.0F, -1.0F, 1.0F);
+
+            try {
+                Class<?> c = Class.forName("net.minecraft.client.renderer.entity.LivingEntityRenderer");
+                Method method = c.getDeclaredMethod("scale", LivingEntity.class, PoseStack.class, float.class);
+                method.setAccessible(true);
+                method.invoke(renderer, disguise, poseStack, partialTicks);
+            }
+            catch (Exception ignored) {}
+            poseStack.translate(0.0F, -1.501F, 0.0F);
+
+            float walkSpeed = entity.walkAnimation.speed(partialTicks);
+            float walkPos = entity.walkAnimation.position(partialTicks);
+
+            if (entity instanceof ArmorStand) {
+                headPitch = 0;
+                netHeadYaw = 0;
+                animProgress = 0;
+            }
+
+            model.prepareMobModel(disguise, walkPos, walkSpeed, partialTicks);
+            model.setupAnim(disguise, walkPos, walkSpeed, animProgress, netHeadYaw, headPitch);
+
+            boolean bodyVisible = true;
+            try {
+                Class<?> c = Class.forName("net.minecraft.client.renderer.entity.LivingEntityRenderer");
+                Method method = c.getDeclaredMethod("isBodyVisible", LivingEntity.class);
+                method.setAccessible(true);
+                bodyVisible = (boolean)method.invoke(renderer, entity);
+            }
+            catch (Exception ignored) {}
+
+            Minecraft mc = Minecraft.getInstance();
+            boolean invisible = !bodyVisible && !entity.isInvisibleTo(mc.player);
+            boolean glowing = mc.shouldEntityAppearGlowing(entity);
+
+            RenderType type = RenderType.SOLID;
+            try {
+                Class<?> c = Class.forName("net.minecraft.client.renderer.entity.LivingEntityRenderer");
+                Method method = c.getDeclaredMethod("getRenderType", LivingEntity.class, boolean.class, boolean.class, boolean.class);
+                method.setAccessible(true);
+                type = (RenderType) method.invoke(renderer, disguise, bodyVisible, invisible, glowing);
+            }
+            catch (Exception ignored) {}
+
+            if (type != null) {
+                VertexConsumer consumer = buffer.getBuffer(type);
+                float whiteOverlayProgress = 0;
+                try {
+                    Class<?> c = Class.forName("net.minecraft.client.renderer.entity.LivingEntityRenderer");
+                    Method method = c.getDeclaredMethod("getWhiteOverlayProgress", LivingEntity.class, float.class);
+                    method.setAccessible(true);
+                    whiteOverlayProgress = (float) method.invoke(renderer, entity, partialTicks);
+                }
+                catch (Exception ignored) {}
+
+                int overlay = getOverlayCoords(entity, whiteOverlayProgress);
+                try {
+                    model.renderToBuffer(poseStack, consumer, light, overlay, FastColor.ARGB32.colorFromFloat(invisible ? 0.15F : 1.0F, 1.0F, 1.0F, 1.0F));
+                } catch (Exception ignored) {}
+            }
+
+            if (!entity.isSpectator()) {
+                for (Object layer : renderer.layers) {
+                       try {
+                           ((RenderLayer)layer).render(poseStack, buffer, light, disguise, walkPos, walkSpeed, partialTicks, animProgress, netHeadYaw, headPitch);
+                       } catch (Exception ignored) {}
+                }
+            }
+
+            poseStack.popPose();
+        }
+
+
     }
 }

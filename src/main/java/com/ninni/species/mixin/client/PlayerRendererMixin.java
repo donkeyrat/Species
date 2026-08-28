@@ -17,6 +17,7 @@ import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -43,7 +44,7 @@ public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractC
 
     @Inject(method = "renderLeftHand", at = @At("HEAD"), cancellable = true)
     private void renderLeftHand(PoseStack poseStack, MultiBufferSource buffer, int light, AbstractClientPlayer player, CallbackInfo ci) {
-        LivingEntity disguise = ((DisguisingEntity)player).getDisguisedEntity();
+        Entity disguise = ((DisguisingEntity)player).getDisguisedEntity();
         if (disguise == null) return;
 
         ItemStack headItem = player.getItemBySlot(EquipmentSlot.HEAD);
@@ -59,7 +60,7 @@ public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractC
 
     @Inject(method = "renderRightHand", at = @At("HEAD"), cancellable = true)
     private void renderRightHand(PoseStack poseStack, MultiBufferSource buffer, int light, AbstractClientPlayer player, CallbackInfo ci) {
-        LivingEntity disguise = ((DisguisingEntity)player).getDisguisedEntity();
+        Entity disguise = ((DisguisingEntity)player).getDisguisedEntity();
         if (disguise == null) return;
 
         ItemStack headItem = player.getItemBySlot(EquipmentSlot.HEAD);
@@ -75,8 +76,10 @@ public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractC
 
     @Inject(method = "renderHand", at = @At("HEAD"), cancellable = true)
     private void renderHand(PoseStack poseStack, MultiBufferSource buffer, int light, AbstractClientPlayer player, ModelPart rendererArm, ModelPart rendererArmwear, CallbackInfo ci) {
-        LivingEntity disguise = ((DisguisingEntity)player).getDisguisedEntity();
+        Entity disguise = ((DisguisingEntity)player).getDisguisedEntity();
         if (disguise == null) return;
+
+        if (!(disguise instanceof LivingEntity livingEntity)) return;
 
         ItemStack headItem = player.getItemBySlot(EquipmentSlot.HEAD);
         if (!headItem.is(SpeciesItems.WICKED_MASK.get())) return;
@@ -88,10 +91,10 @@ public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractC
             model.attackTime = 0.0F;
             model.setupAnim(disguise, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
             rendererArm.xRot = 0.0F;
-            rendererArm.render(poseStack, buffer.getBuffer(RenderType.entitySolid(renderer.getTextureLocation(disguise))), light, OverlayTexture.NO_OVERLAY);
+            rendererArm.render(poseStack, buffer.getBuffer(RenderType.entitySolid(renderer.getTextureLocation(livingEntity))), light, OverlayTexture.NO_OVERLAY);
             if (rendererArmwear != null) {
                 rendererArmwear.xRot = 0.0F;
-                rendererArmwear.render(poseStack, buffer.getBuffer(RenderType.entitySolid(renderer.getTextureLocation(disguise))), light, OverlayTexture.NO_OVERLAY);
+                rendererArmwear.render(poseStack, buffer.getBuffer(RenderType.entitySolid(renderer.getTextureLocation(livingEntity))), light, OverlayTexture.NO_OVERLAY);
             }
         }
     }

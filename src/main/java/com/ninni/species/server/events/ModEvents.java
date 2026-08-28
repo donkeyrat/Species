@@ -74,25 +74,6 @@ public class ModEvents {
             attacked.level().getEntitiesOfClass(LivingEntity.class, attacked.getBoundingBox().inflate(2), (livingEntity) -> livingEntity.isAlive() && !livingEntity.is(attacked)).forEach(livingEntity -> livingEntity.hurt(attacked.level().damageSources().mobAttack(attacked), 6));
             attacked.removeEffect(SpeciesStatusEffects.COMBUSTION);
         }
-
-        //Spectralibur
-        if (source.getEntity() instanceof Player player && player.getMainHandItem().getItem() instanceof SpectraliburItem && !(attacked.getType().is(SpeciesTags.EntityTypes.SOULLESS))) {
-            if (amount > attacked.getHealth()) {
-
-                //Storing souls in Spectralibur
-                var tag = player.getMainHandItem().getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-                if (!(tag.contains("Souls") && tag.getInt("Souls") == 5)) {
-                    CompoundTag newTag = tag.copy();
-                    newTag.putInt("Souls", Math.min ((tag.getInt("Souls") + 1), 5));
-                    if (player.level() instanceof ServerLevel serverLevel) {
-                        serverLevel.playSound(null, attacked.getX(), attacked.getY(), attacked.getZ(), SpeciesSoundEvents.SPECTRALIBUR_COLLECT_SOUL.get(), SoundSource.PLAYERS, 1, 1);
-                        serverLevel.sendParticles(SpeciesParticles.COLLECTED_SOUL.get(), attacked.getX(), attacked.getY() + 0.2F, attacked.getZ(), 1, 0,0,0, 0);
-                    }
-                    CustomData.set(DataComponents.CUSTOM_DATA, player.getMainHandItem(), newTag);
-                }
-            }
-        }
-
     }
 
 }

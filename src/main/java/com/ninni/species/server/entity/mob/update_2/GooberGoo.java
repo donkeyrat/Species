@@ -1,6 +1,5 @@
 package com.ninni.species.server.entity.mob.update_2;
 
-import com.google.common.collect.Maps;
 import com.ninni.species.registry.SpeciesDataMaps;
 import com.ninni.species.registry.SpeciesEntities;
 import com.ninni.species.registry.SpeciesItems;
@@ -20,12 +19,10 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
-import java.util.Map;
-
 public class GooberGoo extends ThrowableItemProjectile {
 
-    public GooberGoo(EntityType<? extends GooberGoo> entityType, Level world) {
-        super(entityType, world);
+    public GooberGoo(EntityType<? extends GooberGoo> type, Level world) {
+        super(type, world);
     }
 
     public GooberGoo(Level world, double x, double y, double z) {
@@ -35,10 +32,7 @@ public class GooberGoo extends ThrowableItemProjectile {
     @Override
     protected void onHit(HitResult hitResult) {
         super.onHit(hitResult);
-        HitResult.Type type = hitResult.getType();
-        if (type != HitResult.Type.ENTITY) {
-            this.discard();
-        }
+        if (hitResult.getType() != HitResult.Type.ENTITY) this.discard();
     }
 
     @Override
@@ -49,14 +43,13 @@ public class GooberGoo extends ThrowableItemProjectile {
         if (level.isClientSide) return;
 
         BlockPos pos = result.getBlockPos();
-        Map<BlockPos, BlockState> posBlockStateMap = Maps.newHashMap();
 
-        int yRange = 2;
         int xRadius = UniformInt.of(4, 7).sample(this.random);
+        int yRange = 2;
         int zRadius = UniformInt.of(4, 7).sample(this.random);
 
-        for (int y = -yRange; y <= yRange; y++) {
-            for (int x = -xRadius; x <= xRadius; x++) {
+        for (int x = -xRadius; x <= xRadius; x++) {
+            for (int y = -yRange; y <= yRange; y++) {
                 for (int z = -zRadius; z <= zRadius; z++) {
                     BlockPos placePos = BlockPos.containing(pos.getX() + x, pos.getY() + y, pos.getZ() + z);
                     int distance = Math.max(1, Math.round(Mth.sqrt((float) pos.distSqr(placePos))));
@@ -68,47 +61,44 @@ public class GooberGoo extends ThrowableItemProjectile {
 
                     BlockState aboveState = level.getBlockState(placePos.above());
                     if (aboveState.isAir() || aboveState.canBeReplaced()) {
-//                        if (state.getBlock() instanceof DoublePlantBlock && state.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.UPPER) continue;
-//                        posBlockStateMap.put(placePos, block.defaultBlockState());
-                        level.setBlock(placePos, newBlock.defaultBlockState(), 2);
+                        this.replaceBlock(level, placePos, state, newBlock.defaultBlockState());
                     }
                 }
             }
         }
+    }
 
-        for (BlockPos position : posBlockStateMap.keySet()) {
-            BlockState state = this.level().getBlockState(position);
-            BlockState output = posBlockStateMap.get(position);
-            if (this.random.nextFloat() < 0.35F) {
-                this.level().levelEvent(2005, position, 0);
+    public void replaceBlock(Level level, BlockPos pos, BlockState state, BlockState newState) {
+        if (level.getRandom().nextFloat() < 0.35F) {
+            level.levelEvent(2005, pos, 0);
+        }
+        if (state.getBlock() instanceof DoublePlantBlock && state.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.LOWER) {
+            BlockState aboveState = level.getBlockState(pos.above());
+            if (aboveState.getBlock() instanceof DoublePlantBlock && aboveState.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.UPPER) {
+                level.removeBlock(pos.above(), false);
             }
-            if (state.getBlock() instanceof DoublePlantBlock && state.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.LOWER) {
-                BlockState aboveState = level.getBlockState(position.above());
-                if (aboveState.getBlock() instanceof DoublePlantBlock && aboveState.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.UPPER) {
-                    level.removeBlock(position.above(), false);
-                }
-                DoublePlantBlock.placeAt(this.level(), output, position, 2);
-                continue;
-            }
-            level.setBlock(position, output, 2);
+            DoublePlantBlock.placeAt(level, newState, pos, 2);
+        } else {
+            level.setBlock(pos, newState, 2);
         }
     }
 
     @Override
-    public void recreateFromPacket(ClientboundAddEntityPacket clientboundAddEntityPacket) {
-        super.recreateFromPacket(clientboundAddEntityPacket);
-        double d = clientboundAddEntityPacket.getXa();
-        double e = clientboundAddEntityPacket.getYa();
-        double f = clientboundAddEntityPacket.getZa();
+    public void recreateFromPacket(ClientboundAddEntityPacket packet) {
+        super.recreateFromPacket(packet);
+        double xS = packet.getXa();
+        double yS = packet.getYa();
+        double zS = packet.getZa();
         for (int i = 0; i < 7; ++i) {
-            double g = 0.4 + 0.1 * (double)i;
-            this.level().addParticle(ParticleTypes.SPIT, this.getX(), this.getY(), this.getZ(), d * g, e, f * g);
+            double g = 0.4F + 0.1F * (double) i;
+            this.level().addParticle(ParticleTypes.SPIT, this.getX(), this.getY(), this.getZ(), xS * g, yS, zS * g);
         }
-        this.setDeltaMovement(d, e, f);
+        this.setDeltaMovement(xS, yS, zS);
     }
 
     @Override
     protected Item getDefaultItem() {
         return SpeciesItems.PETRIFIED_EGG.get();
     }
+
 }

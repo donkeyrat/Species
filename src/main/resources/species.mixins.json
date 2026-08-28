@@ -8,6 +8,7 @@
 		"AbstractArrowMixin",
 		"AbstractSkeletonEntityMixin",
 		"AgeableMobMixin",
+		"ArmorStandMixin",
 		"BlockEntityTypeMixin",
 		"FallingBlockEntityMixin",
 		"FlowerPotBlockMixin",

@@ -25,7 +25,7 @@ public record LimpetOres(
 	Optional<Integer> minSpawnHeight
 ) {
 
-	public record BiomeLocation(Either<ResourceKey<Biome>, TagKey<Biome>> value) { // TODO replace with a simpler (existing) class maybe
+	public record BiomeLocation(Either<ResourceKey<Biome>, TagKey<Biome>> value) {
 
 		public static final Codec<BiomeLocation> CODEC = Codec.either(
 			ResourceKey.codec(Registries.BIOME),

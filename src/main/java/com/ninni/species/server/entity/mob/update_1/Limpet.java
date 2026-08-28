@@ -314,12 +314,11 @@ public class Limpet extends PathfinderMob {
     public boolean isValidEntity(Player player) {
         Optional<ItemStack> stack = this.getStackInHand(player);
         return this.hasShell()
-                && !player.isSpectator()
-                && player.isAlive()
-                && !player.getAbilities().instabuild
-                && !player.isShiftKeyDown()
-                || (this.hasShell()
-                && stack.isPresent());
+            && !player.isSpectator()
+            && player.isAlive()
+            && !player.getAbilities().instabuild
+            && !player.isShiftKeyDown()
+            || (this.hasShell() && stack.isPresent());
     }
 
     public boolean isValidEntityHoldingPickaxe(Player player) {
@@ -330,74 +329,8 @@ public class Limpet extends PathfinderMob {
         return player.getMainHandItem().isCorrectToolForDrops(this.getOreBlockState()) ? Optional.of(player.getMainHandItem()) : Optional.empty();
     }
 
-    public boolean canBreak(DamageSource source) {
-        boolean result = this.hasShell();
-
-        ItemStack weapon = source.getWeaponItem();
-        if (weapon != null && !weapon.isEmpty()) result = result && weapon.isCorrectToolForDrops(this.getOreBlockState());
-
-        Entity entity = source.getEntity();
-        if (entity instanceof Player player) result = result && !player.getCooldowns().isOnCooldown(player.getMainHandItem().getItem());
-
-        return result;
-    }
-
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        boolean canBreak = this.hasShell();
-
-        ItemStack weapon = source.getWeaponItem();
-        if (weapon != null && !weapon.isEmpty()) canBreak = canBreak && weapon.isCorrectToolForDrops(this.getOreBlockState());
-
-        Entity entity = source.getEntity();
-        if (entity instanceof Player player) canBreak = canBreak && !player.getCooldowns().isOnCooldown(player.getMainHandItem().getItem());
-
-        if (canBreak) {
-            boolean hasOre = this.getOreData().getKey() != SpeciesLimpetOreData.SHELL;
-            if (hasOre) this.spawnBreakingParticles();
-
-            if (this.getCrackedStage() < 3) {
-                if (entity instanceof LivingEntity livingEntity) {
-                    this.getBrain().setMemoryWithExpiry(MemoryModuleType.AVOID_TARGET, livingEntity, RETREAT_DURATION.sample(this.level().random));
-                }
-                this.setCrackedStage(this.getCrackedStage() + 1);
-                this.playSound(this.getOreBlockState().getSoundType().getBreakSound(), 1, (float) this.getCrackedStage() * 0.3f + 0.5f);
-                this.playSound(SpeciesSoundEvents.LIMPET_BREAK.get(), 0.6f, this.getCrackedStage() + 1);
-                this.setScaredTicks(0);
-
-                if (entity instanceof Player player && !player.isCreative()) {
-                    player.getCooldowns().addCooldown(weapon.getItem(), 80);
-                }
-
-                return false;
-            } else {
-                if (this.getMaxCount() > 0) {
-                    int count = (int) ((this.getMaxCount() / 2 + random.nextInt(this.getMaxCount() / 2)) * (1 + weapon.getEnchantmentLevel(registryAccess().holderOrThrow(Enchantments.FORTUNE)) * 0.15f));
-
-                    if (hasOre) {
-                        for (int i = 0; i < count; i++) {
-                            this.spawnAtLocation(this.getOreItemStack().getItem(), 1);
-                        }
-                    }
-                }
-
-                this.playSound(this.getOreBlockState().getSoundType().getBreakSound(), 1, (float) this.getCrackedStage() * 0.3f + 1f);
-                this.playSound(SpeciesSoundEvents.LIMPET_BREAK.get(), 0.6f, this.getCrackedStage() + 1.5f);
-                this.setCrackedStage(0);
-                if (EnchantmentHelper.hasTag(weapon, SpeciesTags.Enchantments.PREVENT_LIMPET_ORE_DROPS)) {
-                    if (!hasOre) this.setHasShell(false); // TODO is this even correct?
-
-                    if (entity instanceof ServerPlayer serverPlayer) SpeciesCriterion.SILK_TOUCH_BREAK_LIMPET.get().trigger(serverPlayer);
-                    return false;
-                } else {
-                    this.setHasShell(false);
-                    this.setScaredTicks(0);
-                }
-                if (entity instanceof ServerPlayer serverPlayer) SpeciesCriterion.BREAK_LIMPET.get().trigger(serverPlayer);
-            }
-            return super.hurt(source, amount);
-        }
-
         if (source.getEntity() instanceof LivingEntity && amount < 12 && !this.level().isClientSide && this.hasShell()) {
             if (source.getDirectEntity() instanceof Projectile projectile) projectile.setDeltaMovement(new Vec3(1, 1, 0));
             this.playSound(SpeciesSoundEvents.LIMPET_DEFLECT.get(), 1, 1);
@@ -405,7 +338,61 @@ public class Limpet extends PathfinderMob {
             return false;
         }
 
+        this.tryBreaking(this.level(), source);
         return super.hurt(source, amount);
+    }
+
+    public void tryBreaking(Level level, DamageSource source) {
+        boolean canBreak = this.hasShell();
+
+        ItemStack stack = source.getWeaponItem();
+        if (stack != null) canBreak = canBreak && stack.isCorrectToolForDrops(this.getOreBlockState());
+
+        Entity entity = source.getEntity();
+        if (entity instanceof Player player) canBreak = canBreak && !player.getCooldowns().isOnCooldown(player.getMainHandItem().getItem());
+
+        if (!canBreak) return;
+
+        boolean hasOre = this.getOreData().getKey() != SpeciesLimpetOreData.SHELL;
+        if (hasOre) this.spawnBreakingParticles();
+
+        if (this.getCrackedStage() < 3) {
+            if (entity instanceof LivingEntity livingEntity) {
+                this.getBrain().setMemoryWithExpiry(MemoryModuleType.AVOID_TARGET, livingEntity, RETREAT_DURATION.sample(this.level().random));
+            }
+            this.setCrackedStage(this.getCrackedStage() + 1);
+            this.playSound(this.getOreBlockState().getSoundType().getBreakSound(), 1, (float) this.getCrackedStage() * 0.3f + 0.5f);
+            this.playSound(SpeciesSoundEvents.LIMPET_BREAK.get(), 0.6f, this.getCrackedStage() + 1);
+            this.setScaredTicks(0);
+
+            if (entity instanceof Player player && !player.isCreative()) {
+                player.getCooldowns().addCooldown(stack.getItem(), 80);
+            }
+
+            return;
+        }
+
+        if (this.getMaxCount() > 0) {
+            float multiplier = 1 + stack.getEnchantmentLevel(level.registryAccess().holderOrThrow(Enchantments.FORTUNE)) * 0.15F;
+            int count = (int) ((this.getMaxCount() / 2F + random.nextInt(this.getMaxCount() / 2)) * multiplier);
+
+            if (hasOre) for (int i = 0; i < count; i++) {
+                this.spawnAtLocation(this.getOreItemStack().getItem(), 1);
+            }
+        }
+
+        this.playSound(this.getOreBlockState().getSoundType().getBreakSound(), 1, (float) this.getCrackedStage() * 0.3F + 1);
+        this.playSound(SpeciesSoundEvents.LIMPET_BREAK.get(), 0.6F, this.getCrackedStage() + 1.5F);
+        this.setCrackedStage(0);
+        if (stack != null && EnchantmentHelper.hasTag(stack, SpeciesTags.Enchantments.PREVENT_LIMPET_ORE_DROPS)) {
+            if (!hasOre) this.setHasShell(false);
+            if (entity instanceof ServerPlayer serverPlayer) SpeciesCriterion.SILK_TOUCH_BREAK_LIMPET.get().trigger(serverPlayer);
+            return;
+        } else {
+            this.setHasShell(false);
+            this.setScaredTicks(0);
+        }
+        if (entity instanceof ServerPlayer serverPlayer) SpeciesCriterion.BREAK_LIMPET.get().trigger(serverPlayer);
     }
 
     public void spawnBreakingParticles() {

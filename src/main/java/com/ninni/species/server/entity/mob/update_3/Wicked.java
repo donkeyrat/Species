@@ -297,7 +297,7 @@ public class Wicked extends Monster implements RangedAttackMob {
                 && (((livingEntity instanceof Enemy) || (livingEntity instanceof NeutralMob))
                 && !livingEntity.getType().is(SpeciesTags.EntityTypes.CANT_BE_HAUNTED)
                 && !livingEntity.hasCustomName()
-                //Replace with tag?
+                //Replace with data?
                 //&& livingEntity.getMobType() != MobType.WATER
                 )
                 || (livingEntity.getType().is(SpeciesTags.EntityTypes.CAN_BE_HAUNTED_EXTRAS));

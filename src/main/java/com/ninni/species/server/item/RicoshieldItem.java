@@ -101,7 +101,7 @@ public class RicoshieldItem extends ShieldItem {
 
     @Override
     public boolean isValidRepairItem(ItemStack stack, ItemStack material) {
-        return material.is(SpeciesItems.BROKEN_LINKS.get()); // TODO replace with tag
+        return material.is(SpeciesItems.BROKEN_LINKS.get()); // TODO replace with data
     }
 
     @Override
