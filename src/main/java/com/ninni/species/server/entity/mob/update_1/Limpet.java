@@ -165,12 +165,16 @@ public class Limpet extends PathfinderMob {
         int maxYLevel = level.getMaxBuildHeight();
         int minYLevel = level.getMinBuildHeight();
 
-        Predicate<LimpetOres> filter = data -> data.location().isPresent()
-                && data.location().get().matchesBiome(biome)
-                && yLevel <= data.maxSpawnHeight().orElse(maxYLevel)
-                && yLevel > data.minSpawnHeight().orElse(minYLevel);
+        Predicate<LimpetOres> filter = data -> {
+            boolean result = yLevel <= data.maxSpawnHeight().orElse(maxYLevel)
+                    && yLevel > data.minSpawnHeight().orElse(minYLevel);
+            System.out.println(result);
+            if (data.location().isPresent()) result = result && data.location().get().matchesBiome(biome);
+            return result;
+        };
 
         Holder<LimpetOres> data = getRandomVariant(level, filter);
+        System.out.println(data);
         if (data != null) this.setOreData(data);
     }
 
@@ -365,14 +369,14 @@ public class Limpet extends PathfinderMob {
             this.playSound(SpeciesSoundEvents.LIMPET_BREAK.get(), 0.6f, this.getCrackedStage() + 1);
             this.setScaredTicks(0);
 
-            if (entity instanceof Player player && !player.isCreative()) {
+            if (entity instanceof Player player && !player.isCreative() && stack != null) {
                 player.getCooldowns().addCooldown(stack.getItem(), 80);
             }
 
             return;
         }
 
-        if (this.getMaxCount() > 0) {
+        if (this.getMaxCount() > 0 && stack != null) {
             float multiplier = 1 + stack.getEnchantmentLevel(level.registryAccess().holderOrThrow(Enchantments.FORTUNE)) * 0.15F;
             int count = (int) ((this.getMaxCount() / 2F + random.nextInt(this.getMaxCount() / 2)) * multiplier);
 
