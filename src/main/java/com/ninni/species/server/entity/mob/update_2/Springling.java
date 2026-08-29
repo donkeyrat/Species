@@ -236,7 +236,7 @@ public class Springling extends TamableAnimal implements PlayerRideable {
     }
 
     @Override
-    public float getScale() {
+    public float getAgeScale() {
         return this.isBaby() ? 0.25f : 1.0f;
     }
 
@@ -399,7 +399,7 @@ public class Springling extends TamableAnimal implements PlayerRideable {
     @Override
     public EntityDimensions getDefaultDimensions(Pose pose) {
         float extensionScale = this.currentQuantizedStep / 10.0f;
-        return EntityDimensions.scalable(0.99F, 2.2F).scale(this.getScale(), (this.getScale() + extensionScale / 1.5f) - (0.1F * this.getScale()));
+        return EntityDimensions.scalable(0.99F, 2.2F).scale(this.getAgeScale(), (this.getAgeScale() + extensionScale / 1.5f) - (0.1F * this.getAgeScale()));
     }
 
     @Override

@@ -11,7 +11,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.registries.datamaps.DataMapType;
 import net.neoforged.neoforge.registries.datamaps.RegisterDataMapTypesEvent;
 
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD, modid = Species.MOD_ID)
+@EventBusSubscriber(modid = Species.MOD_ID)
 public class SpeciesDataMaps {
 
 	@SubscribeEvent

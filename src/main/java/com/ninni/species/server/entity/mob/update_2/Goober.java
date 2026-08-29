@@ -251,7 +251,7 @@ public class Goober extends Animal {
         return (pose == SpeciesPose.LAYING_DOWN.get()
                 || pose == SpeciesPose.YAWNING_LAYING_DOWN.get()
                 || pose == SpeciesPose.SNEEZING_LAYING_DOWN.get())
-                ? SITTING_DIMENSIONS.scale(this.getScale())
+                ? SITTING_DIMENSIONS.scale(this.getAgeScale())
                 : super.getDefaultDimensions(pose);
     }
 
