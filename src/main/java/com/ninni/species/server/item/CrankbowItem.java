@@ -145,6 +145,7 @@ public class CrankbowItem extends ProjectileWeaponItem {
                 );
             }
         }
+        if (entity instanceof CrankingEntity cranking) cranking.setShotsFired(0);
     }
 
     protected void shoot(ServerLevel level, LivingEntity entity, InteractionHand hand, ItemStack weapon, List<ItemStack> projectileItems, float originalVelocity, float inaccuracy, boolean isCrit, @Nullable LivingEntity target) {
