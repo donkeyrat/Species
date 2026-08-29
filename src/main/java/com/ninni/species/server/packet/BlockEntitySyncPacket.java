@@ -7,14 +7,10 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.function.Supplier;
 
 public class BlockEntitySyncPacket implements CustomPacketPayload {
 
@@ -43,23 +39,15 @@ public class BlockEntitySyncPacket implements CustomPacketPayload {
         return new BlockEntitySyncPacket(buffer.readBlockPos(), buffer.readNbt());
     }
 
-    public static void handle(BlockEntitySyncPacket packet, IPayloadContext ctx) {
-        ctx.enqueueWork(() -> {
-            Level world;
-            Player sender = ctx.player();
-            if (ctx.flow().isClientbound())
-                world = Species.PROXY.getWorld();
-            else {
-                if (sender == null) return;
-                world = sender.level();
-            }
-
-            BlockEntity t = world.getBlockEntity(packet.pos);
-            if (t != null) {
-                t.loadCustomOnly(packet.tag, world.registryAccess());
-                t.setChanged();
+    public static void handle(BlockEntitySyncPacket packet, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            Level level = context.player().level();
+            BlockEntity entity = level.getBlockEntity(packet.pos);
+            if (entity != null) {
+                entity.loadCustomOnly(packet.tag, level.registryAccess());
+                entity.setChanged();
             }
         });
-        //ctx.get().setPacketHandled(true);
     }
+
 }

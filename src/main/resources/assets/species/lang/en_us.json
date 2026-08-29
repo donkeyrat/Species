@@ -446,7 +446,7 @@
   "item.species.wicked_mask.desc.disguise.1": "%1$s + %2$s",
   "item.species.wicked_mask.desc.disguise.2": "to Select a Mob",
   "item.species.wicked_treat": "Wicked Treat",
-  "item.species.wicked_treat.desc": "Can only be fed to Pets",
+  "item.species.pet_effect.desc": "Can only be fed to Pets",
   "item.species.wicked_treat.desc.snatched": "Snatched II (0:45)",
   "item.species.wicked_treat.desc.iron_will": "Iron Will (0:45)",
   "item.species.wicked_treat.desc.regeneration": "Regeneration (0:45)",

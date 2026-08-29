@@ -33,7 +33,7 @@ public class LightningRodMixin {
         List<BlockPos> pos = Lists.newArrayList();
         BlockPos otherRodPos = blockPos.relative(rodFacing.getOpposite(), 4);
 
-        if (rodFacing.getAxis() != Direction.Axis.Y && level.getBlockState(blockPos.relative(rodFacing.getOpposite())).is(SpeciesTags.MAMMUTILATION_BODY_BLOCKS)) {
+        if (rodFacing.getAxis() != Direction.Axis.Y && level.getBlockState(blockPos.relative(rodFacing.getOpposite())).is(SpeciesTags.Blocks.MAMMUTILATION_BODY_BLOCKS)) {
             //Check for the other Lightning Rod
             if (level.getBlockState(otherRodPos).is(Blocks.LIGHTNING_ROD)) {
                 Direction otherRodFacing = level.getBlockState(otherRodPos).getValue(LightningRodBlock.FACING);
@@ -44,8 +44,8 @@ public class LightningRodMixin {
                     BlockPos pumpkin2 = blockPos.relative(rodFacing.getOpposite(), 2).offset(0,-1,0).relative(rodFacing.getCounterClockWise());
 
                     //Checks for the pumpkin's facing and position
-                    boolean bl1 = level.getBlockState(pumpkin1).is(Blocks.CARVED_PUMPKIN) && level.getBlockState(pumpkin2).is(SpeciesTags.MAMMUTILATION_BODY_BLOCKS) && level.getBlockState(pumpkin1).getValue(CarvedPumpkinBlock.FACING) == rodFacing.getClockWise();
-                    boolean bl2 = level.getBlockState(pumpkin2).is(Blocks.CARVED_PUMPKIN) && level.getBlockState(pumpkin1).is(SpeciesTags.MAMMUTILATION_BODY_BLOCKS) && level.getBlockState(pumpkin2).getValue(CarvedPumpkinBlock.FACING) == rodFacing.getCounterClockWise();
+                    boolean bl1 = level.getBlockState(pumpkin1).is(Blocks.CARVED_PUMPKIN) && level.getBlockState(pumpkin2).is(SpeciesTags.Blocks.MAMMUTILATION_BODY_BLOCKS) && level.getBlockState(pumpkin1).getValue(CarvedPumpkinBlock.FACING) == rodFacing.getClockWise();
+                    boolean bl2 = level.getBlockState(pumpkin2).is(Blocks.CARVED_PUMPKIN) && level.getBlockState(pumpkin1).is(SpeciesTags.Blocks.MAMMUTILATION_BODY_BLOCKS) && level.getBlockState(pumpkin2).getValue(CarvedPumpkinBlock.FACING) == rodFacing.getCounterClockWise();
                     if (bl1 || bl2) {
                         //Check for the other mammutilation block
                         for (int y = -1; y <= 1; y++) {
@@ -54,7 +54,7 @@ public class LightningRodMixin {
                                     BlockPos initialPos = blockPos.relative(rodFacing.getOpposite(), 2).offset(0,-1,0);
                                     BlockPos position = BlockPos.containing(initialPos.getX() + x, initialPos.getY() + y, initialPos.getZ() + z);
                                     if (!level.getBlockState(position).is(Blocks.CARVED_PUMPKIN)) {
-                                        if (level.getBlockState(position).is(SpeciesTags.MAMMUTILATION_BODY_BLOCKS)) {
+                                        if (level.getBlockState(position).is(SpeciesTags.Blocks.MAMMUTILATION_BODY_BLOCKS)) {
                                             pos.add(position);
                                         }
                                     }

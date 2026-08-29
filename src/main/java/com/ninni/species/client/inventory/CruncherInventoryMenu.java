@@ -1,7 +1,9 @@
 package com.ninni.species.client.inventory;
 
-import com.ninni.species.server.data.CruncherPelletManager;
+import com.ninni.species.server.CruncherHunting;
 import com.ninni.species.server.entity.mob.update_2.Cruncher;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -31,22 +33,23 @@ public class CruncherInventoryMenu extends AbstractContainerMenu {
             @Override
             public void setChanged() {
                 Cruncher cruncher = CruncherInventoryMenu.this.cruncher;
-                CruncherPelletManager.CruncherPelletData dataInput = null;
+                Holder<CruncherHunting> dataInput = null;
 
                 if (this.getItem().isEmpty()) {
                     cruncher.setPelletData(null);
                     return;
                 }
 
-                for (ItemStack itemStack : CruncherPelletManager.DATA.keySet()) {
-
-                    if (ItemStack.isSameItemSameComponents(itemStack, this.getItem())) {
-                        dataInput = CruncherPelletManager.DATA.get(itemStack);
+                Registry<CruncherHunting> registry = CruncherHunting.getData(cruncher.level());
+                for (Holder<CruncherHunting> data : registry.holders().toList()) {
+                    ItemStack stack = data.value().item();
+                    if (ItemStack.isSameItemSameComponents(stack, this.getItem())) {
+                        dataInput = data;
                         break;
                     }
                 }
 
-                if (dataInput != null && (cruncher.getPelletData() == null || dataInput.entityType() != cruncher.getPelletData().entityType())) {
+                if (dataInput != null && (cruncher.getPelletData() == null || dataInput.value().entityType() != cruncher.getPelletData().value().entityType())) {
 
 
                     cruncher.setPelletData(dataInput);

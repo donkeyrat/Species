@@ -1,0 +1,9 @@
+{
+  "entity_type": "minecraft:husk",
+  "item": {
+    "id": "minecraft:red_sand",
+    "Count": 1
+  },
+  "min_tries": 10,
+  "max_tries": 20
+}

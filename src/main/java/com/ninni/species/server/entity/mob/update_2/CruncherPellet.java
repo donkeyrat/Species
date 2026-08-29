@@ -2,13 +2,14 @@ package com.ninni.species.server.entity.mob.update_2;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
-import com.ninni.species.mixin_util.FallingBlockEntityAccess;
+import com.ninni.species.access.AccessibleFallingBlockEntity;
 import com.ninni.species.registry.SpeciesBlocks;
 import com.ninni.species.registry.SpeciesEntities;
+import com.ninni.species.server.CruncherHunting;
 import com.ninni.species.server.block.entity.CruncherPelletBlockEntity;
-import com.ninni.species.server.data.CruncherPelletManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -38,15 +39,15 @@ import org.slf4j.Logger;
 
 public class CruncherPellet extends FallingBlockEntity {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private CruncherPelletManager.CruncherPelletData pelletData;
+    private Holder<CruncherHunting> pelletData;
 
     public CruncherPellet(EntityType<? extends FallingBlockEntity> entityType, Level level) {
         super(entityType, level);
     }
 
-    public CruncherPellet(Level level, double d, double e, double f, BlockState blockState, CruncherPelletManager.CruncherPelletData data) {
+    public CruncherPellet(Level level, double d, double e, double f, BlockState blockState, Holder<CruncherHunting> data) {
         this(SpeciesEntities.CRUNCHER_PELLET.get(), level);
-        if (this instanceof FallingBlockEntityAccess access) {
+        if (this instanceof AccessibleFallingBlockEntity access) {
             access.setBlockState(blockState);
         }
         this.blocksBuilding = true;
@@ -63,9 +64,8 @@ public class CruncherPellet extends FallingBlockEntity {
     protected void readAdditionalSaveData(CompoundTag compoundTag) {
         super.readAdditionalSaveData(compoundTag);
         if (compoundTag.contains("PelletData", 10)) {
-            CruncherPelletManager.CruncherPelletData.CODEC.parse(
-                    new Dynamic<>(NbtOps.INSTANCE, compoundTag.getCompound("PelletData"))
-            ).resultOrPartial(LOGGER::error).ifPresent(this::setPelletData);
+            CruncherHunting.HOLDER_CODEC.parse(new Dynamic<>(NbtOps.INSTANCE, compoundTag.getCompound("PelletData")))
+                .resultOrPartial(LOGGER::error).ifPresent(this::setPelletData);
         }
     }
 
@@ -73,10 +73,10 @@ public class CruncherPellet extends FallingBlockEntity {
     protected void addAdditionalSaveData(CompoundTag compoundTag) {
         super.addAdditionalSaveData(compoundTag);
         if (this.pelletData != null) {
-            CruncherPelletManager.CruncherPelletData.CODEC
-                    .encodeStart(NbtOps.INSTANCE, this.getPelletData())
-                    .resultOrPartial(LOGGER::error)
-                    .ifPresent(tag -> compoundTag.put("PelletData", tag));
+            CruncherHunting.HOLDER_CODEC
+                .encodeStart(NbtOps.INSTANCE, this.getPelletData())
+                .resultOrPartial(LOGGER::error)
+                .ifPresent(tag -> compoundTag.put("PelletData", tag));
         }
     }
 
@@ -112,7 +112,7 @@ public class CruncherPellet extends FallingBlockEntity {
                     if (bl3 && bl5) {
                         if (this.getBlockState().hasProperty(BlockStateProperties.WATERLOGGED) && this.level().getFluidState(blockPos).getType() == Fluids.WATER) {
 
-                            if (this instanceof FallingBlockEntityAccess access) {
+                            if (this instanceof AccessibleFallingBlockEntity access) {
                                 access.setBlockState(this.getBlockState().setValue(BlockStateProperties.WATERLOGGED, true));
                             }
                         }
@@ -168,11 +168,11 @@ public class CruncherPellet extends FallingBlockEntity {
     }
 
     @Nullable
-    public CruncherPelletManager.CruncherPelletData getPelletData() {
+    public Holder<CruncherHunting> getPelletData() {
         return this.pelletData;
     }
 
-    public void setPelletData(CruncherPelletManager.CruncherPelletData data) {
+    public void setPelletData(Holder<CruncherHunting> data) {
         this.pelletData = data;
     }
 

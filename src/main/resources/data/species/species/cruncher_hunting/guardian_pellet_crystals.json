@@ -1,0 +1,9 @@
+{
+  "entity_type": "minecraft:guardian",
+  "item": {
+    "id": "minecraft:prismarine_crystals",
+    "Count": 1
+  },
+  "min_tries": 8,
+  "max_tries": 16
+}

@@ -16,10 +16,6 @@ public class SpeciesCreativeModeTabs {
             .displayItems((itemDisplayParameters, output) -> {
                 SpeciesItems.ITEMS.getEntries().forEach(itemRegistryObject ->  {
                     if (itemRegistryObject.get().getDefaultInstance().is(SpeciesItems.LOGO.get())) return;
-                    if (itemRegistryObject.get().getDefaultInstance().is(SpeciesItems.TAB.get())) return;
-                    if (itemRegistryObject.get().getDefaultInstance().is(SpeciesItems.V1.get())) return;
-                    if (itemRegistryObject.get().getDefaultInstance().is(SpeciesItems.V2.get())) return;
-                    if (itemRegistryObject.get().getDefaultInstance().is(SpeciesItems.V3.get())) return;
                     output.accept(itemRegistryObject.get());
                 });
             })

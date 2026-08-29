@@ -3,6 +3,17 @@
   "description": {
     "translate": "enchantment.species.capacity"
   },
+  "effects": {
+    "species:crankbow_capacity": {
+      "type": "minecraft:add",
+      "value": {
+        "type": "minecraft:linear",
+        "base": 64,
+        "per_level_above_first": 64
+      }
+    }
+  },
+
   "max_cost": {
     "base": 42,
     "per_level_above_first": 12

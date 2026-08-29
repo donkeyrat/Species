@@ -11,4 +11,5 @@ public class SpeciesVillagerTypes {
     public static final DeferredRegister<VillagerType> VILLAGER_TYPES = DeferredRegister.create(Registries.VILLAGER_TYPE, Species.MOD_ID);
 
     public static final DeferredHolder<VillagerType, VillagerType> CURED_BEWEREAGER = VILLAGER_TYPES.register("cured_bewereager", () ->  new VillagerType("cured_bewereager"));
+
 }

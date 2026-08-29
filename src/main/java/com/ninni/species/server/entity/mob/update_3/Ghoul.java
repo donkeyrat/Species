@@ -461,7 +461,7 @@ public class Ghoul extends Monster implements VibrationSystem {
         private double SecondPreyZOld;
         private double ThirdPreyXOld;
         private double ThirdPreyZOld;
-        public static final Predicate<LivingEntity> PREY = (entity) -> !(entity.getType().is(SpeciesTags.CANT_BE_TARGETED_BY_GHOUL)) && (!(entity instanceof Player player) || (!player.isSpectator() && !player.isCreative()));
+        public static final Predicate<LivingEntity> PREY = (entity) -> !(entity.getType().is(SpeciesTags.EntityTypes.CANT_BE_TARGETED_BY_GHOUL)) && (!(entity instanceof Player player) || (!player.isSpectator() && !player.isCreative()));
         private boolean endedEarly;
 
         @Override

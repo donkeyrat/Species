@@ -1,9 +1,0 @@
-{
-  "type": "species:spectre",
-  "item": {
-    "id": "species:broken_links",
-    "Count": 1
-  },
-  "minTries": 1,
-  "maxTries": 8
-}

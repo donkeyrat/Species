@@ -2,15 +2,15 @@ package com.ninni.species.server.entity.mob.update_2;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
+import com.ninni.species.access.ContainerCountingEntity;
 import com.ninni.species.client.inventory.CruncherInventoryMenu;
-import com.ninni.species.mixin_util.ServerPlayerAccess;
 import com.ninni.species.registry.*;
-import com.ninni.species.registry.SpeciesCriterion;
-import com.ninni.species.server.data.CruncherPelletManager;
+import com.ninni.species.server.CruncherHunting;
 import com.ninni.species.server.entity.ai.CruncherAi;
 import com.ninni.species.server.packet.OpenCruncherScreenPacket;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
@@ -61,6 +61,7 @@ import java.util.Optional;
 import java.util.function.IntFunction;
 
 public class Cruncher extends Animal implements InventoryCarrier, HasCustomInventoryScreen {
+
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final EntityDataAccessor<CruncherState> CRUNCHER_STATE = SynchedEntityData.defineId(Cruncher.class, SpeciesEntityDataSerializers.CRUNCHER_STATE.get());
     private static final EntityDataAccessor<Integer> STUNNED_TICKS = SynchedEntityData.defineId(Cruncher.class, EntityDataSerializers.INT);
@@ -71,8 +72,9 @@ public class Cruncher extends Animal implements InventoryCarrier, HasCustomInven
     public final AnimationState stunAnimationState = new AnimationState();
     private final ServerBossEvent bossEvent = (ServerBossEvent) new ServerBossEvent(Component.translatable("bar.species.cruncher" , this.getDisplayName().getString()), BossEvent.BossBarColor.BLUE, BossEvent.BossBarOverlay.NOTCHED_6).setDarkenScreen(true).setPlayBossMusic(true);
     private final int maxHunger = 3;
-    @Nullable
-    private CruncherPelletManager.CruncherPelletData pelletData = null;
+
+    @Nullable private Holder<CruncherHunting> pelletData;
+
     private int hunger;
     private int idleAnimationTimeout = 0;
     private int spits;
@@ -182,7 +184,7 @@ public class Cruncher extends Animal implements InventoryCarrier, HasCustomInven
         this.bossEvent.setColor(this.getBarColor());
 
         if (compoundTag.contains("PelletData", 10)) {
-            CruncherPelletManager.CruncherPelletData.CODEC.parse(
+            CruncherHunting.HOLDER_CODEC.parse(
                     new Dynamic<>(NbtOps.INSTANCE, compoundTag.getCompound("PelletData"))
             ).resultOrPartial(LOGGER::error).ifPresent(this::setPelletData);
         }
@@ -211,10 +213,9 @@ public class Cruncher extends Animal implements InventoryCarrier, HasCustomInven
         this.bossEvent.setColor(this.getBarColor());
 
         if (this.pelletData != null) {
-            CruncherPelletManager.CruncherPelletData.CODEC
-                    .encodeStart(NbtOps.INSTANCE, this.getPelletData())
-                    .resultOrPartial(LOGGER::error)
-                    .ifPresent(tag -> compoundTag.put("PelletData", tag));
+            CruncherHunting.HOLDER_CODEC.encodeStart(NbtOps.INSTANCE, this.getPelletData())
+                .resultOrPartial(LOGGER::error)
+                .ifPresent(tag -> compoundTag.put("PelletData", tag));
         }
 
         if (!this.inventory.getItem(0).isEmpty()) {
@@ -237,11 +238,11 @@ public class Cruncher extends Animal implements InventoryCarrier, HasCustomInven
     }
 
     @Nullable
-    public CruncherPelletManager.CruncherPelletData getPelletData() {
+    public Holder<CruncherHunting> getPelletData() {
         return this.pelletData;
     }
 
-    public void setPelletData(CruncherPelletManager.CruncherPelletData data) {
+    public void setPelletData(Holder<CruncherHunting> data) {
         this.pelletData = data;
     }
 
@@ -279,7 +280,8 @@ public class Cruncher extends Animal implements InventoryCarrier, HasCustomInven
             this.openCustomInventoryScreen(player);
             return InteractionResult.SUCCESS;
         }
-        if (itemStack.is(SpeciesTags.CRUNCHER_EATS) && this.getStunnedTicks() > 0) {
+
+        if (itemStack.is(SpeciesTags.Items.CRUNCHER_EATS) && this.getStunnedTicks() > 0) {
 
             itemStack.shrink(1);
 
@@ -296,7 +298,7 @@ public class Cruncher extends Animal implements InventoryCarrier, HasCustomInven
                 this.level().broadcastEntityEvent(this, (byte)7);
             }
 
-            this.transitionTo(CruncherState.IDLE);
+            this.setState(CruncherState.IDLE);
             this.playSound(SoundEvents.GENERIC_EAT, 2.0F, 1.0F);
             this.setHealth(this.getMaxHealth());
             this.setStunnedTicks(0);
@@ -327,7 +329,7 @@ public class Cruncher extends Animal implements InventoryCarrier, HasCustomInven
         if (!this.level().isClientSide && player instanceof ServerPlayer serverPlayer) {
             if (serverPlayer.containerMenu != serverPlayer.inventoryMenu) serverPlayer.closeContainer();
 
-            if (serverPlayer instanceof ServerPlayerAccess serverPlayerAccess) {
+            if (serverPlayer instanceof ContainerCountingEntity serverPlayerAccess) {
                 serverPlayerAccess.getNextContainerCounter();
 
                 PacketDistributor.sendToPlayer(serverPlayer, new OpenCruncherScreenPacket(this.getId(), this.inventory.getContainerSize(), serverPlayerAccess.getContainerCounter()));
@@ -358,7 +360,7 @@ public class Cruncher extends Animal implements InventoryCarrier, HasCustomInven
         if (this.getHunger() > 0 && flag) {
             if (this.getState() != CruncherState.STUNNED) {
                 this.playSound(SpeciesSoundEvents.CRUNCHER_STUN.get(), 2.0F, 1.0F);
-                this.transitionTo(CruncherState.STUNNED);
+                this.setState(CruncherState.STUNNED);
                 this.setStunnedTicks(320);
             }
         }
@@ -386,7 +388,7 @@ public class Cruncher extends Animal implements InventoryCarrier, HasCustomInven
                     this.setStunnedTicks(ticks - 1);
                     this.heal(1.0F);
                 } else {
-                    this.transitionTo(CruncherState.IDLE);
+                    this.setState(CruncherState.IDLE);
                 }
             }
 
@@ -488,33 +490,14 @@ public class Cruncher extends Animal implements InventoryCarrier, HasCustomInven
         return this.getState() == CruncherState.IDLE ? SpeciesSoundEvents.CRUNCHER_IDLE.get() : SoundEvents.EMPTY;
     }
 
-    @Nullable
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {
         return SpeciesSoundEvents.CRUNCHER_HURT.get();
     }
 
-    @Nullable
     @Override
     protected SoundEvent getDeathSound() {
         return SpeciesSoundEvents.CRUNCHER_DEATH.get();
-    }
-
-    public void transitionTo(CruncherState cruncherState) {
-        switch (cruncherState) {
-            case IDLE -> {
-                this.setState(CruncherState.IDLE);
-            }
-            case ROAR -> {
-                this.setState(CruncherState.ROAR);
-            }
-            case STOMP -> {
-                this.setState(CruncherState.STOMP);
-            }
-            case STUNNED -> {
-                this.setState(CruncherState.STUNNED);
-            }
-        }
     }
 
     public CruncherState getState() {
@@ -565,7 +548,7 @@ public class Cruncher extends Animal implements InventoryCarrier, HasCustomInven
         STOMP("stomp", SoundEvents.EMPTY, 20, 2),
         STUNNED("stunned", SoundEvents.EMPTY, 0, 3);
 
-        private static final IntFunction<Cruncher.CruncherState> BY_ID = ByIdMap.continuous(Cruncher.CruncherState::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+        public static final IntFunction<Cruncher.CruncherState> BY_ID = ByIdMap.continuous(Cruncher.CruncherState::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
         public static final StreamCodec<ByteBuf, Cruncher.CruncherState> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Cruncher.CruncherState::id);
 
         private final String name;
@@ -597,4 +580,5 @@ public class Cruncher extends Animal implements InventoryCarrier, HasCustomInven
             return this.duration;
         }
     }
+
 }

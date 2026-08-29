@@ -1,6 +1,6 @@
 package com.ninni.species.server.entity.ai.goal;
 
-import com.ninni.species.mixin_util.WolfAccess;
+import com.ninni.species.access.BewereagerableEntity;
 import com.ninni.species.registry.SpeciesEntities;
 import com.ninni.species.registry.SpeciesSoundEvents;
 import com.ninni.species.server.entity.mob.update_3.Bewereager;
@@ -18,7 +18,7 @@ public class TransformDuringFullMoonGoal extends Goal {
     @Override
     public boolean canUse() {
         if (!wolf.level().getBlockState(wolf.getOnPos().above(2)).isAir()) return false;
-        if (wolf instanceof WolfAccess wolfAccess && !wolfAccess.getIsBewereager()) return false;
+        if (wolf instanceof BewereagerableEntity wolfAccess && !wolfAccess.isBewereager()) return false;
         return wolf.getOwnerUUID() != null && wolf.level().getMoonBrightness() > 0.9F && !wolf.isInWater() && wolf.level().isNight() && wolf.onGround() && wolf.level().getDifficulty() != Difficulty.PEACEFUL;
     }
 

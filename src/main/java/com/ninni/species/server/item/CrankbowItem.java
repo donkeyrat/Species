@@ -1,22 +1,24 @@
 package com.ninni.species.server.item;
 
-import com.ninni.species.mixin_util.AbstractArrowAccess;
-import com.ninni.species.registry.SpeciesEnchantments;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.ninni.species.access.CrankingEntity;
+import com.ninni.species.access.ImmunityFrameIgnoringEntity;
+import com.ninni.species.registry.SpeciesEnchantmentEffectComponents;
 import com.ninni.species.registry.SpeciesItems;
 import com.ninni.species.registry.SpeciesParticles;
 import com.ninni.species.registry.SpeciesSoundEvents;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
@@ -33,42 +35,69 @@ import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.item.component.ChargedProjectiles;
-import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.mutable.MutableFloat;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public class CrankbowItem extends ProjectileWeaponItem {
-    public static final String TAG_SHOTS_FIRED = "Speed";
-    public static final String TAG_COOLDOWN = "Cooldown";
-    public static final String TAG_USING = "IsUsing";
 
-    public CrankbowItem() {
-        super(new Properties().stacksTo(1).durability(865));
+    public static final int BASE_CAPACITY = 128;
+    public static final int BASE_MINIMUM_SPEED = 30;
+    public static final int BASE_MAXIMUM_SPEED = 7;
+    public static final float BASE_SPARING_CHANCE = 0;
+
+    public CrankbowItem(Item.Properties properties) {
+        super(properties);
+    }
+
+    public static float getPullProperty(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
+        if (level == null || entity == null) return 0;
+        if (!entity.isUsingItem()) return 0;
+        if (entity.getUseItem() != stack) return 0;
+
+        int useDuration = stack.getItem() instanceof CrankbowItem crankbow ? crankbow.getUseDuration(stack, entity) : 72000;
+        int time = useDuration - entity.getUseItemRemainingTicks();
+
+        int cooldown = CrankbowItem.getShootingCooldown(entity, stack, level.getRandom());
+        float progress = (time % Math.max(1, cooldown)) / (float) Math.max(1, cooldown);
+
+        if (progress < 0.05F) return 0;
+        else if (progress < 0.20F) return 0.15F;
+        else if (progress < 0.35F) return 0.3F;
+        else if (progress < 0.5F) return 0.4F;
+        else return 0.6F;
+    }
+
+    public static ChargedProjectiles getProjectiles(LivingEntity entity, ItemStack stack) {
+        ChargedProjectiles projectiles = stack.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
+        if (projectiles.isEmpty() && entity instanceof Player player && player.isCreative()) {
+            return ChargedProjectiles.of(new ItemStack(Items.ARROW));
+        }
+        return projectiles;
+    }
+
+    public static boolean canStartShooting(LivingEntity entity, ItemStack stack) {
+        if (entity instanceof Player player && player.isCreative()) return true;
+        return getProjectiles(entity, stack).isEmpty();
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (!stack.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY).isEmpty()) {
-            CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-            tag.remove(TAG_SHOTS_FIRED);
-            tag.remove(TAG_COOLDOWN);
-            CustomData.set(DataComponents.CUSTOM_DATA, stack, tag);
+        if (!canStartShooting(player, stack)) return InteractionResultHolder.fail(stack);
 
-            player.startUsingItem(hand);
-            return InteractionResultHolder.consume(stack);
-        }
-        return InteractionResultHolder.fail(stack);
+        player.startUsingItem(hand);
+        return InteractionResultHolder.consume(stack);
     }
 
     @Override
@@ -78,158 +107,147 @@ public class CrankbowItem extends ProjectileWeaponItem {
             return;
         }
 
-        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-
-        if (tag.contains(TAG_COOLDOWN)) {
-            int cooldown = tag.getInt(TAG_COOLDOWN);
-            if (cooldown > 0) tag.putInt(TAG_COOLDOWN, cooldown - 1);
+        ChargedProjectiles projectiles = getProjectiles(entity, stack);
+        if (projectiles.isEmpty()) {
+            if (entity instanceof Player player) player.stopUsingItem();
+            if (entity instanceof CrankingEntity cranking) cranking.setShotsFired(0);
         }
 
-        var chargedProjectiles = stack.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
-        if (!chargedProjectiles.isEmpty()) {
-            if (!tag.contains(TAG_COOLDOWN)) {
-                if (stack.getEnchantmentLevel(level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(SpeciesEnchantments.QUICK_CRANK)) > 0) entity.playSound(SpeciesSoundEvents.CRANKBOW_PULL_QUICK.get());
-                else entity.playSound(SpeciesSoundEvents.CRANKBOW_PULL.get());
-                tag.putInt(TAG_COOLDOWN, getShootingCooldown(stack, level.registryAccess()));
-                tag.putInt(TAG_SHOTS_FIRED, 0);
-            } else {
-                if (tag.getInt(TAG_COOLDOWN) == 0) {
-                    if (stack.getEnchantmentLevel(level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(SpeciesEnchantments.QUICK_CRANK)) > 0) entity.playSound(SpeciesSoundEvents.CRANKBOW_PULL_QUICK.get());
-                    else entity.playSound(SpeciesSoundEvents.CRANKBOW_PULL.get());
-                    if (level instanceof ServerLevel serverLevel) {
-                        shoot(serverLevel, entity, entity.getUsedItemHand(), stack, chargedProjectiles.getItems(), 1f, 1f, false, null);
-                    }
-                    tag.putInt(TAG_COOLDOWN, getShootingCooldown(stack, level.registryAccess()));
-                    int shotsFired = tag.getInt(TAG_SHOTS_FIRED);
-                    if (shotsFired < 40) tag.putInt(TAG_SHOTS_FIRED, shotsFired + 1);
-                }
+        PullingSounds sounds = getPullingSounds(stack);
+        int cooldown = getShootingCooldown(entity, stack, level.getRandom());
+        if ((this.getUseDuration(stack, entity) - time + 1) % cooldown == 0) {
+            entity.playSound(sounds.pull.value());
+            if (level instanceof ServerLevel serverLevel) {
+                shoot(serverLevel, entity, entity.getUsedItemHand(), stack, projectiles.getItems(), 1f, 1f, false, null);
             }
-            if (!level.isClientSide) tag.putBoolean(TAG_USING, true);
-        } else {
-            if (entity instanceof Player player) {
-                tag.remove(TAG_SHOTS_FIRED);
-                tag.remove(TAG_COOLDOWN);
-                player.stopUsingItem();
-            }
+            if (entity instanceof CrankingEntity cranking) cranking.addShotsFired();
         }
+    }
 
-        CustomData.set(DataComponents.CUSTOM_DATA, stack, tag);
+    public static PullingSounds getPullingSounds(ItemStack stack) {
+        return EnchantmentHelper.pickHighestLevel(stack, SpeciesEnchantmentEffectComponents.CRANKBOW_PULLING_SOUNDS.get()).orElse(PullingSounds.DEFAULT);
     }
 
     @Override
-    public void releaseUsing(ItemStack stack, Level level, LivingEntity livingEntity, int timeLeft) {
-        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-        tag.remove(TAG_COOLDOWN);
+    public void releaseUsing(ItemStack stack, Level level, LivingEntity entity, int timeLeft) {
+        int shots = entity instanceof CrankingEntity cranking ?  cranking.getShotsFired() : 0;
+        if (entity instanceof Player player) player.getCooldowns().addCooldown(this, shots * 8);
 
-        if (livingEntity instanceof Player player && tag.contains(TAG_SHOTS_FIRED)) {
-            int shots = tag.getInt(TAG_SHOTS_FIRED);
-            player.getCooldowns().addCooldown(this, shots * 8);
-            if (shots > 7) livingEntity.playSound(SpeciesSoundEvents.CRANKBOW_STOP.get());
-            if (level instanceof ServerLevel serverLevel) {
-                for (int i = 0; i < shots / 2; i++) {
-                    serverLevel.sendParticles(
-                            SpeciesParticles.BEWEREAGER_SLOW.get(),
-                            livingEntity.getX() + livingEntity.getRandom().nextGaussian() * 0.5,
-                            livingEntity.getY(1F) + livingEntity.getRandom().nextFloat(),
-                            livingEntity.getZ() + livingEntity.getRandom().nextGaussian() * 0.5,
-                            1, 0.3, 0.3, 0.3, 1.0D
-                    );
-                }
-            }
-            tag.remove(TAG_SHOTS_FIRED);
-            tag.remove(TAG_USING);
-            CustomData.set(DataComponents.CUSTOM_DATA, stack, tag);
-        }
-    }
-
-    protected void shoot(ServerLevel level, LivingEntity shooter, InteractionHand hand, ItemStack weapon, List<ItemStack> projectileItems, float originalVelocity, float inaccuracy, boolean isCrit, @Nullable LivingEntity target) {
-        CompoundTag tag = weapon.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-        if (weapon.has(DataComponents.CUSTOM_DATA) && weapon.has(DataComponents.CHARGED_PROJECTILES) && tag.contains(TAG_SHOTS_FIRED)) {
-            var projectiles = weapon.get(DataComponents.CHARGED_PROJECTILES);
-            if (projectiles.isEmpty() || projectiles.getItems().isEmpty()) return;
-
-            ItemStack arrowStack = projectiles.getItems().getFirst();
-            int shotsFired = tag.getInt(TAG_SHOTS_FIRED);
-            float v = shotsFired / 20f;
-            float velocity = v + 1.15f;
-
-            if (shotsFired % 5 == 0 && shotsFired != 0 && shotsFired <= 30) {
-                shooter.playSound(SpeciesSoundEvents.CRANKBOW_SPEED.get(), 0.5F,v + 0.5F);
-            }
-
-            float spread = (2 + (getMaxSpeed(weapon, level.registryAccess()) - getShootingCooldown(weapon, level.registryAccess())) / (float) getMaxSpeed(weapon, level.registryAccess())) / 2f;
-            for (int i = 0; i < spread * 10; i++) {
-                level.sendParticles(
-                        SpeciesParticles.BEWEREAGER_SPEED.get(),
-                        shooter.getRandomX(0.35D),
-                        shooter.getY(0.35D) + shooter.getRandom().nextFloat(),
-                        shooter.getRandomZ(0.35D),
-                        1, 0.3, 0.3, 0.3, 1.0D
+        if (shots > 7) entity.playSound(SpeciesSoundEvents.CRANKBOW_STOP.get());
+        if (level instanceof ServerLevel serverLevel) {
+            for (int i = 0; i < shots / 2; i++) {
+                serverLevel.sendParticles(
+                    SpeciesParticles.BEWEREAGER_SLOW.get(),
+                    entity.getX() + entity.getRandom().nextGaussian() * 0.5,
+                    entity.getY(1F) + entity.getRandom().nextFloat(),
+                    entity.getZ() + entity.getRandom().nextGaussian() * 0.5,
+                    1, 0.3, 0.3, 0.3, 1.0D
                 );
             }
-
-            if (weapon.getEnchantmentLevel(level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(SpeciesEnchantments.SCATTERSHOT)) > 0) {
-                if (shotsFired <= 10) {
-                    float z = (v * -15) + 10;
-                    shootProjectile(level, shooter, hand, weapon, arrowStack, 1.0F, velocity, 1.0F, z, true);
-                    shootProjectile(level, shooter, hand, weapon, arrowStack, 1.0F, velocity, 1.0F, -z, true);
-                }
-
-                if (shotsFired <= 5) {
-                    float z = (v * -40) + 20;
-                    shootProjectile(level, shooter, hand, weapon, arrowStack, 1.0F, velocity,1.0F, z, true);
-                    shootProjectile(level, shooter, hand, weapon, arrowStack, 1.0F, velocity,1.0F, -z, true);
-                }
-            }
-            shootProjectile(level, shooter, hand, weapon, arrowStack, 1.0F, velocity,1.0F, 0, false);
         }
+    }
+
+    protected void shoot(ServerLevel level, LivingEntity entity, InteractionHand hand, ItemStack weapon, List<ItemStack> projectileItems, float originalVelocity, float inaccuracy, boolean isCrit, @Nullable LivingEntity target) {
+        ChargedProjectiles projectiles = getProjectiles(entity, weapon);
+        if (projectiles.isEmpty()) return;
+
+        int shots = entity instanceof CrankingEntity cranking ?  cranking.getShotsFired() : 0;
+        ItemStack projectileStack = projectiles.getItems().getFirst();
+        float v = shots / 20f;
+        float velocity = v + 1.15f;
+
+        if (shots % 5 == 0 && shots != 0 && shots <= 30) {
+            entity.playSound(SpeciesSoundEvents.CRANKBOW_SPEED.get(), 0.5F,v + 0.5F);
+        }
+
+        float spread = (2 + (getMaxSpeed(weapon, level.getRandom()) - getShootingCooldown(entity, weapon, level.getRandom())) / (float) getMaxSpeed(weapon, level.getRandom())) / 2f;
+        for (int i = 0; i < spread * 10; i++) {
+            level.sendParticles(
+                SpeciesParticles.BEWEREAGER_SPEED.get(),
+                entity.getRandomX(0.35D),
+                entity.getY(0.35D) + entity.getRandom().nextFloat(),
+                entity.getRandomZ(0.35D),
+                1, 0.3, 0.3, 0.3, 1.0D
+            );
+        }
+
+        if (EnchantmentHelper.has(weapon, SpeciesEnchantmentEffectComponents.CRANKBOW_SCATTERSHOT.get())) {
+            if (shots <= 10) {
+                float z = (v * -15) + 10;
+                shootProjectile(level, entity, hand, weapon, projectileStack, 1.0F, velocity, 1.0F, z, true);
+                shootProjectile(level, entity, hand, weapon, projectileStack, 1.0F, velocity, 1.0F, -z, true);
+            }
+
+            if (shots <= 5) {
+                float z = (v * -40) + 20;
+                shootProjectile(level, entity, hand, weapon, projectileStack, 1.0F, velocity,1.0F, z, true);
+                shootProjectile(level, entity, hand, weapon, projectileStack, 1.0F, velocity,1.0F, -z, true);
+            }
+        }
+        shootProjectile(level, entity, hand, weapon, projectileStack, 1.0F, velocity,1.0F, 0, false);
     }
 
     @Override
-    protected void shootProjectile(LivingEntity livingEntity, Projectile projectile, int i, float v, float v1, float v2, @Nullable LivingEntity livingEntity1) {
-
+    protected void shootProjectile(LivingEntity shooter, Projectile projectile, int index, float velocity, float inaccuracy, float angle, @Nullable LivingEntity target) {
+        projectile.shootFromRotation(shooter, shooter.getXRot(), shooter.getYRot() + angle, 0.0F, velocity, inaccuracy);
     }
 
-    public static int getShootingCooldown(ItemStack stack, RegistryAccess access) {
-        CompoundTag tag = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-        if (tag.contains(TAG_SHOTS_FIRED)) {
-            int shots = tag.getInt(TAG_SHOTS_FIRED);
-            int level = stack.getEnchantmentLevel(access.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(SpeciesEnchantments.QUICK_CRANK));
-            int i = level == 0 ? 3 : Math.max(1, 4 - level);
+    public static int getShootingCooldown(LivingEntity entity, ItemStack stack, RandomSource random) {
+        int shots = entity instanceof CrankingEntity cranking ?  cranking.getShotsFired() : 0;
+//        int level = stack.getEnchantmentLevel(random.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(SpeciesEnchantments.QUICK_CRANK));
+//        int i = level == 0 ? 3 : Math.max(1, 4 - level);
+        int i = 3; // TODO fix this maybe idk
 
-            int cooldown = getMinSpeed(stack, access);
-            if (shots == 0) cooldown = getMinSpeed(stack, access);
-            else if (shots <= 1) cooldown -= i;
-            else if (shots <= 5) cooldown -= 2 * i;
-            else if (shots <= 10) cooldown -= 5 * i;
-            else if (shots <= 20) cooldown -= 10 * i;
-            else if (shots <= 30) cooldown -= 20 * i;
-            else cooldown -= 30 * i;
+        int cooldown = getMinSpeed(stack, random);
+        if (shots == 0) cooldown = getMinSpeed(stack, random);
+        else if (shots <= 1) cooldown -= i;
+        else if (shots <= 5) cooldown -= 2 * i;
+        else if (shots <= 10) cooldown -= 5 * i;
+        else if (shots <= 20) cooldown -= 10 * i;
+        else if (shots <= 30) cooldown -= 20 * i;
+        else cooldown -= 30 * i;
 
-            return Math.max(getMaxSpeed(stack, access), Math.min(40, cooldown));
-        }
-        return getMinSpeed(stack, access);
+        return Math.clamp(cooldown, getMaxSpeed(stack, random), 40);
     }
 
-    public static int getMaxSpeed(ItemStack stack, RegistryAccess access) {
-        return switch (stack.getEnchantmentLevel(access.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(SpeciesEnchantments.QUICK_CRANK))) {
-            case 1, 2 -> 6;
-            case 3 -> 5;
-            default -> 7;
-        };
+    public static int getMinSpeed(ItemStack stack, RandomSource random) {
+        return modifyCrankbowMinimumSpeed(stack, random, BASE_MINIMUM_SPEED);
     }
 
-    public static int getMinSpeed(ItemStack stack, RegistryAccess access) {
-        return switch (stack.getEnchantmentLevel(access.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(SpeciesEnchantments.QUICK_CRANK))) {
-            case 1 -> 25;
-            case 2 -> 20;
-            case 3 -> 15;
-            default -> 30;
-        };
+    public static int modifyCrankbowMinimumSpeed(ItemStack stack, RandomSource random, float value) {
+        MutableFloat result = new MutableFloat(value);
+        EnchantmentHelper.runIterationOnItem(stack, (holder, level) ->
+            holder.value().modifyUnfilteredValue(SpeciesEnchantmentEffectComponents.CRANKBOW_MINIMUM_SPEED.get(), random, level, result)
+        );
+        return (int) Math.max(0, Math.ceil(result.floatValue()));
     }
 
-    public static int getMaxWeight(ItemStack stack, HolderLookup.Provider access) {
-        return 128 + (stack.getEnchantmentLevel(access.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(SpeciesEnchantments.CAPACITY)) * 64);
+    public static int getMaxSpeed(ItemStack stack, RandomSource random) {
+        return modifyCrankbowMaximumSpeed(stack, random, BASE_MAXIMUM_SPEED);
+    }
+
+    public static int modifyCrankbowMaximumSpeed(ItemStack stack, RandomSource random, float value) {
+        MutableFloat result = new MutableFloat(value);
+        EnchantmentHelper.runIterationOnItem(stack, (holder, level) ->
+            holder.value().modifyUnfilteredValue(SpeciesEnchantmentEffectComponents.CRANKBOW_MAXIMUM_SPEED.get(), random, level, result)
+        );
+        return (int) Math.max(0, Math.ceil(result.floatValue()));
+    }
+
+    public static int getMaxWeight(LivingEntity entity, ItemStack stack) {
+        return modifyCrankbowCapacity(stack, entity.getRandom(), BASE_CAPACITY);
+    }
+
+    public static int getMaxWeight(RandomSource random, ItemStack stack) {
+        return modifyCrankbowCapacity(stack, random, BASE_CAPACITY);
+    }
+
+    public static int modifyCrankbowCapacity(ItemStack stack, RandomSource random, float value) {
+        MutableFloat result = new MutableFloat(value);
+        EnchantmentHelper.runIterationOnItem(stack, (holder, level) ->
+            holder.value().modifyUnfilteredValue(SpeciesEnchantmentEffectComponents.CRANKBOW_CAPACITY.get(), random, level, result)
+        );
+        return (int) Math.max(0, Math.ceil(result.floatValue()));
     }
 
     @Override
@@ -241,209 +259,188 @@ public class CrankbowItem extends ProjectileWeaponItem {
         return 72000;
     }
 
-
-
     private static void shootProjectile(Level level, LivingEntity livingEntity, InteractionHand hand, ItemStack stack, ItemStack stack1, float pitch, float x, float y, float z, boolean fromScattershot) {
-        if (!level.isClientSide) {
-            ArrowItem arrowitem = (ArrowItem)(stack1.getItem() instanceof ArrowItem ? stack1.getItem() : Items.ARROW);
-            AbstractArrow abstractarrow = arrowitem.createArrow(level, stack1, livingEntity, stack);
-            if (abstractarrow instanceof AbstractArrowAccess access) access.setTgnoreImmunityFrame(true);
+        if (level.isClientSide) return;
 
-            Vec3 vec31 = livingEntity.getUpVector(1.0F);
-            Quaternionf quaternionf = (new Quaternionf()).setAngleAxis((z * 0.017453292F), vec31.x, vec31.y, vec31.z);
-            Vec3 vec3 = livingEntity.getViewVector(1.0F);
-            Vector3f vector3f = vec3.toVector3f().rotate(quaternionf);
-            abstractarrow.shoot(vector3f.x(), vector3f.y(), vector3f.z(), x, y);
+        ArrowItem arrowitem = (ArrowItem)(stack1.getItem() instanceof ArrowItem ? stack1.getItem() : Items.ARROW);
+        AbstractArrow abstractarrow = arrowitem.createArrow(level, stack1, livingEntity, stack);
+        if (abstractarrow instanceof ImmunityFrameIgnoringEntity access) access.setIgnoreImmunityFrames(true);
 
-            if (livingEntity instanceof Player player) {
-                boolean flag1 = player.getAbilities().instabuild || arrowitem.isInfinite(stack1, stack, player) || fromScattershot;
-                if (flag1 || player.getAbilities().instabuild && (stack1.is(Items.SPECTRAL_ARROW) || stack1.is(Items.TIPPED_ARROW))) {
+        Vec3 vec31 = livingEntity.getUpVector(1.0F);
+        Quaternionf quaternionf = (new Quaternionf()).setAngleAxis((z * 0.017453292F), vec31.x, vec31.y, vec31.z);
+        Vec3 vec3 = livingEntity.getViewVector(1.0F);
+        Vector3f vector3f = vec3.toVector3f().rotate(quaternionf);
+        abstractarrow.shoot(vector3f.x(), vector3f.y(), vector3f.z(), x, y);
+
+        if (livingEntity instanceof Player player) {
+            boolean flag1 = player.getAbilities().instabuild || arrowitem.isInfinite(stack1, stack, player) || fromScattershot;
+            if (flag1 || player.getAbilities().instabuild && (stack1.is(Items.SPECTRAL_ARROW) || stack1.is(Items.TIPPED_ARROW))) {
+                abstractarrow.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
+            }
+
+            if (!flag1 && !player.getAbilities().instabuild) {
+                float sparingChance = getSparingChance(stack, level.getRandom());
+                if (sparingChance > 0 && level.getRandom().nextFloat() < sparingChance) {
                     abstractarrow.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
-                }
-
-                if (!flag1 && !player.getAbilities().instabuild) {
-                    int sparingLevel = stack.getEnchantmentLevel(level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(SpeciesEnchantments.SPARING));
-                    int i = sparingLevel == 1 ? 10 : sparingLevel == 2 ? 5 : 3;
-                    if (sparingLevel > 0 && level.random.nextInt(i) == 0) {
-                        abstractarrow.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
-                        level.playSound(null, livingEntity.getX(), livingEntity.getY(), livingEntity.getZ(),  SpeciesSoundEvents.CRANKBOW_SHOOT_SPARING.get(), SoundSource.PLAYERS, 1.0F, pitch);
-                    } else {
-                        removeOneItem(stack);
-                        level.playSound(null, livingEntity.getX(), livingEntity.getY(), livingEntity.getZ(), SpeciesSoundEvents.CRANKBOW_SHOOT.get(), SoundSource.PLAYERS, 1.0F, pitch);
-                    }
+                    level.playSound(null, livingEntity.getX(), livingEntity.getY(), livingEntity.getZ(),  SpeciesSoundEvents.CRANKBOW_SHOOT_SPARING.get(), SoundSource.PLAYERS, 1.0F, pitch);
                 } else {
-                    if (!fromScattershot) level.playSound(null, livingEntity.getX(), livingEntity.getY(), livingEntity.getZ(), SpeciesSoundEvents.CRANKBOW_SHOOT.get(), SoundSource.PLAYERS, 1.0F, pitch);
+                    removeOneItem(stack);
+                    level.playSound(null, livingEntity.getX(), livingEntity.getY(), livingEntity.getZ(), SpeciesSoundEvents.CRANKBOW_SHOOT.get(), SoundSource.PLAYERS, 1.0F, pitch);
                 }
-            }
-
-            stack.hurtAndBreak(1, livingEntity, livingEntity.getEquipmentSlotForItem(livingEntity.getItemInHand(hand)));
-            level.addFreshEntity(abstractarrow);
-        }
-
-    }
-
-
-    @Override
-    public boolean overrideStackedOnOther(ItemStack stack, Slot slot, ClickAction clickAction, Player player) {
-        if (stack.getCount() == 1 && clickAction == ClickAction.SECONDARY) {
-            ItemStack itemstack = slot.getItem();
-            if (itemstack.isEmpty()) {
-                this.playRemoveOneSound(player);
-                removeOne(stack).ifPresent((p_150740_) -> {
-                    add(stack, slot.safeInsert(p_150740_), player.registryAccess());
-                });
-            } else if (itemstack.getItem().canFitInsideContainerItems() && getAllSupportedProjectiles().test(itemstack)) {
-                int i = (getMaxWeight(stack, player.registryAccess()) - getContentWeight(stack));
-                int j = add(stack, slot.safeTake(itemstack.getCount(), i, player), player.registryAccess());
-                if (j > 0) {
-                    this.playInsertSound(player);
-                }
-            }
-
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public boolean overrideOtherStackedOnMe(ItemStack p_150742_, ItemStack added, Slot p_150744_, ClickAction p_150745_, Player player, SlotAccess p_150747_) {
-        if (p_150742_.getCount() != 1) {
-            return false;
-        } else if (p_150745_ == ClickAction.SECONDARY && p_150744_.allowModification(player)) {
-            if (added.isEmpty()) {
-                removeOne(p_150742_).ifPresent((p_186347_) -> {
-                    this.playRemoveOneSound(player);
-                    p_150747_.set(p_186347_);
-                });
             } else {
-                if (getAllSupportedProjectiles().test(added)) {
-                    int i = add(p_150742_, added, player.registryAccess());
-                    if (i > 0) {
-                        this.playInsertSound(player);
-                        added.shrink(i);
-                    }
-                }
+                if (!fromScattershot) level.playSound(null, livingEntity.getX(), livingEntity.getY(), livingEntity.getZ(), SpeciesSoundEvents.CRANKBOW_SHOOT.get(), SoundSource.PLAYERS, 1.0F, pitch);
             }
-
-            return true;
-        } else {
-            return false;
         }
+
+        stack.hurtAndBreak(1, livingEntity, livingEntity.getEquipmentSlotForItem(livingEntity.getItemInHand(hand)));
+        level.addFreshEntity(abstractarrow);
     }
 
-    public static int add(ItemStack weapon, ItemStack stack, RegistryAccess access) {
-        if (!stack.isEmpty() && stack.getItem().canFitInsideContainerItems()) {
-            var projectiles = weapon.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
-            var itemList = new ArrayList<>(projectiles.getItems());
+    public static float getSparingChance(ItemStack stack, RandomSource random) {
+        return modifyCrankbowSparingChance(stack, random, BASE_SPARING_CHANCE);
+    }
 
-            int i = getContentWeight(weapon);
-            int k = Math.min(stack.getCount(), getMaxWeight(weapon, access) - i);
+    public static float modifyCrankbowSparingChance(ItemStack stack, RandomSource random, float value) {
+        MutableFloat result = new MutableFloat(value);
+        EnchantmentHelper.runIterationOnItem(stack, (holder, level) ->
+            holder.value().modifyUnfilteredValue(SpeciesEnchantmentEffectComponents.CRANKBOW_SPARING_CHANCE.get(), random, level, result)
+        );
+        return (float) Math.max(0, Math.ceil(result.floatValue()));
+    }
 
-            if (k == 0) return 0;
-            else {
-                Optional<ItemStack> optional = getMatchingItem(stack, itemList);
-                if (optional.isPresent()) {
-                    ItemStack itemStack = optional.get();
+    @Override
+    public boolean overrideStackedOnOther(ItemStack stack, Slot slot, ClickAction action, Player player) {
+        if (stack.getCount() != 1) return false;
+        if (action != ClickAction.SECONDARY) return false;
 
-                    if (itemStack.getCount() + k > 64) {
-                        int i2 = itemStack.getCount() + k;
-                        itemStack.setCount(64);
-                        itemList.remove(itemStack);
-                        itemList.addFirst(itemStack);
+		ItemStack slotStack = slot.getItem();
+		if (slotStack.isEmpty()) {
+			this.playRemoveOneSound(player);
+			removeOne(stack).ifPresent(rStack ->
+				add(player, stack, slot.safeInsert(rStack))
+			);
+		} else if (slotStack.getItem().canFitInsideContainerItems() && getAllSupportedProjectiles().test(slotStack)) {
+			int i = (getMaxWeight(player, stack) - getContentWeight(stack));
+			int j = add(player, stack, slot.safeTake(slotStack.getCount(), i, player));
+			if (j > 0) this.playInsertSound(player);
+		}
 
-                        ItemStack copiedItemStack = stack.copyWithCount(k);
-                        copiedItemStack.setCount(i2-64);
-                        itemList.addFirst(copiedItemStack);
-                    } else {
-                        itemStack.grow(k);
-                        itemList.remove(itemStack);
-                        itemList.addFirst(itemStack);
-                    }
-                } else {
-                    ItemStack copiedItemStack = stack.copyWithCount(k);
-                    itemList.addFirst(copiedItemStack);
-                }
-                weapon.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.of(itemList));
-                return k;
+		return true;
+	}
+
+    @Override
+    public boolean overrideOtherStackedOnMe(ItemStack stack, ItemStack other, Slot slot, ClickAction action, Player player, SlotAccess access) {
+        if (stack.getCount() != 1) return false;
+        if (action != ClickAction.SECONDARY) return false;
+        if (!slot.allowModification(player)) return false;
+
+        if (other.isEmpty()) {
+            removeOne(stack).ifPresent(rStack -> {
+                this.playRemoveOneSound(player);
+                access.set(rStack);
+            });
+        } else if (getAllSupportedProjectiles().test(other)) {
+            int i = add(player, stack, other);
+            if (i > 0) {
+                this.playInsertSound(player);
+                other.shrink(i);
             }
-        } else return 0;
+        }
+
+        return true;
     }
 
+    public static int add(LivingEntity entity, ItemStack weapon, ItemStack stack) {
+        if (stack.isEmpty() || !stack.getItem().canFitInsideContainerItems()) return 0;
+
+        ChargedProjectiles projectiles = weapon.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
+        List<ItemStack> items = new ArrayList<>(projectiles.getItems());
+
+        int i = getContentWeight(weapon);
+        int k = Math.min(stack.getCount(), getMaxWeight(entity, weapon) - i);
+
+        if (k == 0) return 0;
+
+        Optional<ItemStack> optional = getMatchingItem(stack, items);
+        if (optional.isPresent()) {
+            ItemStack itemStack = optional.get();
+
+            if (itemStack.getCount() + k > 64) {
+                int i2 = itemStack.getCount() + k;
+                itemStack.setCount(64);
+                items.remove(itemStack);
+                items.addFirst(itemStack);
+
+                ItemStack copiedItemStack = stack.copyWithCount(k);
+                copiedItemStack.setCount(i2-64);
+                items.addFirst(copiedItemStack);
+            } else {
+                itemStack.grow(k);
+                items.remove(itemStack);
+                items.addFirst(itemStack);
+            }
+        } else {
+            ItemStack copiedItemStack = stack.copyWithCount(k);
+            items.addFirst(copiedItemStack);
+        }
+        weapon.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.of(items));
+        return k;
+    }
 
     private static Optional<ItemStack> getMatchingItem(ItemStack stack, List<ItemStack> items) {
-        Optional<ItemStack> optional;
-        if (stack.is(Items.BUNDLE)) {
-            optional = Optional.empty();
-        } else {
-            Stream<ItemStack> stream = items.stream();
-            Objects.requireNonNull(CompoundTag.class);
-            stream = stream.filter(CompoundTag.class::isInstance);
-            Objects.requireNonNull(CompoundTag.class);
-            optional = stream.filter((itemStack) -> ItemStack.isSameItemSameComponents(itemStack, stack)).findFirst();
-        }
-
-        return optional;
+        if (stack.is(Items.BUNDLE)) return Optional.empty();
+        return items.stream().filter(iStack -> ItemStack.isSameItemSameComponents(iStack, stack)).findFirst();
     }
 
-    public static int getContentWeight(ItemStack itemStack2) {
-        return CrankbowItem.getContents(itemStack2).mapToInt(ItemStack::getCount).sum();
+    public static int getContentWeight(ItemStack stack) {
+        return CrankbowItem.getContents(stack).mapToInt(ItemStack::getCount).sum();
     }
 
-    private static Optional<ItemStack> removeOne(ItemStack itemStack) {
-        var projectiles = itemStack.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
-        if (projectiles.isEmpty()) {
+    private static Optional<ItemStack> removeOne(ItemStack stack) {
+        ChargedProjectiles projectiles = stack.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
+        if (projectiles.isEmpty()) return Optional.empty();
+        if (projectiles.getItems().isEmpty()) return Optional.empty();
+
+        ArrayList<ItemStack> items = new ArrayList<>(projectiles.getItems());
+        ItemStack firstStack = items.getFirst();
+        items.removeFirst();
+
+        stack.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.of(items));
+        return Optional.of(firstStack);
+    }
+
+    private static Optional<ItemStack> removeOneItem(ItemStack stack) {
+        ChargedProjectiles projectiles = stack.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
+        if (projectiles.isEmpty()) return Optional.empty();
+        if (projectiles.getItems().isEmpty()) return Optional.empty();
+
+        ArrayList<ItemStack> items = new ArrayList<>(projectiles.getItems());
+        ItemStack firstStack = items.getFirst();
+
+        if (firstStack.getCount() == 1) {
+            if (items.size() == 1) items.clear();
+            else items.removeFirst();
+
+            stack.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.of(items));
             return Optional.empty();
-        } else {
-            if (projectiles.getItems().isEmpty()) {
-                return Optional.empty();
-            } else {
-                var itemList = new ArrayList<>(projectiles.getItems());
-
-                ItemStack itemstack = itemList.getFirst();
-                itemList.removeFirst();
-
-                itemStack.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.of(itemList));
-                return Optional.of(itemstack);
-            }
         }
+
+        ItemStack reducedStack = firstStack.copyWithCount(firstStack.getCount() - 1);
+        items.set(0, reducedStack);
+        stack.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.of(items));
+        return Optional.of(reducedStack);
     }
 
-
-    private static Optional<ItemStack> removeOneItem(ItemStack itemStack) {
-        var projectiles = itemStack.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
-        if (!projectiles.isEmpty() && !projectiles.getItems().isEmpty()) {
-            var itemList = new ArrayList<>(projectiles.getItems());
-            ItemStack firstStack = itemList.getFirst();
-
-            if (firstStack.getCount() == 1) {
-                if (itemList.size() == 1) {
-                    itemList.clear();
-                }
-                else {
-                    itemList.removeFirst();
-                }
-                itemStack.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.of(itemList));
-                return Optional.empty();
-            }
-
-            ItemStack reducedStack = firstStack.copyWithCount(firstStack.getCount()-1);
-            itemList.set(0, reducedStack);
-            itemStack.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.of(itemList));
-            return Optional.of(reducedStack);
-        }
-        return Optional.empty();
-    }
-
-    private static Stream<ItemStack> getContents(ItemStack itemStack) {
-        var projectiles = itemStack.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
-        if (projectiles.isEmpty()) return Stream.empty();
-        return projectiles.getItems().stream();
+    private static Stream<ItemStack> getContents(ItemStack stack) {
+//        ChargedProjectiles projectiles = stack.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
+//        if (projectiles.isEmpty()) return Stream.empty();
+//        return projectiles.getItems().stream();
+        return stack.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY).getItems().stream();
     }
 
     @Override
-    public void onDestroyed(ItemEntity itemEntity) {
-        ItemUtils.onContainerDestroyed(itemEntity, CrankbowItem.getContents(itemEntity.getItem()).toList());
+    public void onDestroyed(ItemEntity entity) {
+        ItemUtils.onContainerDestroyed(entity, CrankbowItem.getContents(entity.getItem()).toList());
     }
 
     private void playRemoveOneSound(Entity entity) {
@@ -455,31 +452,45 @@ public class CrankbowItem extends ProjectileWeaponItem {
     }
 
     @Override
-    public Optional<TooltipComponent> getTooltipImage(ItemStack itemStack) {
-        NonNullList<ItemStack> nonNullList = NonNullList.create();
-        CrankbowItem.getContents(itemStack).forEach(nonNullList::add);
-        return Optional.of(new BundleTooltip(new BundleContents(nonNullList)));
+    public Optional<TooltipComponent> getTooltipImage(ItemStack stack) {
+        NonNullList<ItemStack> list = NonNullList.create();
+        CrankbowItem.getContents(stack).forEach(list::add);
+        return Optional.of(new BundleTooltip(new BundleContents(list)));
     }
 
     @Override
-    public void appendHoverText(ItemStack itemStack, TooltipContext context, List<Component> list, TooltipFlag tooltipFlag) {
-        list.add(Component.translatable("item.species.crankbow.fullness", CrankbowItem.getContentWeight(itemStack), CrankbowItem.getMaxWeight(itemStack, context.registries())).withStyle(ChatFormatting.GRAY));
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> list, TooltipFlag tooltipFlag) {
+        Level level = context.level();
+        if (level == null) return;
+
+        list.add(Component.translatable("item.species.crankbow.fullness", CrankbowItem.getContentWeight(stack), CrankbowItem.getMaxWeight(level.getRandom(), stack)).withStyle(ChatFormatting.GRAY));
         list.add(Component.translatable("item.species.crankbow.desc").withStyle(Style.EMPTY.withColor(0x723548)));
-        super.appendHoverText(itemStack, context, list, tooltipFlag);
+        super.appendHoverText(stack, context, list, tooltipFlag);
     }
 
     @Override
     public Predicate<ItemStack> getAllSupportedProjectiles() {
-        return stack -> stack.getItem() instanceof ArrowItem;
+        return ARROW_ONLY;
     }
 
     @Override
-    public boolean isValidRepairItem(ItemStack stack, ItemStack stack1) {
-        return stack1.is(SpeciesItems.WEREFANG.get());
+    public boolean isValidRepairItem(ItemStack stack, ItemStack material) {
+        return material.is(SpeciesItems.WEREFANG.get());
     }
 
     @Override
-    public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
-        return slotChanged;
+    public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean changed) {
+        return changed;
     }
+
+    public record PullingSounds(Holder<SoundEvent> pull) {
+
+        public static final PullingSounds DEFAULT = new PullingSounds(SpeciesSoundEvents.CRANKBOW_PULL);
+
+        public static final Codec<PullingSounds> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            SoundEvent.CODEC.optionalFieldOf("pull", SpeciesSoundEvents.CRANKBOW_PULL).forGetter(PullingSounds::pull)
+        ).apply(instance, PullingSounds::new));
+
+    }
+
 }

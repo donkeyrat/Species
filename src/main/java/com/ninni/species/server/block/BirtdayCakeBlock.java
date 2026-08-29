@@ -89,7 +89,6 @@ public class BirtdayCakeBlock extends BaseEntityBlock {
 
                     @Override
                     public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
-                        System.out.println("Creating menu");
                         return new BirtdayCakeMenu(id, inv, pos);
                     }
                 }, pos);

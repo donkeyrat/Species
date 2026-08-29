@@ -1,23 +1,24 @@
 package com.ninni.species.mixin;
 
-import com.ninni.species.mixin_util.LivingEntityAccess;
+import com.ninni.species.access.DisguisingEntity;
+import com.ninni.species.access.TankingAndSnatchingEntity;
+import com.ninni.species.event.EquipmentChangeEvent;
 import com.ninni.species.registry.*;
 import com.ninni.species.server.entity.util.CustomDeathParticles;
 import com.ninni.species.server.packet.SnatchedPacket;
 import com.ninni.species.server.packet.TankedPacket;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -28,25 +29,37 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityMixin extends Entity implements LivingEntityAccess {
+public abstract class LivingEntityMixin extends Entity implements TankingAndSnatchingEntity, DisguisingEntity {
+
     @Shadow public abstract boolean hasEffect(Holder<MobEffect> effect);
     @Shadow @Nullable public abstract MobEffectInstance getEffect(Holder<MobEffect> effect);
-    @Shadow public abstract ItemStack getItemBySlot(EquipmentSlot p_21127_);
-    @OnlyIn(Dist.CLIENT)
-    private @Unique boolean snatched;
-    @OnlyIn(Dist.CLIENT)
-    private @Unique boolean tanked;
-    private @Unique EntityType disguisedEntityType;
-    private @Unique LivingEntity disguisedEntity;
 
-    public LivingEntityMixin(EntityType<?> p_19870_, Level p_19871_) {
-        super(p_19870_, p_19871_);
+    @OnlyIn(Dist.CLIENT) @Unique private boolean snatched;
+    @OnlyIn(Dist.CLIENT) @Unique private boolean tanked;
+
+    @Unique private final ItemStack[] previousEquipment = new ItemStack[EquipmentSlot.values().length];
+    @Unique private Entity disguisedEntity;
+
+    public LivingEntityMixin(EntityType<?> type, Level level) {
+        super(type, level);
     }
 
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void onTick(CallbackInfo ci) {
+        LivingEntity self = (LivingEntity) (Object) this;
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            ItemStack stack = self.getItemBySlot(slot);
+            ItemStack previousStack = previousEquipment[slot.ordinal()];
+            if (previousStack == null) previousStack = ItemStack.EMPTY;
+            if (!ItemStack.matches(stack, previousStack)) {
+                NeoForge.EVENT_BUS.post(new EquipmentChangeEvent(self, slot, stack));
+                previousEquipment[slot.ordinal()] = stack.copy();
+            }
+        }
+    }
 
     @Inject(method = "tickEffects", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;updateGlowingStatus()V", ordinal = 0))
     private void onStatusEffectChange(CallbackInfo ci) {
@@ -58,11 +71,11 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityAc
     public void applySpeciesEffects(CallbackInfo ci) {
         Level level = this.level();
 
-        if (this.hasEffect(SpeciesStatusEffects.GUT_FEELING) ) {
-            if (this.getEffect(SpeciesStatusEffects.GUT_FEELING).getDuration() < 20 * 60 * 5) {
+        MobEffectInstance instance = this.getEffect(SpeciesStatusEffects.GUT_FEELING);
+        if (instance != null) {
+            if (instance.getDuration() < 20 * 60 * 5) {
                 if (this.getRandom().nextInt(200) == 0) this.playSound(SpeciesSoundEvents.GUT_FEELING_ROAR.get(), 0.2f, 0);
-            }
-            else {
+            } else {
                 if (this.getRandom().nextInt(800) == 0) this.playSound(SpeciesSoundEvents.GUT_FEELING_ROAR.get(), 0.2f, 0);
             }
         }
@@ -71,47 +84,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityAc
             if (this.tickCount % 10 == 1) {
                 world.sendParticles(SpeciesParticles.BIRTD.get(), this.getX(), this.getEyeY() + 0.5F, this.getZ() - 0.5, 1,0, 0, 0, 0);
             }
-        }
-
-    }
-
-    @Inject(method = "tick", at = @At("TAIL"))
-    public void tick(CallbackInfo ci) {
-        ItemStack headItem = this.getItemBySlot(EquipmentSlot.HEAD);
-        CompoundTag tag = headItem.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-
-        if (headItem.is(SpeciesItems.WICKED_MASK.get())) {
-            if ((this.getDisguisedEntity() == null || this.getDisguisedEntityType() == null) ||
-                    tag == null ||
-                    !tag.contains("id") ||
-                    !this.getDisguisedEntityType().toShortString().equals(tag.getString("id"))) {
-
-                if (tag != null && tag.contains("id")) {
-                    Optional<EntityType<?>> entityType = EntityType.byString(tag.getString("id"));
-                    if (entityType.isPresent()) {
-                        Entity rawEntity = entityType.get().create(this.level());
-                        if (rawEntity instanceof LivingEntity living) {
-                            living.load(tag);
-                            if (living instanceof Mob mob) mob.readAdditionalSaveData(tag);
-                            this.setDisguisedEntity(living);
-                            this.setDisguisedEntityType(entityType.get());
-                        } else {
-                            this.setDisguisedEntity(null);
-                            this.setDisguisedEntityType(null);
-                        }
-                    }
-                } else {
-                    this.setDisguisedEntity(null);
-                    this.setDisguisedEntityType(null);
-                }
-            }
-        } else if (this.getDisguisedEntity() != null || this.getDisguisedEntityType() != null) {
-            this.setDisguisedEntity(null);
-            this.setDisguisedEntityType(null);
-        }
-
-        if (this.getDisguisedEntity() != null && this.getDisguisedEntity().getPose() != this.getPose()) {
-            this.getDisguisedEntity().setPose(this.getPose());
         }
     }
 
@@ -127,7 +99,6 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityAc
             customDeathParticles.makeDeathParticles();
         }
     }
-
 
     @Inject(method = "isPushable", at = @At("HEAD"), cancellable = true)
     public void S$isPushable(CallbackInfoReturnable<Boolean> cir) {
@@ -156,38 +127,33 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityAc
     }
 
     @Override
-    public @Unique boolean hasSnatched() {
-        return this.snatched;
-    }
-    @Override
-    public @Unique void setSnatched(boolean snatched) {
-        this.snatched = snatched;
+    public boolean hasTanked() {
+        return this.tanked;
     }
 
     @Override
-    public @Unique boolean hasTanked() {
-        return this.tanked;
-    }
-    @Override
-    public @Unique void setTanked(boolean tanked) {
+    public void setTanked(boolean tanked) {
         this.tanked = tanked;
     }
 
     @Override
-    public @Unique EntityType getDisguisedEntityType() {
-        return disguisedEntityType;
-    }
-    @Override
-    public @Unique void setDisguisedEntityType(EntityType disguisedEntityType) {
-        this.disguisedEntityType = disguisedEntityType;
+    public boolean hasSnatched() {
+        return this.snatched;
     }
 
     @Override
-    public @Unique LivingEntity getDisguisedEntity() {
-        return disguisedEntity;
+    public void setSnatched(boolean snatched) {
+        this.snatched = snatched;
     }
+
     @Override
-    public @Unique void setDisguisedEntity(LivingEntity disguisedEntity) {
+    public Entity getDisguisedEntity() {
+        return this.disguisedEntity;
+    }
+
+    @Override
+    public void setDisguisedEntity(Entity disguisedEntity) {
         this.disguisedEntity = disguisedEntity;
     }
+
 }

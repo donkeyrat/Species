@@ -1,0 +1,16 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "caverns_and_chasms"
+    }
+  ],
+
+  "entity_type": "caverns_and_chasms:peeper",
+  "item": {
+    "id": "caverns_and_chasms:peeper_head",
+    "Count": 1
+  },
+  "min_tries": 12,
+  "max_tries": 18
+}

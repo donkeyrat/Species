@@ -1,7 +1,7 @@
 package com.ninni.species.server.entity.mob.update_2;
 
+import com.ninni.species.Species;
 import com.ninni.species.registry.*;
-import com.ninni.species.registry.SpeciesCriterion;
 import com.ninni.species.server.packet.SendSpringlingPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -23,10 +23,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.animal.camel.Camel;
-import net.minecraft.world.entity.animal.goat.Goat;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.piglin.Piglin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -35,10 +32,14 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.entity.PartEntity;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
 
+@EventBusSubscriber(modid = Species.MOD_ID)
 public class Springling extends TamableAnimal implements PlayerRideable {
     public static final EntityDataAccessor<Integer> MAX_EXTENDED_AMOUNT = SynchedEntityData.defineId(Springling.class, EntityDataSerializers.INT);
     public static final EntityDataAccessor<Float> EXTENDED_AMOUNT = SynchedEntityData.defineId(Springling.class, EntityDataSerializers.FLOAT);
@@ -48,6 +49,13 @@ public class Springling extends TamableAnimal implements PlayerRideable {
     public int currentQuantizedStep;
     private final SpringlingHead[] subEntities;
     public final SpringlingHead head;
+
+    @SubscribeEvent
+    public static void onBreakSpeed(PlayerEvent.BreakSpeed event) {
+        if (event.getEntity().getVehicle() instanceof Springling) {
+            event.setNewSpeed(event.getOriginalSpeed() * 5.0F);
+        }
+    }
 
     public Springling(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
@@ -80,7 +88,7 @@ public class Springling extends TamableAnimal implements PlayerRideable {
         this.goalSelector.addGoal(1, new BreedGoal(this, 1));
         this.goalSelector.addGoal(1, new PanicGoal(this, 2.0));
         this.goalSelector.addGoal(2, new SpringlingFollowOwnerGoal(this, 1.25, 5.0f, 2.0f));
-        this.goalSelector.addGoal(3, new TemptGoal(this, 1.2, Ingredient.of(SpeciesTags.SPRINGLING_BREED_ITEMS), false));
+        this.goalSelector.addGoal(3, new TemptGoal(this, 1.2, Ingredient.of(SpeciesTags.Items.SPRINGLING_BREED_ITEMS), false));
         this.goalSelector.addGoal(4, new WaterAvoidingRandomStrollGoal(this, 0.8));
         this.goalSelector.addGoal(5, new LookAtPlayerGoal(this, Player.class, 6.0f));
         this.goalSelector.addGoal(6, new RandomLookAroundGoal(this));
@@ -143,7 +151,7 @@ public class Springling extends TamableAnimal implements PlayerRideable {
             return super.mobInteract(player, interactionHand);
         }
 
-        if (!this.isTame() && itemStack.is(SpeciesTags.SPRINGLING_TAMING_ITEMS) && !this.isBaby()) {
+        if (!this.isTame() && itemStack.is(SpeciesTags.Items.SPRINGLING_TAMING_ITEMS) && !this.isBaby()) {
 
             if (!player.getAbilities().instabuild) itemStack.shrink(1);
             if (!this.isSilent()) {
@@ -224,7 +232,7 @@ public class Springling extends TamableAnimal implements PlayerRideable {
 
     @Override
     public boolean isFood(ItemStack itemStack) {
-        return itemStack.is(SpeciesTags.SPRINGLING_BREED_ITEMS);
+        return itemStack.is(SpeciesTags.Items.SPRINGLING_BREED_ITEMS);
     }
 
     @Override

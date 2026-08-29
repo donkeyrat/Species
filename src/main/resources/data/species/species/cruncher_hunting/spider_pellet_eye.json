@@ -1,0 +1,9 @@
+{
+  "entity_type": "minecraft:spider",
+  "item": {
+    "id": "minecraft:spider_eye",
+    "Count": 1
+  },
+  "min_tries": 10,
+  "max_tries": 20
+}
