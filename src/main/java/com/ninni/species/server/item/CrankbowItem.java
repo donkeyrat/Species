@@ -2,21 +2,19 @@ package com.ninni.species.server.item;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.ninni.species.access.CrankingEntity;
 import com.ninni.species.access.ImmunityFrameIgnoringEntity;
-import com.ninni.species.registry.SpeciesEnchantmentEffectComponents;
-import com.ninni.species.registry.SpeciesItems;
-import com.ninni.species.registry.SpeciesParticles;
-import com.ninni.species.registry.SpeciesSoundEvents;
+import com.ninni.species.registry.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -61,15 +59,12 @@ public class CrankbowItem extends ProjectileWeaponItem {
     }
 
     public static float getPullProperty(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
-        if (level == null || entity == null) return 0;
-        if (!entity.isUsingItem()) return 0;
-        if (entity.getUseItem() != stack) return 0;
+        if (level == null || entity == null) return -1;
+        if (!stack.has(SpeciesDataComponents.USING)) return -1;
 
-        int useDuration = stack.getItem() instanceof CrankbowItem crankbow ? crankbow.getUseDuration(stack, entity) : 72000;
-        int time = useDuration - entity.getUseItemRemainingTicks();
-
-        int cooldown = CrankbowItem.getShootingCooldown(entity, stack, level.getRandom());
-        float progress = (time % Math.max(1, cooldown)) / (float) Math.max(1, cooldown);
+        int cooldown = stack.getOrDefault(SpeciesDataComponents.COOLDOWN, 0);
+        int maxCooldown = CrankbowItem.getShootingCooldown(entity, stack, level.getRandom(), level);
+        float progress = 1f - ((float) cooldown / Math.max(1, maxCooldown));
 
         if (progress < 0.05F) return 0;
         else if (progress < 0.20F) return 0.15F;
@@ -88,7 +83,7 @@ public class CrankbowItem extends ProjectileWeaponItem {
 
     public static boolean canStartShooting(LivingEntity entity, ItemStack stack) {
         if (entity instanceof Player player && player.isCreative()) return true;
-        return getProjectiles(entity, stack).isEmpty();
+        return !getProjectiles(entity, stack).isEmpty();
     }
 
     @Override
@@ -96,6 +91,8 @@ public class CrankbowItem extends ProjectileWeaponItem {
         ItemStack stack = player.getItemInHand(hand);
         if (!canStartShooting(player, stack)) return InteractionResultHolder.fail(stack);
 
+        stack.set(SpeciesDataComponents.SHOTS_FIRED, 0);
+        stack.remove(SpeciesDataComponents.COOLDOWN);
         player.startUsingItem(hand);
         return InteractionResultHolder.consume(stack);
     }
@@ -107,20 +104,41 @@ public class CrankbowItem extends ProjectileWeaponItem {
             return;
         }
 
-        ChargedProjectiles projectiles = getProjectiles(entity, stack);
-        if (projectiles.isEmpty()) {
-            if (entity instanceof Player player) player.stopUsingItem();
-            if (entity instanceof CrankingEntity cranking) cranking.setShotsFired(0);
+        if (stack.has(SpeciesDataComponents.COOLDOWN)) {
+            int cooldown = stack.get(SpeciesDataComponents.COOLDOWN);
+            if (cooldown > 0) stack.set(SpeciesDataComponents.COOLDOWN, cooldown - 1);
         }
 
-        PullingSounds sounds = getPullingSounds(stack);
-        int cooldown = getShootingCooldown(entity, stack, level.getRandom());
-        if ((this.getUseDuration(stack, entity) - time + 1) % cooldown == 0) {
-            entity.playSound(sounds.pull.value());
-            if (level instanceof ServerLevel serverLevel) {
-                shoot(serverLevel, entity, entity.getUsedItemHand(), stack, projectiles.getItems(), 1f, 1f, false, null);
+        var chargedProjectiles = getProjectiles(entity, stack);
+        if (!chargedProjectiles.isEmpty()) {
+            PullingSounds sounds = getPullingSounds(stack);
+            if (!stack.has(SpeciesDataComponents.COOLDOWN)) {
+                entity.playSound(sounds.pull.value());
+                stack.set(SpeciesDataComponents.COOLDOWN, getShootingCooldown(entity, stack, level.getRandom(), level));
+                stack.set(SpeciesDataComponents.SHOTS_FIRED, 0);
+            } else {
+                if (stack.get(SpeciesDataComponents.COOLDOWN) == 0) {
+                    int shotsFired = stack.getOrDefault(SpeciesDataComponents.SHOTS_FIRED, 0);
+                    entity.playSound(sounds.pull.value());
+
+                    if (shotsFired % 5 == 0 && shotsFired != 0 && shotsFired <= 30) {
+                        entity.playSound(SpeciesSoundEvents.CRANKBOW_SPEED.get(), 0.5F, shotsFired / 20f + 0.5F);
+                    }
+
+                    if (level instanceof ServerLevel serverLevel) {
+                        shoot(serverLevel, entity, entity.getUsedItemHand(), stack, chargedProjectiles.getItems(), 1f, 1f, false, null);
+                    }
+                    stack.set(SpeciesDataComponents.COOLDOWN, getShootingCooldown(entity, stack, level.getRandom(), level));
+                    if (shotsFired < 40) stack.set(SpeciesDataComponents.SHOTS_FIRED, shotsFired + 1);
+                }
             }
-            if (entity instanceof CrankingEntity cranking) cranking.addShotsFired();
+            if (!level.isClientSide) stack.set(SpeciesDataComponents.USING, true);
+        } else {
+            if (entity instanceof Player player) {
+                stack.set(SpeciesDataComponents.SHOTS_FIRED, 0);
+                stack.remove(SpeciesDataComponents.COOLDOWN);
+                player.stopUsingItem();
+            }
         }
     }
 
@@ -130,7 +148,7 @@ public class CrankbowItem extends ProjectileWeaponItem {
 
     @Override
     public void releaseUsing(ItemStack stack, Level level, LivingEntity entity, int timeLeft) {
-        int shots = entity instanceof CrankingEntity cranking ?  cranking.getShotsFired() : 0;
+        int shots = stack.getOrDefault(SpeciesDataComponents.SHOTS_FIRED, 0);
         if (entity instanceof Player player) player.getCooldowns().addCooldown(this, shots * 8);
 
         if (shots > 7) entity.playSound(SpeciesSoundEvents.CRANKBOW_STOP.get());
@@ -145,23 +163,21 @@ public class CrankbowItem extends ProjectileWeaponItem {
                 );
             }
         }
-        if (entity instanceof CrankingEntity cranking) cranking.setShotsFired(0);
+        stack.set(SpeciesDataComponents.SHOTS_FIRED, 0);
+        stack.remove(SpeciesDataComponents.COOLDOWN);
+        stack.remove(SpeciesDataComponents.USING);
     }
 
     protected void shoot(ServerLevel level, LivingEntity entity, InteractionHand hand, ItemStack weapon, List<ItemStack> projectileItems, float originalVelocity, float inaccuracy, boolean isCrit, @Nullable LivingEntity target) {
         ChargedProjectiles projectiles = getProjectiles(entity, weapon);
         if (projectiles.isEmpty()) return;
 
-        int shots = entity instanceof CrankingEntity cranking ?  cranking.getShotsFired() : 0;
+        int shots = weapon.getOrDefault(SpeciesDataComponents.SHOTS_FIRED, 0);
         ItemStack projectileStack = projectiles.getItems().getFirst();
         float v = shots / 20f;
         float velocity = v + 1.15f;
 
-        if (shots % 5 == 0 && shots != 0 && shots <= 30) {
-            entity.playSound(SpeciesSoundEvents.CRANKBOW_SPEED.get(), 0.5F,v + 0.5F);
-        }
-
-        float spread = (2 + (getMaxSpeed(weapon, level.getRandom()) - getShootingCooldown(entity, weapon, level.getRandom())) / (float) getMaxSpeed(weapon, level.getRandom())) / 2f;
+        float spread = (2 + (getMaxSpeed(weapon, level.getRandom()) - getShootingCooldown(entity, weapon, level.getRandom(), level)) / (float) getMaxSpeed(weapon, level.getRandom())) / 2f;
         for (int i = 0; i < spread * 10; i++) {
             level.sendParticles(
                 SpeciesParticles.BEWEREAGER_SPEED.get(),
@@ -193,11 +209,10 @@ public class CrankbowItem extends ProjectileWeaponItem {
         projectile.shootFromRotation(shooter, shooter.getXRot(), shooter.getYRot() + angle, 0.0F, velocity, inaccuracy);
     }
 
-    public static int getShootingCooldown(LivingEntity entity, ItemStack stack, RandomSource random) {
-        int shots = entity instanceof CrankingEntity cranking ?  cranking.getShotsFired() : 0;
-//        int level = stack.getEnchantmentLevel(random.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(SpeciesEnchantments.QUICK_CRANK));
-//        int i = level == 0 ? 3 : Math.max(1, 4 - level);
-        int i = 3; // TODO fix this maybe idk
+    public static int getShootingCooldown(LivingEntity entity, ItemStack stack, RandomSource random, Level level) {
+        int shots = stack.getOrDefault(SpeciesDataComponents.SHOTS_FIRED, 0);
+        int enchantLevel = stack.getEnchantmentLevel(level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(SpeciesEnchantments.QUICK_CRANK));
+        int i = enchantLevel == 0 ? 3 : Math.max(1, 4 - enchantLevel);
 
         int cooldown = getMinSpeed(stack, random);
         if (shots == 0) cooldown = getMinSpeed(stack, random);
@@ -433,9 +448,6 @@ public class CrankbowItem extends ProjectileWeaponItem {
     }
 
     private static Stream<ItemStack> getContents(ItemStack stack) {
-//        ChargedProjectiles projectiles = stack.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
-//        if (projectiles.isEmpty()) return Stream.empty();
-//        return projectiles.getItems().stream();
         return stack.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY).getItems().stream();
     }
 

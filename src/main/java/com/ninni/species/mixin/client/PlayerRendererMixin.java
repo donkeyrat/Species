@@ -37,7 +37,7 @@ public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractC
     @Inject(method = "getArmPose", at = @At("HEAD"), cancellable = true)
     private static void getArmPose(AbstractClientPlayer player, InteractionHand hand, CallbackInfoReturnable<HumanoidModel.ArmPose> cir) {
         ItemStack stack = player.getItemInHand(hand);
-        if (!player.swinging && stack.getItem() instanceof CrankbowItem && player.isUsingItem() && stack.has(DataComponents.CHARGED_PROJECTILES)) {
+        if (!player.swinging && stack.getItem() instanceof CrankbowItem && player.isUsingItem() && (stack.has(DataComponents.CHARGED_PROJECTILES) || player.isCreative())) {
             cir.setReturnValue(HumanoidModel.ArmPose.CROSSBOW_HOLD);
         }
     }

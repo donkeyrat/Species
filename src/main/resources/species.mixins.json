@@ -22,8 +22,7 @@
 		"PoseMixin",
 		"ServerPlayerMixin",
 		"WitherSkeletonEntityMixin",
-		"WolfMixin",
-		"crankbow.LivingEntityMixin"
+		"WolfMixin"
 	],
 	"client": [
 		"client.AbstractClientPlayerMixin",
@@ -31,8 +30,7 @@
 		"client.InventoryScreenMixin",
 		"client.ItemInHandRendererMixin",
 		"client.PlayerRendererMixin",
-		"client.VillagerProfessionLayerMixin",
-		"client.WolfRendererMixin"
+		"client.VillagerProfessionLayerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
