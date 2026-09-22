@@ -3,36 +3,21 @@ package com.ninni.species;
 import net.minecraft.ChatFormatting;
 import net.minecraft.resources.ResourceLocation;
 
-import java.util.Map;
+import java.util.HashMap;
 import java.util.UUID;
 
+import static com.ninni.species.Species.MOD_ID;
+
 public class SpeciesDevelopers {
+    public static HashMap<UUID, SpeciesDeveloperNames> developerUUIDS = new HashMap<>();
+    public static final ResourceLocation NINNI_TEXTURE = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/entity/capes/ninni.png");
+    public static final ResourceLocation REDA_TEXTURE = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/entity/capes/floofhips.png");
+    public static final ResourceLocation NOON_TEXTURE = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/entity/capes/noonyeyz.png");
+    public static final ResourceLocation BORNULHU_TEXTURE = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/entity/capes/bornulhu.png");
+    public static final ResourceLocation GLADOS_TEXTURE = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/entity/capes/glados_edition.png");
+    public static final ResourceLocation YAPETTO_TEXTURE = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/entity/capes/yapetto.png");
+    public static final ResourceLocation CONTRIBUTOR_TEXTURE = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/entity/capes/contributor.png");
 
-    public static Map<UUID, SpeciesDeveloperNames> DEVELOPER_UUIDS;
-
-    public static void setDeveloperUuids() {
-        DEVELOPER_UUIDS = Map.ofEntries(
-            Map.entry(UUID.fromString("2d173722-de6b-4bb8-b21b-b2843cfe395d"), SpeciesDevelopers.SpeciesDeveloperNames.NINNI),
-            Map.entry(UUID.fromString("f1fb25f4-60c4-4e21-b33c-59f0a2daf4b1"), SpeciesDevelopers.SpeciesDeveloperNames.REDA),
-            Map.entry(UUID.fromString("4a463319-625c-4b86-a4e7-8b700f023a60"), SpeciesDevelopers.SpeciesDeveloperNames.NOON),
-            Map.entry(UUID.fromString("603d30f1-77a1-4b88-b8c5-624a02feabcc"), SpeciesDevelopers.SpeciesDeveloperNames.BORNULHU),
-//        Map.entry(UUID.fromString(""), SpeciesDevelopers.SpeciesDeveloperNames.GLADOS), // Glados does not own minecraft
-            Map.entry(UUID.fromString("3ff497ed-71f0-453a-a869-4fc17be298ff"), SpeciesDevelopers.SpeciesDeveloperNames.YAPETTO),
-            Map.entry(UUID.fromString("81499a26-ba39-430e-8009-29ee87351c20"), SpeciesDevelopers.SpeciesDeveloperNames.ORCINUS),
-            Map.entry(UUID.fromString("0c22615f-a189-4f4e-85ae-79fd80c353c8"), SpeciesDevelopers.SpeciesDeveloperNames.VAKY),
-            Map.entry(UUID.fromString("aca529a2-1166-41aa-b304-209f06831998"), SpeciesDevelopers.SpeciesDeveloperNames.TAZZ),
-            Map.entry(UUID.fromString("f6dffbc0-746a-41fe-b0c1-20f9a596795a"), SpeciesDevelopers.SpeciesDeveloperNames.BUNTEN),
-            Map.entry(UUID.fromString("4f00e7fc-b325-4f16-88cf-80cd78733646"), SpeciesDevelopers.SpeciesDeveloperNames.EXCLAIM)
-        );
-    }
-
-    public static final ResourceLocation NINNI_TEXTURE = Species.of("textures/entity/capes/ninni.png");
-    public static final ResourceLocation REDA_TEXTURE = Species.of("textures/entity/capes/floofhips.png");
-    public static final ResourceLocation NOON_TEXTURE = Species.of("textures/entity/capes/noonyeyz.png");
-    public static final ResourceLocation BORNULHU_TEXTURE = Species.of("textures/entity/capes/bornulhu.png");
-    public static final ResourceLocation GLADOS_TEXTURE = Species.of("textures/entity/capes/glados_edition.png");
-    public static final ResourceLocation YAPETTO_TEXTURE = Species.of("textures/entity/capes/yapetto.png");
-    public static final ResourceLocation CONTRIBUTOR_TEXTURE = Species.of("textures/entity/capes/contributor.png");
 
     public enum SpeciesDeveloperNames {
         NINNI("Ninni", ContributionLevel.DEVELOPER, ChatFormatting.DARK_AQUA, NINNI_TEXTURE),
@@ -89,5 +74,4 @@ public class SpeciesDevelopers {
             }
         }
     }
-
 }

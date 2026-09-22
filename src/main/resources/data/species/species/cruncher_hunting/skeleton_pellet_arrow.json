@@ -1,9 +1,0 @@
-{
-  "entity_type": "minecraft:skeleton",
-  "item": {
-    "id": "minecraft:arrow",
-    "Count": 1
-  },
-  "min_tries": 10,
-  "max_tries": 20
-}

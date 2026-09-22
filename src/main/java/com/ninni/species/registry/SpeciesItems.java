@@ -3,308 +3,128 @@ package com.ninni.species.registry;
 import com.ninni.species.Species;
 import com.ninni.species.SpeciesDevelopers;
 import com.ninni.species.server.item.*;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.npc.VillagerProfession;
-import net.minecraft.world.entity.npc.VillagerTrades;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.*;
-import net.minecraft.world.item.alchemy.PotionBrewing;
-import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.component.DyedItemColor;
-import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.material.Fluids;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.common.BasicItemListing;
-import net.neoforged.neoforge.event.TagsUpdatedEvent;
-import net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent;
-import net.neoforged.neoforge.event.village.VillagerTradesEvent;
+import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.function.Supplier;
 
-@EventBusSubscriber(modid = Species.MOD_ID)
 public class SpeciesItems {
-
-    @SubscribeEvent
-    public static void registerBrewingRecipes(RegisterBrewingRecipesEvent event) {
-        PotionBrewing.Builder builder = event.getBuilder();
-
-        builder.addMix(Potions.AWKWARD, GHOUL_TONGUE.get(), SpeciesPotions.BLOODLUST);
-    }
-
-    @SubscribeEvent
-    public static void onVillagerTraderInit(VillagerTradesEvent event) {
-        VillagerProfession type = event.getType();
-        Int2ObjectMap<List<VillagerTrades.ItemListing>> trades = event.getTrades();
-        if (type == VillagerProfession.CLERIC) {
-            trades.get(4).add(new BasicItemListing(
-                new ItemStack(GHOUL_TONGUE.get()),
-                ItemStack.EMPTY,
-                new ItemStack(Items.EMERALD, 3),
-                12, 8, 0.2F
-            ));
-        }
-    }
-
-    @SubscribeEvent
-    public static void onTagsUpdated(TagsUpdatedEvent event) {
-        //DispenserBlock.registerBehavior(BIRT_EGG.get(), new ProjectileDispenseBehavior(BIRT_EGG.get()));
-        DispenserBlock.registerBehavior(DEFLECTOR_DUMMY.get(), SpeciesDispenserBehaviour.DISPENSE_DEFLECTOR_DUMMY_BEHAVIOUR);
-        DispenserBlock.registerBehavior(WICKED_MASK.get(), WickedMaskItem.DISPENSE_ITEM_BEHAVIOR);
-        DispenserBlock.registerBehavior(WICKED_CANDLE.get(), ArmorItem.DISPENSE_ITEM_BEHAVIOR);
-        DispenserBlock.registerBehavior(QUAKE_HEAD.get(), ArmorItem.DISPENSE_ITEM_BEHAVIOR);
-        DispenserBlock.registerBehavior(GHOUL_HEAD.get(), ArmorItem.DISPENSE_ITEM_BEHAVIOR);
-        DispenserBlock.registerBehavior(BEWEREAGER_HEAD.get(), ArmorItem.DISPENSE_ITEM_BEHAVIOR);
-        DispenserBlock.registerBehavior(DEEPFISH_BUCKET.get(), SpeciesDispenserBehaviour.DISPENSE_BUCKET_BEHAVIOUR);
-    }
-
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Species.MOD_ID);
 
-    public static final DeferredItem<Item> LOGO = ITEMS.registerItem("logo", Item::new);
+    public static final DeferredItem<Item> LOGO = ITEMS.registerItem("logo", Item::new, new Item.Properties().rarity(Rarity.EPIC).stacksTo(1).fireResistant());
+    public static final DeferredItem<Item> TAB = ITEMS.registerItem("tab", Item::new, new Item.Properties().rarity(Rarity.EPIC).stacksTo(1).fireResistant());
 
     //UPDATE 1
-    public static final DeferredItem<Item> WRAPTOR_SPAWN_EGG = ITEMS.registerItem("wraptor_spawn_egg", properties ->
-        new SpeciesSpawnEggItem(SpeciesEntities.WRAPTOR.get(), 0xBC2765, 0x44A19D, SpeciesDevelopers.SpeciesDeveloperNames.NOON, properties)
-    );
-    public static final DeferredItem<BlockItem> WRAPTOR_EGG = ITEMS.registerSimpleBlockItem(SpeciesBlocks.WRAPTOR_EGG);
-    public static final DeferredItem<Item> CRACKED_WRAPTOR_EGG = ITEMS.registerItem("cracked_wraptor_egg",
-        CrakedWraptorEggItem::new,
-        new Item.Properties().food(SpeciesFoodProperties.CRACKED_WRAPTOR_EGG)
-    );
+    public static final DeferredItem<Item> V1 = ITEMS.registerItem("v1", Item::new, new Item.Properties());
 
-    public static final DeferredItem<Item> DEEPFISH_SPAWN_EGG = ITEMS.registerItem("deepfish_spawn_egg", properties ->
-        new SpeciesSpawnEggItem(SpeciesEntities.DEEPFISH.get(), 0x5A5A5A, 0xED98BD, SpeciesDevelopers.SpeciesDeveloperNames.BORNULHU, properties)
-    );
-    public static final DeferredItem<Item> DEEPFISH_BUCKET = ITEMS.registerItem("deepfish_bucket", properties ->
-        new MobBucketItem(SpeciesEntities.DEEPFISH.get(), Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, properties),
-        new Item.Properties().stacksTo(1)
-    );
+    public static final DeferredItem<Item> WRAPTOR_SPAWN_EGG = ITEMS.registerItem("wraptor_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.WRAPTOR.get(), 0xBC2765, 0x44A19D, SpeciesDevelopers.SpeciesDeveloperNames.NOON, new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<BlockItem> WRAPTOR_EGG = ITEMS.registerSimpleBlockItem("wraptor_egg", SpeciesBlocks.WRAPTOR_EGG, new Item.Properties());
+    public static final DeferredItem<Item> CRACKED_WRAPTOR_EGG = ITEMS.registerItem("cracked_wraptor_egg", CrakedWraptorEggItem::new, new Item.Properties().food(new FoodProperties.Builder().nutrition(5).saturationModifier(0.7f).effect(() -> new MobEffectInstance(SpeciesStatusEffects.WITHER_RESISTANCE, 20 * 90, 0), 1).build()));
 
-    public static final DeferredItem<Item> STACKATICK_SPAWN_EGG = ITEMS.registerItem("stackatick_spawn_egg", properties ->
-        new SpeciesSpawnEggItem(SpeciesEntities.STACKATICK.get(), 0x83493B, 0x1F1F21, SpeciesDevelopers.SpeciesDeveloperNames.NINNI, properties)
-    );
+    public static final DeferredItem<Item> DEEPFISH_SPAWN_EGG = ITEMS.registerItem("deepfish_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.DEEPFISH.get(), 0x5A5A5A, 0xED98BD, SpeciesDevelopers.SpeciesDeveloperNames.BORNULHU, new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> DEEPFISH_BUCKET = ITEMS.registerItem("deepfish_bucket", (properties) -> new MobBucketItem(SpeciesEntities.DEEPFISH.get(), Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, new Item.Properties().stacksTo(1)));
 
-    public static final DeferredItem<Item> BIRT_SPAWN_EGG = ITEMS.registerItem("birt_spawn_egg", properties ->
-        new SpeciesSpawnEggItem(SpeciesEntities.BIRT.get(), 0x4DD1E1, 0xD87247, SpeciesDevelopers.SpeciesDeveloperNames.REDA, properties)
-    );
-    public static final DeferredItem<Item> BIRT_EGG = ITEMS.registerItem("birt_egg", BirtEggItem::new,
-        new Item.Properties().stacksTo(16)
-    );
-    public static final DeferredItem<BlockItem> BIRT_DWELLING = ITEMS.registerSimpleBlockItem(SpeciesBlocks.BIRT_DWELLING);
-    public static final DeferredItem<BlockItem> BIRTDAY_CAKE = ITEMS.registerSimpleBlockItem(SpeciesBlocks.BIRTDAY_CAKE,
-        new Item.Properties().stacksTo(1)
-    );
+    public static final DeferredItem<Item> STACKATICK_SPAWN_EGG = ITEMS.registerItem("stackatick_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.STACKATICK.get(), 0x83493B, 0x1F1F21, SpeciesDevelopers.SpeciesDeveloperNames.NINNI, new Item.Properties().stacksTo(64)));
+
+    public static final DeferredItem<Item> BIRT_SPAWN_EGG = ITEMS.registerItem("birt_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.BIRT.get(), 0x4DD1E1, 0xD87247, SpeciesDevelopers.SpeciesDeveloperNames.REDA, new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> BIRT_EGG = ITEMS.registerItem("birt_egg", BirtEggItem::new, new Item.Properties().stacksTo(16));
+    public static final DeferredItem<BlockItem> BIRT_DWELLING = ITEMS.registerItem("birt_dwelling", (properties) -> new BlockItem(SpeciesBlocks.BIRT_DWELLING.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> BIRTDAY_CAKE = ITEMS.registerItem("birtday_cake", (properties) -> new BlockItem(SpeciesBlocks.BIRTDAY_CAKE.get(), new Item.Properties().stacksTo(1)));
     public static final DeferredItem<Item> BIRTDAY_CAKE_SLICE = ITEMS.registerItem("birtday_cake_slice", BirtdayCakeSliceItem::new, new Item.Properties().food(new FoodProperties.Builder().alwaysEdible().nutrition(4).saturationModifier(0.6f).effect(() -> new MobEffectInstance(SpeciesStatusEffects.BIRTD, 20 * 10, 0), 1).build()));
-    public static final DeferredItem<Item> MUSIC_DISC_DIAL = ITEMS.registerItem("music_disc_dial", Item::new,
-        new Item.Properties()
-            .rarity(Rarity.RARE).stacksTo(1)
-            .jukeboxPlayable(SpeciesJukeboxSongs.DIAL)
-    );
+    public static final DeferredItem<Item> MUSIC_DISC_DIAL = ITEMS.registerItem("music_disc_dial", Item::new, new Item.Properties().rarity(Rarity.RARE).stacksTo(1).jukeboxPlayable(ResourceKey.create(Registries.JUKEBOX_SONG, ResourceLocation.fromNamespaceAndPath("species", "dial"))));
 
-    public static final DeferredItem<Item> LIMPET_SPAWN_EGG = ITEMS.registerItem("limpet_spawn_egg",properties ->
-        new SpeciesSpawnEggItem(SpeciesEntities.LIMPET.get(), 0xA5C1D2, 0xFBF236, SpeciesDevelopers.SpeciesDeveloperNames.GLADOS, properties)
-    );
+    public static final DeferredItem<Item> LIMPET_SPAWN_EGG = ITEMS.registerItem("limpet_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.LIMPET.get(), 0xA5C1D2, 0xFBF236, SpeciesDevelopers.SpeciesDeveloperNames.GLADOS, new Item.Properties().stacksTo(64)));
 
     //UPDATE 2
-    public static final DeferredItem<BlockItem> RED_SUSPICIOUS_SAND = ITEMS.registerSimpleBlockItem(SpeciesBlocks.RED_SUSPICIOUS_SAND);
-    public static final DeferredItem<Item> MUSIC_DISC_LAPIDARIAN = ITEMS.registerItem("music_disc_lapidarian", Item::new,
-        new Item.Properties()
-            .rarity(Rarity.RARE).stacksTo(1)
-            .jukeboxPlayable(SpeciesJukeboxSongs.LAPIDARIAN)
-    );
+    public static final DeferredItem<Item> V2 = ITEMS.registerItem("v2", Item::new, new Item.Properties());
+    public static final DeferredItem<Item> RED_SUSPICIOUS_SAND = ITEMS.registerItem("red_suspicious_sand", (properties) -> new BlockItem(SpeciesBlocks.RED_SUSPICIOUS_SAND.get(), new Item.Properties()));
+    public static final DeferredItem<Item> MUSIC_DISC_LAPIDARIAN = ITEMS.registerItem("music_disc_lapidarian", Item::new, new Item.Properties().rarity(Rarity.RARE).stacksTo(1).jukeboxPlayable(ResourceKey.create(Registries.JUKEBOX_SONG, ResourceLocation.fromNamespaceAndPath("species", "lapidarian"))));
 
-    public static final DeferredItem<BlockItem> BONE_BARK = ITEMS.registerSimpleBlockItem(SpeciesBlocks.BONE_BARK);
-    public static final DeferredItem<BlockItem> BONE_VERTEBRA = ITEMS.registerSimpleBlockItem(SpeciesBlocks.BONE_VERTEBRA);
-    public static final DeferredItem<BlockItem> BONE_SPIKE = ITEMS.registerSimpleBlockItem(SpeciesBlocks.BONE_SPIKE);
+    public static final DeferredItem<Item> BONE_BARK = ITEMS.registerItem("bone_bark", (properties) -> new BlockItem(SpeciesBlocks.BONE_BARK.get(), new Item.Properties()));
+    public static final DeferredItem<Item> BONE_VERTEBRA = ITEMS.registerItem("bone_vertebra", (properties) -> new BlockItem(SpeciesBlocks.BONE_VERTEBRA.get(), new Item.Properties()));
+    public static final DeferredItem<Item> BONE_SPIKE = ITEMS.registerItem("bone_spike", (properties) -> new BlockItem(SpeciesBlocks.BONE_SPIKE.get(), new Item.Properties()));
 
-    public static final DeferredItem<Item> TREEPER_SPAWN_EGG = ITEMS.registerItem("treeper_spawn_egg", properties ->
-        new SpeciesSpawnEggItem(SpeciesEntities.TREEPER.get(), 0x402E1B, 0x32992D, SpeciesDevelopers.SpeciesDeveloperNames.NINNI, properties)
-    );
-    public static final DeferredItem<Item> ANCIENT_PINECONE = ITEMS.registerItem("ancient_pinecone",
-        properties -> new ItemNameBlockItem(SpeciesBlocks.TROOPER.get(), properties)
-    );
-    public static final DeferredItem<Item> TROOPER_SPAWN_EGG = ITEMS.registerItem("trooper_spawn_egg",
-        properties -> new SpeciesSpawnEggItem(SpeciesEntities.TROOPER.get(), 0x6f5535, 0x32992D, SpeciesDevelopers.SpeciesDeveloperNames.NINNI, properties)
-    );
+    public static final DeferredItem<Item> TREEPER_SPAWN_EGG = ITEMS.registerItem("treeper_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.TREEPER.get(), 0x402E1B, 0x32992D, SpeciesDevelopers.SpeciesDeveloperNames.NINNI, new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> ANCIENT_PINECONE = ITEMS.registerItem("ancient_pinecone", (properties) -> new ItemNameBlockItem(SpeciesBlocks.TROOPER.get(), new Item.Properties()));
+    public static final DeferredItem<Item> TROOPER_SPAWN_EGG = ITEMS.registerItem("trooper_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.TROOPER.get(), 0x6f5535, 0x32992D, SpeciesDevelopers.SpeciesDeveloperNames.NINNI, new Item.Properties().stacksTo(64)));
 
-    public static final DeferredItem<Item> GOOBER_SPAWN_EGG = ITEMS.registerItem("goober_spawn_egg", properties ->
-        new SpeciesSpawnEggItem(SpeciesEntities.GOOBER.get(), 0x49674E, 0x49674E, SpeciesDevelopers.SpeciesDeveloperNames.BORNULHU, properties)
-    );
-    public static final DeferredItem<BlockItem> PETRIFIED_EGG = ITEMS.registerSimpleBlockItem(SpeciesBlocks.PETRIFIED_EGG);
-    public static final DeferredItem<BlockItem> ALPHACENE_MOSS_BLOCK = ITEMS.registerSimpleBlockItem(SpeciesBlocks.ALPHACENE_MOSS_BLOCK);
-    public static final DeferredItem<BlockItem> ALPHACENE_MOSS_CARPET = ITEMS.registerSimpleBlockItem(SpeciesBlocks.ALPHACENE_MOSS_CARPET);
-    public static final DeferredItem<BlockItem> ALPHACENE_GRASS_BLOCK = ITEMS.registerSimpleBlockItem(SpeciesBlocks.ALPHACENE_GRASS_BLOCK);
-    public static final DeferredItem<BlockItem> ALPHACENE_GRASS = ITEMS.registerSimpleBlockItem(SpeciesBlocks.ALPHACENE_GRASS);
-    public static final DeferredItem<Item> ALPHACENE_TALL_GRASS = ITEMS.registerItem("alphacene_tall_grass",
-        properties -> new DoubleHighBlockItem(SpeciesBlocks.ALPHACENE_TALL_GRASS.get(), properties)
-    );
-    public static final DeferredItem<BlockItem> ALPHACENE_MUSHROOM = ITEMS.registerSimpleBlockItem(SpeciesBlocks.ALPHACENE_MUSHROOM);
-    public static final DeferredItem<BlockItem> ALPHACENE_MUSHROOM_BLOCK = ITEMS.registerSimpleBlockItem(SpeciesBlocks.ALPHACENE_MUSHROOM_BLOCK);
-    public static final DeferredItem<BlockItem> ALPHACENE_MUSHROOM_GROWTH = ITEMS.registerSimpleBlockItem(SpeciesBlocks.ALPHACENE_MUSHROOM_GROWTH);
+    public static final DeferredItem<Item> GOOBER_SPAWN_EGG = ITEMS.registerItem("goober_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.GOOBER.get(), 0x49674E, 0x49674E, SpeciesDevelopers.SpeciesDeveloperNames.BORNULHU, new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> PETRIFIED_EGG = ITEMS.registerItem("petrified_egg", (properties) -> new BlockItem(SpeciesBlocks.PETRIFIED_EGG.get(), new Item.Properties()));
+    public static final DeferredItem<Item> ALPHACENE_MOSS_BLOCK = ITEMS.registerItem("alphacene_moss_block", (properties) -> new BlockItem(SpeciesBlocks.ALPHACENE_MOSS_BLOCK.get(), new Item.Properties()));
+    public static final DeferredItem<Item> ALPHACENE_MOSS_CARPET = ITEMS.registerItem("alphacene_moss_carpet", (properties) -> new BlockItem(SpeciesBlocks.ALPHACENE_MOSS_CARPET.get(), new Item.Properties()));
+    public static final DeferredItem<Item> ALPHACENE_GRASS_BLOCK = ITEMS.registerItem("alphacene_grass_block", (properties) -> new BlockItem(SpeciesBlocks.ALPHACENE_GRASS_BLOCK.get(), new Item.Properties()));
+    public static final DeferredItem<Item> ALPHACENE_GRASS = ITEMS.registerItem("alphacene_grass", (properties) -> new BlockItem(SpeciesBlocks.ALPHACENE_GRASS.get(), new Item.Properties()));
+    public static final DeferredItem<Item> ALPHACENE_TALL_GRASS = ITEMS.registerItem("alphacene_tall_grass", (properties) -> new DoubleHighBlockItem(SpeciesBlocks.ALPHACENE_TALL_GRASS.get(), new Item.Properties()));
+    public static final DeferredItem<Item> ALPHACENE_MUSHROOM = ITEMS.registerItem("alphacene_mushroom", (properties) -> new BlockItem(SpeciesBlocks.ALPHACENE_MUSHROOM.get(), new Item.Properties()));
+    public static final DeferredItem<Item> ALPHACENE_MUSHROOM_BLOCK = ITEMS.registerItem("alphacene_mushroom_block", (properties) -> new BlockItem(SpeciesBlocks.ALPHACENE_MUSHROOM_BLOCK.get(), new Item.Properties()));
+    public static final DeferredItem<Item> ALPHACENE_MUSHROOM_GROWTH = ITEMS.registerItem("alphacene_mushroom_growth", (properties) -> new BlockItem(SpeciesBlocks.ALPHACENE_MUSHROOM_GROWTH.get(), new Item.Properties()));
 
-    public static final DeferredItem<Item> CRUNCHER_SPAWN_EGG = ITEMS.registerItem("cruncher_spawn_egg", properties -> new SpeciesSpawnEggItem(SpeciesEntities.CRUNCHER.get(), 0x5522B6, 0x99032B, SpeciesDevelopers.SpeciesDeveloperNames.NOON, properties));
-    public static final DeferredItem<Item> CRUNCHER_EGG = ITEMS.registerItem("cruncher_egg",
-        properties -> new DoubleHighBlockItem(SpeciesBlocks.CRUNCHER_EGG.get(), properties)
-    );
-    public static final DeferredItem<BlockItem> CRUNCHER_PELLET = ITEMS.registerSimpleBlockItem(SpeciesBlocks.CRUNCHER_PELLET);
+    public static final DeferredItem<Item> CRUNCHER_SPAWN_EGG = ITEMS.registerItem("cruncher_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.CRUNCHER.get(), 0x5522B6, 0x99032B, SpeciesDevelopers.SpeciesDeveloperNames.NOON, new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> CRUNCHER_EGG = ITEMS.registerItem("cruncher_egg", (properties) -> new DoubleHighBlockItem(SpeciesBlocks.CRUNCHER_EGG.get(), new Item.Properties()));
+    public static final DeferredItem<Item> CRUNCHER_PELLET = ITEMS.registerItem("cruncher_pellet", (properties) -> new BlockItem(SpeciesBlocks.CRUNCHER_PELLET.get(), new Item.Properties()));
 
-    public static final DeferredItem<Item> MAMMUTILATION_SPAWN_EGG = ITEMS.registerItem("mammutilation_spawn_egg",
-        properties -> new SpeciesSpawnEggItem(SpeciesEntities.MAMMUTILATION.get(), 0x472418, 0xDE5D34, SpeciesDevelopers.SpeciesDeveloperNames.REDA, properties)
-    );
-    public static final DeferredItem<BlockItem> FROZEN_MEAT = ITEMS.registerSimpleBlockItem(SpeciesBlocks.FROZEN_MEAT);
-    public static final DeferredItem<BlockItem> FROZEN_HAIR = ITEMS.registerSimpleBlockItem(SpeciesBlocks.FROZEN_HAIR);
-    public static final DeferredItem<Item> ICHOR_BOTTLE = ITEMS.registerItem("ichor_bottle",
-        properties -> new IchorBottle(SpeciesBlocks.ICHOR.get(), properties),
-        new Item.Properties().stacksTo(16)
-    );
-    public static final DeferredItem<Item> YOUTH_POTION = ITEMS.registerItem("youth_potion", YouthPotion::new,
-        new Item.Properties().rarity(Rarity.UNCOMMON).stacksTo(1)
-    );
+    public static final DeferredItem<Item> MAMMUTILATION_SPAWN_EGG = ITEMS.registerItem("mammutilation_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.MAMMUTILATION.get(), 0x472418, 0xDE5D34, SpeciesDevelopers.SpeciesDeveloperNames.REDA, new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> FROZEN_MEAT = ITEMS.registerItem("frozen_meat", (properties) -> new BlockItem(SpeciesBlocks.FROZEN_MEAT.get(), new Item.Properties()));
+    public static final DeferredItem<Item> FROZEN_HAIR = ITEMS.registerItem("frozen_hair", (properties) -> new BlockItem(SpeciesBlocks.FROZEN_HAIR.get(), new Item.Properties()));
+    public static final DeferredItem<Item> ICHOR_BOTTLE = ITEMS.registerItem("ichor_bottle", (properties) -> new IchorBottle(SpeciesBlocks.ICHOR.get(), new Item.Properties().stacksTo(16)));
+    public static final DeferredItem<Item> YOUTH_POTION = ITEMS.registerItem("youth_potion", (properties) -> new YouthPotion(new Item.Properties().rarity(Rarity.UNCOMMON).stacksTo(1)));
 
-    public static final DeferredItem<Item> SPRINGLING_SPAWN_EGG = ITEMS.registerItem("springling_spawn_egg",
-        properties -> new SpeciesSpawnEggItem(SpeciesEntities.SPRINGLING.get(), 0x413D70, 0xE7663A, SpeciesDevelopers.SpeciesDeveloperNames.GLADOS, properties)
-    );
-    public static final DeferredItem<Item> SPRINGLING_EGG = ITEMS.registerItem("springling_egg",
-        properties -> new DoubleHighBlockItem(SpeciesBlocks.SPRINGLING_EGG.get(), properties)
-    );
+    public static final DeferredItem<Item> SPRINGLING_SPAWN_EGG = ITEMS.registerItem("springling_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.SPRINGLING.get(), 0x413D70, 0xE7663A, SpeciesDevelopers.SpeciesDeveloperNames.GLADOS, new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> SPRINGLING_EGG = ITEMS.registerItem("springling_egg", (properties) -> new DoubleHighBlockItem(SpeciesBlocks.SPRINGLING_EGG.get(), new Item.Properties()));
 
     //UPDATE 3
-    public static final DeferredItem<Item> GHOUL_SPAWN_EGG = ITEMS.registerItem("ghoul_spawn_egg",
-        properties -> new SpeciesSpawnEggItem(SpeciesEntities.GHOUL.get(), 0xA3908C, 0xBAA3A0, SpeciesDevelopers.SpeciesDeveloperNames.BORNULHU, properties)
-    );
-    public static final DeferredItem<Item> GHOUL_TONGUE = ITEMS.registerItem("ghoul_tongue", Item::new,
-        new Item.Properties().food(SpeciesFoodProperties.GHOUL_TONGUE)
-    );
-    public static final DeferredItem<Item> GHOUL_HEAD = ITEMS.registerItem("ghoul_head",
-        properties -> new StandingAndWallBlockItem(SpeciesBlocks.GHOUL_HEAD.get(), SpeciesBlocks.GHOUL_WALL_HEAD.get(), properties, Direction.DOWN),
-        new Item.Properties().rarity(Rarity.UNCOMMON)
-    );
+    public static final DeferredItem<Item> V3 = ITEMS.registerItem("v3", Item::new, new Item.Properties());
+    public static final DeferredItem<Item> GHOUL_SPAWN_EGG = ITEMS.registerItem("ghoul_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.GHOUL.get(), 0xA3908C, 0xBAA3A0, SpeciesDevelopers.SpeciesDeveloperNames.BORNULHU, new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> GHOUL_TONGUE = ITEMS.registerItem("ghoul_tongue", Item::new, new Item.Properties().food(new FoodProperties.Builder().nutrition(2).saturationModifier(0.2f).effect(() -> new MobEffectInstance(MobEffects.CONFUSION, 20 * 10, 0), 1).effect(new MobEffectInstance(MobEffects.HUNGER, 20 * 10, 1), 1).build()));
+    public static final DeferredItem<Item> GHOUL_HEAD = ITEMS.registerItem("ghoul_head", (properties) -> new MobHeadItem(SpeciesBlocks.GHOUL_HEAD.get(), SpeciesBlocks.GHOUL_WALL_HEAD.get(), (new Item.Properties()).rarity(Rarity.UNCOMMON), Direction.DOWN));
 
-    public static final DeferredItem<Item> QUAKE_SPAWN_EGG = ITEMS.registerItem("quake_spawn_egg",
-        properties -> new SpeciesSpawnEggItem(SpeciesEntities.QUAKE.get(), 0x454646, 0xB77541, SpeciesDevelopers.SpeciesDeveloperNames.NINNI, properties)
-    );
-    public static final DeferredItem<BlockItem> KINETIC_CORE = ITEMS.registerSimpleBlockItem(SpeciesBlocks.KINETIC_CORE,
-        new Item.Properties().rarity(Rarity.UNCOMMON)
-    );
-    public static final DeferredItem<Item> DEFLECTOR_DUMMY = ITEMS.registerItem("deflector_dummy", DeflectorDummyItem::new,
-        new Item.Properties().rarity(Rarity.UNCOMMON).stacksTo(16)
-    );
-    public static final DeferredItem<Item> RICOSHIELD = ITEMS.registerItem("ricoshield", RicoshieldItem::new,
-        new Item.Properties().rarity(Rarity.UNCOMMON).durability(528)
-    );
-    public static final DeferredItem<Item> QUAKE_HEAD = ITEMS.registerItem("quake_head",
-        properties -> new StandingAndWallBlockItem(SpeciesBlocks.QUAKE_HEAD.get(), SpeciesBlocks.QUAKE_WALL_HEAD.get(), properties, Direction.DOWN),
-        new Item.Properties().rarity(Rarity.UNCOMMON)
-    );
-    public static final DeferredItem<Item> MUSIC_DISK_SPAWNER = ITEMS.registerItem("music_disk_spawner", Item::new,
-        new Item.Properties()
-            .rarity(Rarity.RARE).stacksTo(1)
-            .jukeboxPlayable(SpeciesJukeboxSongs.SPAWNER)
-    );
+    public static final DeferredItem<Item> QUAKE_SPAWN_EGG = ITEMS.registerItem("quake_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.QUAKE.get(), 0x454646, 0xB77541, SpeciesDevelopers.SpeciesDeveloperNames.NINNI, new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> KINETIC_CORE = ITEMS.registerItem("kinetic_core", (properties) -> new BlockItem(SpeciesBlocks.KINETIC_CORE.get(), new Item.Properties().rarity(Rarity.UNCOMMON)));
+    public static final DeferredItem<Item> DEFLECTOR_DUMMY = ITEMS.registerItem("deflector_dummy", DeflectorDummyItem::new, new Item.Properties().rarity(Rarity.UNCOMMON).stacksTo(16));
+    public static final DeferredItem<Item> RICOSHIELD = ITEMS.registerItem("ricoshield", RicoshieldItem::new, new Item.Properties().rarity(Rarity.UNCOMMON).durability(528));
+    public static final DeferredItem<Item> QUAKE_HEAD = ITEMS.registerItem("quake_head", (properties) -> new MobHeadItem(SpeciesBlocks.QUAKE_HEAD.get(), SpeciesBlocks.QUAKE_WALL_HEAD.get(), (new Item.Properties()).rarity(Rarity.UNCOMMON), Direction.DOWN));
+    public static final DeferredItem<Item> MUSIC_DISK_SPAWNER = ITEMS.registerItem("music_disk_spawner", Item::new, new Item.Properties().rarity(Rarity.RARE).stacksTo(1).jukeboxPlayable(ResourceKey.create(Registries.JUKEBOX_SONG, ResourceLocation.fromNamespaceAndPath("species", "spawner"))));
 
-    public static final DeferredItem<Item> SPECTRE_SPAWN_EGG = ITEMS.registerItem("spectre_spawn_egg",
-        properties -> new SpeciesSpawnEggItem(SpeciesEntities.SPECTRE.get(), 0x182C39, 0x35f8ff, SpeciesDevelopers.SpeciesDeveloperNames.REDA, properties)
-    );
-    public static final DeferredItem<Item> BROKEN_LINKS = ITEMS.registerItem("broken_links", Item::new);
-    public static final DeferredItem<Item> SPECLIGHT = ITEMS.registerItem("speclight",
-        properties -> new SpectreLightBlockItem(SpeciesBlocks.SPECLIGHT.get(), properties),
-        new Item.Properties().component(DataComponents.DYED_COLOR, new DyedItemColor(0x7CF2F5, false))
-    );
-    public static final DeferredItem<BlockItem> CHAINDELIER = ITEMS.registerSimpleBlockItem(SpeciesBlocks.CHAINDELIER);
-    public static final DeferredItem<Item> HOPELIGHT = ITEMS.registerItem("hopelight",
-        properties -> new SpectreLightBlockItem(SpeciesBlocks.HOPELIGHT.get(), properties),
-        new Item.Properties().component(DataComponents.DYED_COLOR, new DyedItemColor(0x7CF2F5, false))
-    );
-    public static final DeferredItem<Item> SPECTRALIBUR = ITEMS.registerItem("spectralibur", SpectraliburItem::new,
-        new Item.Properties().stacksTo(1).rarity(Rarity.RARE).attributes(SpectraliburItem.createAttributes())
-    );
-    public static final DeferredItem<BlockItem> SPECTRALIBUR_PEDESTAL = ITEMS.registerSimpleBlockItem(SpeciesBlocks.SPECTRALIBUR_PEDESTAL,
-        new Item.Properties().rarity(Rarity.RARE)
-    );
+    public static final DeferredItem<Item> SPECTRE_SPAWN_EGG = ITEMS.registerItem("spectre_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.SPECTRE.get(), 0x182C39, 0x35f8ff, SpeciesDevelopers.SpeciesDeveloperNames.REDA, new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> BROKEN_LINKS = ITEMS.registerItem("broken_links", Item::new, new Item.Properties());
+    public static final DeferredItem<Item> SPECLIGHT = ITEMS.registerItem("speclight", (properties) -> new SpectreLightBlockItem(SpeciesBlocks.SPECLIGHT.get(), new Item.Properties().component(DataComponents.DYED_COLOR, new DyedItemColor(0x7CF2F5, false))));
+    public static final DeferredItem<Item> CHAINDELIER = ITEMS.registerItem("chaindelier", (properties) -> new BlockItem(SpeciesBlocks.CHAINDELIER.get(), new Item.Properties()));
+    public static final DeferredItem<Item> HOPELIGHT = ITEMS.registerItem("hopelight", (properties) -> new SpectreLightBlockItem(SpeciesBlocks.HOPELIGHT.get(), new Item.Properties().component(DataComponents.DYED_COLOR, new DyedItemColor(0x7CF2F5, false))));
+    public static final DeferredItem<Item> SPECTRALIBUR = ITEMS.registerItem("spectralibur", SpectraliburItem::new, new Item.Properties().stacksTo(1).rarity(Rarity.RARE).attributes(SpectraliburItem.createAttributes()));
+    public static final DeferredItem<Item> SPECTRALIBUR_PEDESTAL = ITEMS.registerItem("spectralibur_pedestal", (properties) -> new BlockItem(SpeciesBlocks.SPECTRALIBUR_PEDESTAL.get(), new Item.Properties().rarity(Rarity.RARE)));
 
-    public static final DeferredItem<Item> WICKED_SPAWN_EGG = ITEMS.registerItem("wicked_spawn_egg",
-        properties -> new SpeciesSpawnEggItem(SpeciesEntities.WICKED.get(), 0x435AA3, 0xDF77A0, SpeciesDevelopers.SpeciesDeveloperNames.GLADOS, properties)
-    );
-    public static final DeferredItem<Item> WICKED_WAX = ITEMS.registerItem("wicked_wax", Item::new);
-    public static final DeferredItem<Item> WICKED_SWAPPER = ITEMS.registerItem("wicked_swapper", WickedSwapperItem::new,
-        new Item.Properties().stacksTo(16)
-    );
-    public static final DeferredItem<Item> MONSTER_MEAL = ITEMS.register("monster_meal",
-        () -> new MonsterMealitem(new Item.Properties().component(DataComponents.POTION_CONTENTS, new PotionContents(
-            Optional.empty(),
-            Optional.empty(),
-            List.of(
-                new MobEffectInstance(SpeciesStatusEffects.IRON_WILL, 30 * 20),
-                new MobEffectInstance(SpeciesStatusEffects.TANKED, 20 * 20),
-                new MobEffectInstance(SpeciesStatusEffects.SNATCHED, 10 * 20),
-                new MobEffectInstance(SpeciesStatusEffects.COMBUSTION, 180 * 20)
-            )
-        )).food(SpeciesFoodProperties.MONSTER_MEAL))
-    );
-    public static final DeferredItem<Item> SMOKE_BOMB = ITEMS.register("smoke_bomb",
-        () -> new SmokeBombItem(new Item.Properties().component(DataComponents.POTION_CONTENTS, new PotionContents(
-            Optional.empty(),
-            Optional.empty(),
-            List.of(
-                new MobEffectInstance(MobEffects.INVISIBILITY, 20 * 15, 0, true, true),
-                new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 20 * 2, 2, true, true)
-            )
-        )).component(SpeciesDataComponents.COOLDOWN, 40 * 20).stacksTo(16))
-    );
-    public static final DeferredItem<Item> WICKED_DOPE = ITEMS.registerItem("wicked_dope", WickedDopeItem::new,
-        new Item.Properties().food(SpeciesFoodProperties.WICKED_DOPE)
-    );
-    public static final DeferredItem<Item> WICKED_MASK = ITEMS.registerItem("wicked_mask", WickedMaskItem::new,
-        new Item.Properties().stacksTo(1)
-    );
-    public static final DeferredItem<Item> WICKED_TREAT = ITEMS.register("wicked_treat",
-        () -> new PetEffectItem(new Item.Properties().component(DataComponents.POTION_CONTENTS, new PotionContents(
-            Optional.empty(),
-            Optional.empty(),
-            List.of(
-                new MobEffectInstance(SpeciesStatusEffects.SNATCHED, 45 * 20, 1),
-                new MobEffectInstance(SpeciesStatusEffects.IRON_WILL, 45 * 20, 0),
-                new MobEffectInstance(MobEffects.REGENERATION, 45 * 20, 0),
-                new MobEffectInstance(MobEffects.DAMAGE_BOOST, 20 * 20, 0)
-            )
-        )).component(SpeciesDataComponents.COOLDOWN, 45 * 20))
-    );
-    public static final DeferredItem<Item> WICKED_CANDLE = ITEMS.registerItem("wicked_candle",
-        properties -> new StandingAndWallBlockItem(SpeciesBlocks.WICKED_CANDLE.get(), SpeciesBlocks.WICKED_WALL_CANDLE.get(), properties, Direction.DOWN),
-        new Item.Properties().rarity(Rarity.UNCOMMON)
-    );
+    public static final DeferredItem<Item> WICKED_SPAWN_EGG = ITEMS.registerItem("wicked_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.WICKED.get(), 0x435AA3, 0xDF77A0, SpeciesDevelopers.SpeciesDeveloperNames.GLADOS, new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> WICKED_WAX = ITEMS.registerItem("wicked_wax", Item::new, new Item.Properties());
+    public static final DeferredItem<Item> WICKED_SWAPPER = ITEMS.registerItem("wicked_swapper", WickedSwapperItem::new, new Item.Properties().stacksTo(16));
+    public static final DeferredItem<Item> MONSTER_MEAL = ITEMS.registerItem("monster_meal", (properties) -> new MonsterMealitem());
+    public static final DeferredItem<Item> SMOKE_BOMB = ITEMS.registerItem("smoke_bomb", SmokeBombItem::new, new Item.Properties().stacksTo(16));
+    public static final DeferredItem<Item> WICKED_DOPE = ITEMS.registerItem("wicked_dope", (properties) -> new WickedDopeItem());
+    public static final DeferredItem<Item> WICKED_MASK = ITEMS.registerItem("wicked_mask", (properties) -> new WickedMaskItem());
+    public static final DeferredItem<Item> WICKED_TREAT = ITEMS.registerItem("wicked_treat", (properties) -> new WickedTreatItem());
+    public static final DeferredItem<Item> WICKED_CANDLE = ITEMS.registerItem("wicked_candle", (properties) -> new MobHeadItem(SpeciesBlocks.WICKED_CANDLE.get(), SpeciesBlocks.WICKED_WALL_CANDLE.get(), (new Item.Properties()).rarity(Rarity.UNCOMMON), Direction.DOWN));
 
-    public static final DeferredItem<Item> BEWEREAGER_SPAWN_EGG = ITEMS.registerItem("bewereager_spawn_egg",
-        properties -> new SpeciesSpawnEggItem(SpeciesEntities.BEWEREAGER.get(), 0x8D383F, 0x5D4B4E, SpeciesDevelopers.SpeciesDeveloperNames.NOON, properties)
-    );
-    public static final DeferredItem<Item> WEREFANG = ITEMS.registerItem("werefang", Item::new);
-    public static final DeferredItem<Item> CRANKBOW = ITEMS.registerItem("crankbow", CrankbowItem::new,
-        new Item.Properties().stacksTo(1).durability(865)
-    );
-    public static final DeferredItem<BlockItem> CRANKTRAP = ITEMS.registerSimpleBlockItem(SpeciesBlocks.CRANKTRAP);
-    public static final DeferredItem<Item> BEWEREAGER_HEAD = ITEMS.registerItem("bewereager_head",
-        properties -> new StandingAndWallBlockItem(SpeciesBlocks.BEWEREAGER_HEAD.get(), SpeciesBlocks.BEWEREAGER_WALL_HEAD.get(), properties, Direction.DOWN),
-        new Item.Properties().rarity(Rarity.UNCOMMON)
-    );
+    public static final DeferredItem<Item> BEWEREAGER_SPAWN_EGG = ITEMS.registerItem("bewereager_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.BEWEREAGER.get(), 0x8D383F, 0x5D4B4E, SpeciesDevelopers.SpeciesDeveloperNames.NOON, new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> WEREFANG = ITEMS.registerItem("werefang", Item::new, new Item.Properties());
+    public static final DeferredItem<Item> CRANKBOW = ITEMS.registerItem("crankbow", (properties) -> new CrankbowItem());
+    public static final DeferredItem<Item> CRANKTRAP = ITEMS.registerItem("cranktrap", (properties) -> new BlockItem(SpeciesBlocks.CRANKTRAP.get(), new Item.Properties()));
+    public static final DeferredItem<Item> BEWEREAGER_HEAD = ITEMS.registerItem("bewereager_head", (properties) -> new MobHeadItem(SpeciesBlocks.BEWEREAGER_HEAD.get(), SpeciesBlocks.BEWEREAGER_WALL_HEAD.get(), (new Item.Properties()).rarity(Rarity.UNCOMMON), Direction.DOWN));
 
-    public static final DeferredItem<Item> LEAF_HANGER_SPAWN_EGG = ITEMS.registerItem("leaf_hanger_spawn_egg",
-        properties -> new SpeciesSpawnEggItem(SpeciesEntities.LEAF_HANGER.get(), 0x43994E, 0x5C4A45, SpeciesDevelopers.SpeciesDeveloperNames.YAPETTO, properties)
-    );
-    public static final DeferredItem<Item> CLIFF_HANGER_SPAWN_EGG = ITEMS.registerItem("cliff_hanger_spawn_egg",
-        properties -> new SpeciesSpawnEggItem(SpeciesEntities.CLIFF_HANGER.value(), 0x8B7648, 0x48484B, SpeciesDevelopers.SpeciesDeveloperNames.YAPETTO, properties)
-    );
-    public static final DeferredItem<Item> COIL = ITEMS.registerItem("coil", CoilItem::new);
-    public static final DeferredItem<Item> HARPOON = ITEMS.registerItem("harpoon", HarpoonItem::new,
-        new Item.Properties().stacksTo(1).durability(128)
-    );
+    public static final DeferredItem<Item> LEAF_HANGER_SPAWN_EGG = ITEMS.registerItem("leaf_hanger_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.LEAF_HANGER.get(), 0x43994E, 0x5C4A45, SpeciesDevelopers.SpeciesDeveloperNames.YAPETTO, new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> CLIFF_HANGER_SPAWN_EGG = ITEMS.registerItem("cliff_hanger_spawn_egg", (properties) -> new SpeciesSpawnEggItem(SpeciesEntities.CLIFF_HANGER.value(), 0x8B7648, 0x48484B, SpeciesDevelopers.SpeciesDeveloperNames.YAPETTO, new Item.Properties().stacksTo(64)));
+    public static final DeferredItem<Item> COIL = ITEMS.registerItem("coil", CoilItem::new, new Item.Properties());
+    public static final DeferredItem<Item> HARPOON = ITEMS.registerItem("harpoon", HarpoonItem::new, new Item.Properties().stacksTo(1).durability(128));
 
 }

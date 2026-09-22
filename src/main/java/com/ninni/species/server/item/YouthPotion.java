@@ -8,7 +8,6 @@ import com.ninni.species.server.entity.mob.update_2.Springling;
 import com.ninni.species.server.item.util.HasImportantInteraction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AgeableMob;
@@ -25,35 +24,35 @@ public class YouthPotion extends Item implements HasImportantInteraction {
     }
 
     @Override
-    public InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity entity, InteractionHand hand) {
-        if (!(entity instanceof AgeableMob ageable) || entity.getType().is(SpeciesTags.EntityTypes.ALWAYS_ADULT)) {
-            return super.interactLivingEntity(stack, player, entity, hand);
-        }
+    public InteractionResult interactLivingEntity(ItemStack itemStack, Player player, LivingEntity livingEntity, InteractionHand interactionHand) {
+        if (livingEntity instanceof AgeableMob mob && !livingEntity.getType().is(SpeciesTags.ALWAYS_ADULT)) {
 
-        player.awardStat(Stats.ITEM_USED.get(this));
-        stack.consume(1, player);
-        if (!player.hasInfiniteMaterials() && stack.isEmpty()) {
-            player.getInventory().add(new ItemStack(Items.GLASS_BOTTLE));
-        }
-
-        if (!ageable.isBaby()) {
-            ageable.setBaby(true);
-            if (player instanceof ServerPlayer serverPlayer) SpeciesCriterion.TURN_MOB_INTO_BABY.get().trigger(serverPlayer);
-            ageable.playSound(SpeciesSoundEvents.YOUTH_POTION_BABY.get(), 1, 1);
-            if (entity.level() instanceof ServerLevel serverLevel) {
-                double vx = entity.getRandom().nextGaussian() * 0.02D;
-                double vy = entity.getRandom().nextGaussian() * 0.02D;
-                double vz = entity.getRandom().nextGaussian() * 0.02D;
-                serverLevel.sendParticles(SpeciesParticles.YOUTH_POTION.get(), entity.getRandomX(1), entity.getRandomY() + 0.5D, entity.getRandomZ(1), 0, vx, vy, vz, 1);
+            if (!player.getAbilities().instabuild) {
+                itemStack.shrink(1);
+                ItemStack glassBottle = new ItemStack(Items.GLASS_BOTTLE);
+                if (!player.getInventory().add(glassBottle)) {
+                    player.drop(glassBottle, false);
+                }
             }
-        }
-        if (ageable instanceof Springling springling) {
-            springling.setExtendedAmount(0);
-            springling.setTame(false, false);
-            springling.setOwnerUUID(null);
-        }
+            if (!mob.isBaby()) {
+                mob.setBaby(true);
+                if (player instanceof ServerPlayer serverPlayer) SpeciesCriterion.TURN_MOB_INTO_BABY.get().trigger(serverPlayer);
+                mob.playSound(SpeciesSoundEvents.YOUTH_POTION_BABY.get(), 1, 1);
+                if (livingEntity.level() instanceof ServerLevel serverLevel) {
+                    double d = livingEntity.getRandom().nextGaussian() * 0.02;
+                    double e = livingEntity.getRandom().nextGaussian() * 0.02;
+                    double f = livingEntity.getRandom().nextGaussian() * 0.02;
+                    serverLevel.sendParticles(SpeciesParticles.YOUTH_POTION.get(), livingEntity.getRandomX(1.0D), livingEntity.getRandomY() + 0.5D, livingEntity.getRandomZ(1.0D), 0, d, e, f, 1);
+                }
+            }
+            if (mob instanceof Springling springling) {
+                springling.setExtendedAmount(0);
+                springling.setTame(false, false);
+                springling.setOwnerUUID(null);
+            }
 
-        return InteractionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
+        }
+        return super.interactLivingEntity(itemStack, player, livingEntity, interactionHand);
     }
-
 }

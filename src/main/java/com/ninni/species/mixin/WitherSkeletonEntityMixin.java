@@ -13,14 +13,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(WitherSkeleton.class)
 public abstract class WitherSkeletonEntityMixin extends AbstractSkeleton {
-
-    private WitherSkeletonEntityMixin(EntityType<? extends AbstractSkeleton> type, Level world) {
-        super(type, world);
+    private WitherSkeletonEntityMixin(EntityType<? extends AbstractSkeleton> entityType, Level world) {
+        super(entityType, world);
     }
 
     @Inject(method = "registerGoals", at = @At("TAIL"))
     private void onInitGoals(CallbackInfo ci) {
-        this.goalSelector.addGoal(4, new AvoidEntityGoal<>(this, Wraptor.class, 10, 1, 1.25F));
+        this.goalSelector.addGoal(4, new AvoidEntityGoal<>(this, Wraptor.class, 10.0F, 1.D, 1.25D));
     }
-
 }

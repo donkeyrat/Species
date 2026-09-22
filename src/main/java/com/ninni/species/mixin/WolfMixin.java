@@ -1,6 +1,6 @@
 package com.ninni.species.mixin;
 
-import com.ninni.species.access.BewereagerableEntity;
+import com.ninni.species.mixin_util.WolfAccess;
 import com.ninni.species.server.entity.ai.goal.TransformDuringFullMoonGoal;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -21,69 +21,70 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import javax.annotation.Nullable;
+
 @Mixin(Wolf.class)
-public abstract class WolfMixin extends TamableAnimal implements NeutralMob, BewereagerableEntity {
+public abstract class WolfMixin extends TamableAnimal implements NeutralMob, WolfAccess {
+    @Shadow
+    @Final
+    private static EntityDataAccessor<Integer> DATA_COLLAR_COLOR;
 
-    @Shadow @Final private static EntityDataAccessor<Integer> DATA_COLLAR_COLOR;
+    private @Unique static final EntityDataAccessor<Boolean> DATA_IS_BEWEREAGER = SynchedEntityData.defineId(Wolf.class, EntityDataSerializers.BOOLEAN);
+    private @Unique static final EntityDataAccessor<Boolean> DATA_IS_CURED_BEWEREAGER = SynchedEntityData.defineId(Wolf.class, EntityDataSerializers.BOOLEAN);
 
-    @Unique private static final EntityDataAccessor<Boolean> DATA_IS_BEWEREAGER = SynchedEntityData.defineId(Wolf.class, EntityDataSerializers.BOOLEAN);
-    @Unique private static final EntityDataAccessor<Boolean> DATA_IS_CURED = SynchedEntityData.defineId(Wolf.class, EntityDataSerializers.BOOLEAN);
-
-    protected WolfMixin(EntityType<? extends TamableAnimal> type, Level level) {
-        super(type, level);
+    protected WolfMixin(EntityType<? extends TamableAnimal> entityType, Level level) {
+        super(entityType, level);
     }
 
     @Inject(method = "finalizeSpawn", at = @At("HEAD"))
     public void finalizeSpawn(ServerLevelAccessor l, DifficultyInstance d, MobSpawnType s, SpawnGroupData g, CallbackInfoReturnable<SpawnGroupData> cir) {
-        if (this.getRandom().nextInt(10) == 0) this.setBewereager(true); // TODO replace with gamerule?
+        if (this.getRandom().nextInt(10) == 0) this.setIsBewereager(true);
     }
 
     @Inject(method = "registerGoals", at = @At("TAIL"))
-    private void registerGoals(CallbackInfo ci) {
+    private void onInitGoals(CallbackInfo ci) {
         this.goalSelector.addGoal(1, new TransformDuringFullMoonGoal((Wolf)(Object)this));
     }
 
-    @Inject(method = "defineSynchedData", at = @At("TAIL"))
-    private void defineSynchedData(SynchedEntityData.Builder builder, CallbackInfo ci) {
+    @Inject(at = @At("TAIL"), method = "defineSynchedData")
+    private void S$defineSynchedData(SynchedEntityData.Builder builder, CallbackInfo ci) {
         builder.define(DATA_IS_BEWEREAGER, false);
-        builder.define(DATA_IS_CURED, false);
+        builder.define(DATA_IS_CURED_BEWEREAGER, false);
     }
 
-    @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
-    private void addAdditionalSaveData(CompoundTag tag, CallbackInfo ci) {
-        tag.putBoolean("is_bewereager", this.isBewereager());
-        tag.putBoolean("is_cured", this.isCured());
+
+    @Inject(at = @At("TAIL"), method = "addAdditionalSaveData")
+    private void S$addAdditionalSaveData(CompoundTag compoundTag, CallbackInfo ci) {
+        compoundTag.putBoolean("IsBewereager", this.getIsBewereager());
+        compoundTag.putBoolean("IsCuredBewereager", this.getIsCuredBewereager());
     }
 
-    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
-    private void readAdditionalSaveData(CompoundTag compoundTag, CallbackInfo ci) {
-        this.setBewereager(compoundTag.getBoolean("is_bewereager"));
-        this.setCured(compoundTag.getBoolean("is_cured"));
+    @Inject(at = @At("TAIL"), method = "readAdditionalSaveData")
+    private void S$readAdditionalSaveData(CompoundTag compoundTag, CallbackInfo ci) {
+        this.setIsBewereager(compoundTag.getBoolean("IsBewereager"));
+        this.setIsCuredBewereager(compoundTag.getBoolean("IsCuredBewereager"));
     }
 
     @Override
-    public boolean isBewereager() {
+    public @Unique boolean getIsBewereager() {
         return this.entityData.get(DATA_IS_BEWEREAGER);
     }
-
     @Override
-    public void setBewereager(boolean isBewereager) {
+    public @Unique void setIsBewereager(boolean isBewereager) {
         this.entityData.set(DATA_IS_BEWEREAGER, isBewereager);
     }
 
     @Override
-    public boolean isCured() {
-        return this.entityData.get(DATA_IS_CURED);
+    public @Unique boolean getIsCuredBewereager() {
+        return this.entityData.get(DATA_IS_CURED_BEWEREAGER);
+    }
+    @Override
+    public @Unique void setIsCuredBewereager(boolean isCuredBewereager) {
+        this.entityData.set(DATA_IS_CURED_BEWEREAGER, isCuredBewereager);
     }
 
     @Override
-    public void setCured(boolean setCured) {
-        this.entityData.set(DATA_IS_CURED, setCured);
-    }
-
-    @Override
-    public void setCollarColor(DyeColor color) {
+    public @Unique void setNewCollarColor(DyeColor color) {
         this.entityData.set(DATA_COLLAR_COLOR, color.getId());
     }
-
 }

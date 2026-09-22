@@ -87,7 +87,7 @@ public class PetrifiedEggBlock extends Block {
     @Override
     public void onPlace(BlockState blockState, Level level, BlockPos blockPos, BlockState blockState2, boolean bl) {
         boolean bl2 = PetrifiedEggBlock.hatchBoost(level, blockPos);
-        if (level.getBlockState(blockPos.below()).is(SpeciesTags.Blocks.PETRIFIED_EGG_HATCH)) level.setBlock(blockPos, blockState.setValue(HEATED, true), 2);
+        if (level.getBlockState(blockPos.below()).is(SpeciesTags.PETRIFIED_EGG_HATCH)) level.setBlock(blockPos, blockState.setValue(HEATED, true), 2);
         if (!level.isClientSide() && bl2) level.levelEvent(3009, blockPos, 0);
         int i = bl2 ? BOOSTED_HATCH_TIME_TICKS : REGULAR_HATCH_TIME_TICKS;
         int j = i / 3;
@@ -115,9 +115,9 @@ public class PetrifiedEggBlock extends Block {
     }
 
     public static boolean isBelowHeated(BlockGetter blockGetter, BlockPos blockPos) {
-        return blockGetter.getBlockState(blockPos.below()).is(SpeciesTags.Blocks.PETRIFIED_EGG_HATCH);
+        return blockGetter.getBlockState(blockPos.below()).is(SpeciesTags.PETRIFIED_EGG_HATCH);
     }
     public static boolean hatchBoost(BlockGetter blockGetter, BlockPos blockPos) {
-        return blockGetter.getBlockState(blockPos.below()).is(SpeciesTags.Blocks.PETRIFIED_EGG_HATCH_BOOST);
+        return blockGetter.getBlockState(blockPos.below()).is(SpeciesTags.PETRIFIED_EGG_HATCH_BOOST);
     }
 }

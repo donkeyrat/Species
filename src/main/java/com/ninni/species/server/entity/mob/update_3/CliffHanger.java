@@ -60,7 +60,7 @@ public class CliffHanger extends Hanger {
         this.goalSelector.addGoal(0, new SwitchGravityGoal(this));
         this.goalSelector.addGoal(0, new PullTowardsMouthGoal(this));
         this.goalSelector.addGoal(1, new CeilingTargetingGoal(this, 1.5,
-                entity -> (entity.getType().is(SpeciesTags.EntityTypes.CLIFF_HANGER_PREY) || entity instanceof Player) && this.canAttack(entity) && entity.isAlive() && !entity.isSpectator())
+                entity -> (entity.getType().is(SpeciesTags.CLIFF_HANGER_PREY) || entity instanceof Player) && this.canAttack(entity) && entity.isAlive() && !entity.isSpectator())
         );
         this.goalSelector.addGoal(2, new AvoidEntityGoal<>(this, LivingEntity.class, 4.0F, 1D, 1.25D,  livingEntity -> !this.isAttached()));
     }
@@ -427,7 +427,7 @@ public class CliffHanger extends Hanger {
 
     @SuppressWarnings("unused")
     public static boolean canSpawn(EntityType<? extends PathfinderMob> entityType, ServerLevelAccessor levelAccessor, MobSpawnType spawnType, BlockPos blockPos, RandomSource randomSource) {
-        return levelAccessor.getBrightness(LightLayer.BLOCK, blockPos) == 0 && levelAccessor.getBrightness(LightLayer.SKY, blockPos) == 0 && levelAccessor.getBlockState(blockPos.below()).is(SpeciesTags.Blocks.CLIFF_HANGER_SPAWNABLE_ON) && levelAccessor.getBlockState(blockPos.below()).isValidSpawn(levelAccessor, blockPos, entityType) && levelAccessor.getDifficulty() != Difficulty.PEACEFUL;
+        return levelAccessor.getBrightness(LightLayer.BLOCK, blockPos) == 0 && levelAccessor.getBrightness(LightLayer.SKY, blockPos) == 0 && levelAccessor.getBlockState(blockPos.below()).is(SpeciesTags.CLIFF_HANGER_SPAWNABLE_ON) && levelAccessor.getBlockState(blockPos.below()).isValidSpawn(levelAccessor, blockPos, entityType) && levelAccessor.getDifficulty() != Difficulty.PEACEFUL;
     }
 
     @Override

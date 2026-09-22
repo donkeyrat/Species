@@ -1,9 +1,0 @@
-{
-  "entity_type": "minecraft:enderman",
-  "item": {
-    "id": "minecraft:ender_pearl",
-    "Count": 1
-  },
-  "min_tries": 4,
-  "max_tries": 8
-}

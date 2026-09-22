@@ -12,22 +12,39 @@ import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 import static net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventoryFollowsMouse;
 
 @OnlyIn(Dist.CLIENT)
 public class CruncherInventoryScreen extends AbstractContainerScreen<CruncherInventoryMenu> {
-
-    private static final ResourceLocation CRUNCHER_INVENTORY_LOCATION = Species.of("textures/gui/container/cruncher.png");
-
-    private static final List<ResourceLocation> INPUT_LIST = Arrays.stream(new String[] {
-        "arrow", "bone", "broken_links", "ender_pearl", "ghoul_tongue", "gold_nugget", "ingot", "kinetic_core",
-        "mob_head", "nautilus_shell", "phantom_membrane", "powder", "prismarine_crystals", "prismarine_shard",
-        "rotten_flesh", "sand", "slime_ball", "spider_eye", "string", "tipped_arrow", "werefang", "wicked_wax"
-	}).map(icon -> Species.of("item/empty_slot/" + icon)).toList();
-
+    private static final ResourceLocation CRUNCHER_INVENTORY_LOCATION = ResourceLocation.fromNamespaceAndPath(Species.MOD_ID, "textures/gui/container/cruncher.png");
+    private static final Function<String, ResourceLocation> FUNCTION = s -> ResourceLocation.fromNamespaceAndPath(Species.MOD_ID, "item/empty_slot/" + s);
+    private static final List<ResourceLocation> INPUT_LIST = List.of(
+            FUNCTION.apply("arrow"),
+            FUNCTION.apply("bone"),
+            FUNCTION.apply("broken_links"),
+            FUNCTION.apply("ender_pearl"),
+            FUNCTION.apply("ghoul_tongue"),
+            FUNCTION.apply("gold_nugget"),
+            FUNCTION.apply("ingot"),
+            FUNCTION.apply("kinetic_core"),
+            FUNCTION.apply("mob_head"),
+            FUNCTION.apply("nautilus_shell"),
+            FUNCTION.apply("phantom_membrane"),
+            FUNCTION.apply("powder"),
+            FUNCTION.apply("prismarine_crystals"),
+            FUNCTION.apply("prismarine_shard"),
+            FUNCTION.apply("rotten_flesh"),
+            FUNCTION.apply("sand"),
+            FUNCTION.apply("slime_ball"),
+            FUNCTION.apply("spider_eye"),
+            FUNCTION.apply("string"),
+            FUNCTION.apply("tipped_arrow"),
+            FUNCTION.apply("werefang"),
+            FUNCTION.apply("wicked_wax")
+    );
     private final CruncherSlotBackground inputIcon = new CruncherSlotBackground(0);
     private float xMouse;
     private float yMouse;
@@ -54,7 +71,7 @@ public class CruncherInventoryScreen extends AbstractContainerScreen<CruncherInv
         this.inputIcon.render(this.menu, guiGraphics, f, this.leftPos, this.topPos);
         if (this.cruncher.getPelletData() == null) return;
 
-        Entity entity = this.cruncher.getPelletData().value().entityType().create(cruncher.level());
+        Entity entity = this.cruncher.getPelletData().entityType().create(cruncher.level());
 
         if (!(entity instanceof LivingEntity livingEntity)) return;
 

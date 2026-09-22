@@ -10,7 +10,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 
 public class WickedSwapperItem extends Item {
 
@@ -22,18 +21,17 @@ public class WickedSwapperItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level  level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        Vec3 pos = player.position();
-        level.playSound(null, pos.x, pos.y, pos.z, SpeciesSoundEvents.WICKED_SWAPPER_THROW.get(), SoundSource.PLAYERS, 1, 1);
+        level.playSound(null, player.getX(), player.getY(), player.getZ(), SpeciesSoundEvents.WICKED_SWAPPER_THROW.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
         player.awardStat(Stats.ITEM_USED.get(this));
         player.getCooldowns().addCooldown(this, 20);
 
         if (!level.isClientSide) {
             WickedSwapperProjectile projectile = new WickedSwapperProjectile(level, player);
-            projectile.setPos(pos.x, player.getEyeY() - 0.1F, pos.z);
-            projectile.shootFromRotation(player, player.getXRot(), player.getYRot(), 0, 2, 1);
+            projectile.setPos(player.getX(), player.getEyeY() - 0.1, player.getZ());
+            projectile.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 2, 1.0F);
             level.addFreshEntity(projectile);
         }
-        stack.consume(1, player);
+        if (!player.getAbilities().instabuild) stack.shrink(1);
 
         return InteractionResultHolder.success(stack);
     }

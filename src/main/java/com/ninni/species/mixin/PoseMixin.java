@@ -2,7 +2,6 @@ package com.ninni.species.mixin;
 
 import com.ninni.species.server.entity.util.SpeciesPose;
 import net.minecraft.world.entity.Pose;
-import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -16,11 +15,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-// TODO replace with proper enum extension
-@Mixin(Pose.class)
+@Mixin({Pose.class})
 public class PoseMixin {
+    @Shadow
+    @Mutable
+    @Final
+    private static Pose[] $VALUES;
 
-    @Shadow @Mutable @Final private static Pose[] $VALUES;
+    public PoseMixin() {
+    }
 
     @Invoker("<init>")
     public static Pose newPose(String name, int ordinal, int id) {
@@ -28,16 +31,16 @@ public class PoseMixin {
     }
 
     @Inject(
-        method = "<clinit>",
-        at = @At(
-            value = "FIELD",
-            target = "Lnet/minecraft/world/entity/Pose;$VALUES:[Lnet/minecraft/world/entity/Pose;",
-            shift = At.Shift.AFTER,
-            opcode = Opcodes.PUTSTATIC
-        )
+            method = {"<clinit>"},
+            at = {@At(
+                    value = "FIELD",
+                    target = "Lnet/minecraft/world/entity/Pose;$VALUES:[Lnet/minecraft/world/entity/Pose;",
+                    shift = At.Shift.AFTER,
+                    opcode = 179
+            )}
     )
     private static void US$addCustomPose(CallbackInfo ci) {
-        List<Pose> poses = new ArrayList<>(Arrays.asList($VALUES));
+        List<Pose> poses = new ArrayList(Arrays.asList($VALUES));
         Pose last = poses.getLast();
         int i = 1;
 

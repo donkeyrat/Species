@@ -2,9 +2,7 @@ package com.ninni.species.mixin;
 
 import com.ninni.species.server.block.property.SpeciesNoteBlockInstrument;
 import net.minecraft.core.Holder;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
-import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -18,29 +16,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-// TODO replace with proper enum extension
 @Mixin(NoteBlockInstrument.class)
 public class NoteBlockInstrumentMixin {
-
-    @Shadow @Mutable @Final private static NoteBlockInstrument[] $VALUES;
+    @Shadow
+    @Mutable
+    @Final
+    private static NoteBlockInstrument[] $VALUES;
 
     @Invoker("<init>")
-    public static NoteBlockInstrument newInstrument(String name, int id, String enumName, Holder<SoundEvent> sound, NoteBlockInstrument.Type type) {
+    public static NoteBlockInstrument newInstrument(String name, int id, String enumName, Holder sound, NoteBlockInstrument.Type type) {
         throw new AssertionError();
     }
 
-    @Inject(
-        method = "<clinit>",
-        at = @At(
-            value = "FIELD",
-            target = "Lnet/minecraft/world/level/block/state/properties/NoteBlockInstrument;$VALUES:[Lnet/minecraft/world/level/block/state/properties/NoteBlockInstrument;",
-            shift = At.Shift.AFTER,
-            opcode = Opcodes.PUTSTATIC
-        )
-    )
+    @Inject(method = "<clinit>", at = @At(value = "FIELD", target = "Lnet/minecraft/world/level/block/state/properties/NoteBlockInstrument;$VALUES:[Lnet/minecraft/world/level/block/state/properties/NoteBlockInstrument;", shift = At.Shift.AFTER))
     private static void US$addCustomInstruments(CallbackInfo ci) {
         List<NoteBlockInstrument> instruments = new ArrayList<>(Arrays.asList($VALUES));
-        NoteBlockInstrument last = instruments.getLast();
+        NoteBlockInstrument last = instruments.get(instruments.size() - 1);
         int i = 1;
         for (SpeciesNoteBlockInstrument instrument : SpeciesNoteBlockInstrument.values()) {
             instruments.add(newInstrument(instrument.name(),
@@ -53,5 +44,4 @@ public class NoteBlockInstrumentMixin {
         }
         $VALUES = instruments.toArray(new NoteBlockInstrument[0]);
     }
-
 }

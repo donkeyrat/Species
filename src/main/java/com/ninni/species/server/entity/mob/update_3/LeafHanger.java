@@ -71,7 +71,7 @@ public class LeafHanger extends Hanger {
         this.goalSelector.addGoal(0, new PullTowardsMouthGoal(this));
         this.goalSelector.addGoal(0, new BaitTargetingGoal(this,
                 entity -> {
-                    boolean flag = (entity.getType().is(SpeciesTags.EntityTypes.LEAF_HANGER_PREY) || entity instanceof Player) && this.canAttack(entity) && entity.isAlive() && !entity.isSpectator();
+                    boolean flag = (entity.getType().is(SpeciesTags.LEAF_HANGER_PREY) || entity instanceof Player) && this.canAttack(entity) && entity.isAlive() && !entity.isSpectator();
                     if (entity instanceof Axolotl axolotl && axolotl.isPlayingDead()) return false;
                     return flag;
                 }
@@ -89,7 +89,7 @@ public class LeafHanger extends Hanger {
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor serverLevelAccessor, DifficultyInstance difficultyInstance, MobSpawnType mobSpawnType, @org.jetbrains.annotations.Nullable SpawnGroupData spawnGroupData) {
         Holder<Biome> holder = serverLevelAccessor.getBiome(this.blockPosition());
 
-        if (holder.is(SpeciesTags.Biomes.LEAF_HANGER_HAS_DRIPLEAF)) {
+        if (holder.is(SpeciesTags.LEAF_HANGER_HAS_DRIPLEAF)) {
             this.setBaitBlockState(Blocks.BIG_DRIPLEAF.defaultBlockState());
         }
         return super.finalizeSpawn(serverLevelAccessor, difficultyInstance, mobSpawnType, spawnGroupData);

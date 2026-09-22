@@ -1,9 +1,0 @@
-{
-  "entity_type": "minecraft:creeper",
-  "item": {
-    "id": "minecraft:gunpowder",
-    "Count": 1
-  },
-  "min_tries": 8,
-  "max_tries": 12
-}

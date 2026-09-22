@@ -1,9 +1,0 @@
-{
-  "entity_type": "minecraft:drowned",
-  "item": {
-    "id": "minecraft:nautilus_shell",
-    "Count": 1
-  },
-  "min_tries": 16,
-  "max_tries": 20
-}

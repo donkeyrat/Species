@@ -1,16 +1,16 @@
 package com.ninni.species.server.block.entity;
 
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
-import com.ninni.species.Species;
 import com.ninni.species.registry.SpeciesBlockEntities;
-import com.ninni.species.server.CruncherHunting;
+import com.ninni.species.server.data.CruncherPelletManager;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -28,10 +28,12 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 
 public class CruncherPelletBlockEntity extends BlockEntity {
-
-    @Nullable private Holder<CruncherHunting> data = null;
+    @Nullable
+    private CruncherPelletManager.CruncherPelletData data = null;
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     public CruncherPelletBlockEntity(BlockPos blockPos, BlockState blockState) {
         super(SpeciesBlockEntities.CRUNCHER_PELLET.get(), blockPos, blockState);
@@ -41,7 +43,7 @@ public class CruncherPelletBlockEntity extends BlockEntity {
     public void loadAdditional(CompoundTag compoundTag, HolderLookup.Provider provider) {
         super.loadAdditional(compoundTag, provider);
         if (compoundTag.contains("PelletData", 10)) {
-            CruncherHunting.HOLDER_CODEC.parse(new Dynamic<>(NbtOps.INSTANCE, compoundTag.getCompound("PelletData"))).resultOrPartial(Species.LOGGER::error).ifPresent(this::setPelletData);
+            CruncherPelletManager.CruncherPelletData.CODEC.parse(new Dynamic<>(NbtOps.INSTANCE, compoundTag.getCompound("PelletData"))).resultOrPartial(LOGGER::error).ifPresent(this::setPelletData);
         }
     }
 
@@ -49,30 +51,30 @@ public class CruncherPelletBlockEntity extends BlockEntity {
     protected void saveAdditional(CompoundTag compoundTag, HolderLookup.Provider provider) {
         super.saveAdditional(compoundTag, provider);
         if (this.getPelletData() != null) {
-            CruncherHunting.HOLDER_CODEC.encodeStart(NbtOps.INSTANCE, this.getPelletData()).resultOrPartial(Species.LOGGER::error).ifPresent(tag -> compoundTag.put("PelletData", tag));
+            CruncherPelletManager.CruncherPelletData.CODEC.encodeStart(NbtOps.INSTANCE, this.getPelletData()).resultOrPartial(LOGGER::error).ifPresent(tag -> compoundTag.put("PelletData", tag));
         }
     }
 
-    public Holder<CruncherHunting> getPelletData() {
+    public CruncherPelletManager.CruncherPelletData getPelletData() {
         return this.data;
     }
 
-    public void setPelletData(Holder<CruncherHunting> data) {
+    public void setPelletData(CruncherPelletManager.CruncherPelletData data) {
         this.data = data;
     }
 
     public void unpackLootTable(Player player) {
         if (this.level == null || this.level.isClientSide || this.level.getServer() == null) return;
 
-        Holder<CruncherHunting> pelletData = this.getPelletData();
+        CruncherPelletManager.CruncherPelletData pelletData = this.getPelletData();
 
         if (pelletData == null) return;
 
         if (player instanceof ServerPlayer serverPlayer) {
-            CriteriaTriggers.GENERATE_LOOT.trigger(serverPlayer, pelletData.value().entityType().getDefaultLootTable());
+            CriteriaTriggers.GENERATE_LOOT.trigger(serverPlayer, pelletData.entityType().getDefaultLootTable());
         }
 
-        int count = UniformInt.of(pelletData.value().minTries(), pelletData.value().maxTries()).sample(player.getRandom());
+        int count = UniformInt.of(pelletData.minTries(), pelletData.maxTries()).sample(player.getRandom());
 
         for (int i = 0; i < count; i++) {
             ObjectArrayList<ItemStack> randomDrops = this.getRandomDrops(player);
@@ -87,10 +89,10 @@ public class CruncherPelletBlockEntity extends BlockEntity {
     }
 
     public ObjectArrayList<ItemStack> getRandomDrops(Player player) {
-        Holder<CruncherHunting> data = this.getPelletData();
-        var key = data.value().entityType().getDefaultLootTable();
+        CruncherPelletManager.CruncherPelletData data = this.getPelletData();
+        var key = data.entityType().getDefaultLootTable();
         LootTable lootTable = this.level.getServer().reloadableRegistries().getLootTable(key);
-        Entity entity = data.value().entityType().create(this.level);
+        Entity entity = data.entityType().create(this.level);
 
         DamageSource damageSource;
 

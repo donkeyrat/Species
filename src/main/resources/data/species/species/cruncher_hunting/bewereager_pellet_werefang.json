@@ -1,9 +1,0 @@
-{
-  "entity_type": "species:bewereager",
-  "item": {
-    "id": "species:werefang",
-    "Count": 1
-  },
-  "min_tries": 4,
-  "max_tries": 12
-}

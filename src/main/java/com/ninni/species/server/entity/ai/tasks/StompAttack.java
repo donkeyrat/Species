@@ -1,7 +1,7 @@
 package com.ninni.species.server.entity.ai.tasks;
 
 import com.google.common.collect.ImmutableMap;
-import com.ninni.species.client.events.ClientEvents;
+import com.ninni.species.Species;
 import com.ninni.species.client.screen.ScreenShakeEvent;
 import com.ninni.species.registry.SpeciesDamageTypes;
 import com.ninni.species.registry.SpeciesMemoryModuleTypes;
@@ -43,7 +43,7 @@ public class StompAttack extends Behavior<Cruncher> {
     @Override
     protected void start(ServerLevel serverLevel, Cruncher livingEntity, long l) {
         if (livingEntity.getState() == Cruncher.CruncherState.IDLE) {
-            livingEntity.setState(cruncherState);
+            livingEntity.transitionTo(cruncherState);
         }
         livingEntity.playSound(SpeciesSoundEvents.CRUNCHER_STOMP.get(), 2.0F, 1.0F);
         livingEntity.getBrain().setMemoryWithExpiry(SpeciesMemoryModuleTypes.STOMP_CHARGING.get(), Unit.INSTANCE, 14);
@@ -79,7 +79,7 @@ public class StompAttack extends Behavior<Cruncher> {
             entity.push(vec33.x() * e, vec33.y() * d, vec33.z() * e);
         }
 
-        ClientEvents.SCREEN_SHAKE_EVENTS.add(new ScreenShakeEvent(cruncher.position(), 10, 2.5F, 25, false));
+        Species.PROXY.screenShake(new ScreenShakeEvent(cruncher.position(), 10, 2.5F, 25, false));
 
         for (int i = 0; i <= (cruncher.getRandom().nextInt(50) + 80); i++) serverLevel.sendParticles(ParticleTypes.CLOUD, cruncher.getRandomX(2), cruncher.getY() + 0.25f, cruncher.getRandomZ(2), 1, 0.0, 0.0, 0.0,0.0);
         for (int i = 0; i <= (cruncher.getRandom().nextInt(20) + 20); i++) serverLevel.sendParticles(SpeciesParticles.ASCENDING_DUST.get(), cruncher.getRandomX(2), cruncher.getY() + 0.25f, cruncher.getRandomZ(2), 1, 0.0, 1.0, 0.0,0.0);
@@ -90,7 +90,7 @@ public class StompAttack extends Behavior<Cruncher> {
     @Override
     protected void stop(ServerLevel serverLevel, Cruncher livingEntity, long l) {
         if (livingEntity.getState() == cruncherState) {
-            livingEntity.setState(Cruncher.CruncherState.IDLE);
+            livingEntity.transitionTo(Cruncher.CruncherState.IDLE);
         }
     }
 }

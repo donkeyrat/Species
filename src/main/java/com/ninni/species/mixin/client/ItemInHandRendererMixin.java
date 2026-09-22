@@ -2,7 +2,7 @@ package com.ninni.species.mixin.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import com.ninni.species.access.DisguisingEntity;
+import com.ninni.species.mixin_util.LivingEntityAccess;
 import com.ninni.species.registry.SpeciesItems;
 import com.ninni.species.server.item.CrankbowItem;
 import com.ninni.species.server.item.SpectraliburItem;
@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,6 +21,8 @@ import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,6 +30,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+@OnlyIn(Dist.CLIENT)
 @Mixin(ItemInHandRenderer.class)
 public abstract class ItemInHandRendererMixin {
 
@@ -39,19 +41,18 @@ public abstract class ItemInHandRendererMixin {
 
     @Inject(at = @At("TAIL"), method = "renderArmWithItem")
     private void renderDisguisedArms(AbstractClientPlayer player, float v, float v1, InteractionHand hand, float v2, ItemStack stack, float v3, PoseStack poseStack, MultiBufferSource bufferSource, int i, CallbackInfo ci) {
-        Entity disguise = ((DisguisingEntity)player).getDisguisedEntity();
-        boolean isMainHand = hand == InteractionHand.MAIN_HAND;
-        HumanoidArm arm = isMainHand ? player.getMainArm().getOpposite() : player.getMainArm();
-        if (player.isScoping()) return;
-        if (!player.getItemBySlot(EquipmentSlot.HEAD).is(SpeciesItems.WICKED_MASK.get())) return;
-        if (disguise == null) return;
-        if (!(disguise instanceof Zombie)) return; // TODO is this necessary?
+        LivingEntity disguise = ((LivingEntityAccess)player).getDisguisedEntity();
+        boolean flag = hand == InteractionHand.MAIN_HAND;
+        HumanoidArm humanoidarm = flag ? player.getMainArm().getOpposite() : player.getMainArm();
 
-        poseStack.pushPose();
-        if (player.getOffhandItem().isEmpty() && !player.getMainHandItem().is(Items.FILLED_MAP)) {
-            if (!(player.getMainHandItem().getItem() instanceof CrossbowItem && CrossbowItem.isCharged(player.getMainHandItem()))) {
-                if (isMainHand && !player.isInvisible()) {
-                    this.renderPlayerArm(poseStack, bufferSource, i, v3, v2, arm);
+        if (!player.isScoping() && player.getItemBySlot(EquipmentSlot.HEAD).is(SpeciesItems.WICKED_MASK.get()) && disguise != null && disguise instanceof Zombie) {
+
+            poseStack.pushPose();
+            if (player.getOffhandItem().isEmpty() && !player.getMainHandItem().is(Items.FILLED_MAP)) {
+                if (!(player.getMainHandItem().getItem() instanceof CrossbowItem && CrossbowItem.isCharged(player.getMainHandItem()))) {
+                    if (flag && !player.isInvisible()) {
+                        this.renderPlayerArm(poseStack, bufferSource, i, v3, v2, humanoidarm);
+                    }
                 }
             }
         }
@@ -59,50 +60,51 @@ public abstract class ItemInHandRendererMixin {
 
 
     @Inject(at = @At("HEAD"), method = "evaluateWhichHandsToRender", cancellable = true)
-    private static void evaluateWhichHandsToRender(LocalPlayer player, CallbackInfoReturnable<ItemInHandRenderer.HandRenderSelection> cir) {
-        ItemStack stack = player.getUseItem();
-        if (stack.getItem() instanceof CrankbowItem && player.isUsingItem() && stack.has(DataComponents.CHARGED_PROJECTILES)) {
-            cir.setReturnValue(player.getUsedItemHand() == InteractionHand.MAIN_HAND ? ItemInHandRenderer.HandRenderSelection.RENDER_MAIN_HAND_ONLY : ItemInHandRenderer.HandRenderSelection.RENDER_OFF_HAND_ONLY);
+    private static void S$evaluateWhichHandsToRender(LocalPlayer localPlayer, CallbackInfoReturnable<ItemInHandRenderer.HandRenderSelection> cir) {
+        ItemStack stack = localPlayer.getUseItem();
+        if (stack.getItem() instanceof CrankbowItem && localPlayer.isUsingItem() && stack.has(DataComponents.CHARGED_PROJECTILES)) {
+            InteractionHand interactionhand = localPlayer.getUsedItemHand();
+            cir.setReturnValue(interactionhand == InteractionHand.MAIN_HAND ? ItemInHandRenderer.HandRenderSelection.RENDER_MAIN_HAND_ONLY : ItemInHandRenderer.HandRenderSelection.RENDER_OFF_HAND_ONLY);
         }
     }
 
     @Inject(at = @At("HEAD"), method = "selectionUsingItemWhileHoldingBowLike", cancellable = true)
-    private static void selectionUsingItemWhileHoldingBowLike(LocalPlayer localPlayer, CallbackInfoReturnable<ItemInHandRenderer.HandRenderSelection> cir) {
+    private static void S$selectionUsingItemWhileHoldingBowLike(LocalPlayer localPlayer, CallbackInfoReturnable<ItemInHandRenderer.HandRenderSelection> cir) {
         ItemStack stack = localPlayer.getUseItem();
-        InteractionHand hand = localPlayer.getUsedItemHand();
+        InteractionHand interactionhand = localPlayer.getUsedItemHand();
         if (stack.getItem() instanceof CrankbowItem) {
-            cir.setReturnValue(ItemInHandRenderer.HandRenderSelection.onlyForHand(hand));
+            cir.setReturnValue(ItemInHandRenderer.HandRenderSelection.onlyForHand(interactionhand));
         }
     }
 
     @Inject(at = @At("HEAD"), method = "renderArmWithItem", cancellable = true)
     private void renderCrankBowItem(AbstractClientPlayer player, float v, float v1, InteractionHand hand, float v2, ItemStack stack, float v3, PoseStack poseStack, MultiBufferSource bufferSource, int i, CallbackInfo ci) {
-        boolean isMainHand = hand == InteractionHand.MAIN_HAND;
-        HumanoidArm arm = isMainHand ? player.getMainArm().getOpposite() : player.getMainArm();
-        if (!(stack.getItem() instanceof CrankbowItem) && !(stack.getItem() instanceof SpectraliburItem)) return;
-        if (player.getUseItem() != stack) return;
+        boolean flag = hand == InteractionHand.MAIN_HAND;
+        HumanoidArm humanoidarm = flag ? player.getMainArm().getOpposite() : player.getMainArm();
 
-        ci.cancel();
-        poseStack.pushPose();
-        boolean isRightHand = arm == HumanoidArm.RIGHT;
-        int i2 = isRightHand ? 1 : -1;
-        float f12 = -0.4F * Mth.sin(Mth.sqrt(v2) * 3.1415927F);
-        float f7 = 0.2F * Mth.sin(Mth.sqrt(v2) * 6.2831855F);
-        float f11 = -0.2F * Mth.sin(v2 * 3.1415927F);
-        poseStack.translate((float)i2 * f12, f7, f11);
-        this.applyItemArmTransform(poseStack, arm, v3);
-        this.applyItemArmAttackTransform(poseStack, arm, v2);
-        if (v2 < 0.001F) {
-            if (stack.getItem() instanceof CrankbowItem) {
-                poseStack.translate((float) i2 * -0.641864F, 0.0F, 0.0F);
-                poseStack.mulPose(Axis.YP.rotationDegrees((float) i2 * 10.0F));
+        if ((stack.getItem() instanceof CrankbowItem || stack.getItem() instanceof SpectraliburItem) && player.getUseItem() == stack) {
+            ci.cancel();
+            poseStack.pushPose();
+            boolean flag2 = humanoidarm == HumanoidArm.RIGHT;
+            int i2 = flag2 ? 1 : -1;
+            float f12 = -0.4F * Mth.sin(Mth.sqrt(v2) * 3.1415927F);
+            float f7 = 0.2F * Mth.sin(Mth.sqrt(v2) * 6.2831855F);
+            float f11 = -0.2F * Mth.sin(v2 * 3.1415927F);
+            poseStack.translate((float)i2 * f12, f7, f11);
+            this.applyItemArmTransform(poseStack, humanoidarm, v3);
+            this.applyItemArmAttackTransform(poseStack, humanoidarm, v2);
+            if (v2 < 0.001F) {
+                if (stack.getItem() instanceof CrankbowItem) {
+                    poseStack.translate((float) i2 * -0.641864F, 0.0F, 0.0F);
+                    poseStack.mulPose(Axis.YP.rotationDegrees((float) i2 * 10.0F));
+                }
+                if (stack.getItem() instanceof SpectraliburItem && flag) {
+                    poseStack.translate((float) i2 * -1F, 0.15F, -0.05F);
+                    poseStack.mulPose(Axis.YP.rotationDegrees((float) i2 * 100.0F));
+                }
             }
-            if (stack.getItem() instanceof SpectraliburItem && isMainHand) {
-                poseStack.translate((float) i2 * -1F, 0.15F, -0.05F);
-                poseStack.mulPose(Axis.YP.rotationDegrees((float) i2 * 100.0F));
-            }
+            this.renderItem(player, stack, flag2 ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, !flag2, poseStack, bufferSource, i);
+            poseStack.popPose();
         }
-        this.renderItem(player, stack, isRightHand ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, !isRightHand, poseStack, bufferSource, i);
-        poseStack.popPose();
     }
 }

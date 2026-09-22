@@ -1,17 +1,21 @@
 package com.ninni.species.server.entity.mob.update_3;
 
-import com.ninni.species.access.HarpooningEntity;
+import com.ninni.species.mixin_util.PlayerAccess;
 import com.ninni.species.registry.SpeciesEntities;
 import com.ninni.species.registry.SpeciesItems;
 import com.ninni.species.registry.SpeciesSoundEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -22,6 +26,7 @@ import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.common.extensions.IEntityExtension;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -182,7 +187,7 @@ public class Harpoon extends Projectile {
             }
 
             if (this.onGround()) {
-                if (player instanceof HarpooningEntity playerAccess) playerAccess.setHarpoonId(-1);
+                if (player instanceof PlayerAccess playerAccess) playerAccess.setHarpoonId(-1);
                 removeHook(player, 20);
             }
 
@@ -280,7 +285,7 @@ public class Harpoon extends Projectile {
     private void handleRelease(Player player) {
         if (!isZiplining && this.isAnchored()) player.setDeltaMovement(player.getDeltaMovement().multiply(releaseFactor, 1, releaseFactor).add(0, 0.1 * releaseFactor, 0));
         stopZiplining();
-        if (player instanceof HarpooningEntity playerAccess) playerAccess.setHarpoonId(-1);
+        if (player instanceof PlayerAccess playerAccess) playerAccess.setHarpoonId(-1);
         removeHook(player, 5);
     }
 

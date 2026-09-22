@@ -665,7 +665,7 @@ public class Birt extends Animal implements NeutralMob, FlyingAnimal, VibrationS
         private List<BlockPos> getNearbyFreeDwellings() {
             BlockPos blockPos = Birt.this.blockPosition();
             PoiManager pointOfInterestStorage = ((ServerLevel) Birt.this.level()).getPoiManager();
-            Stream<PoiRecord> stream = pointOfInterestStorage.getInRange((poiType) -> poiType.is(SpeciesTags.PointsOfInterest.BIRT_HOME), blockPos, 20, PoiManager.Occupancy.ANY);
+            Stream<PoiRecord> stream = pointOfInterestStorage.getInRange((poiType) -> poiType.is(SpeciesTags.BIRT_HOME), blockPos, 20, PoiManager.Occupancy.ANY);
             return stream.map(PoiRecord::getPos).filter(Birt.this::doesDwellingHaveSpace).sorted(Comparator.comparingDouble((blockPos2) -> blockPos2.distSqr(blockPos))).collect(Collectors.toList());
         }
     }

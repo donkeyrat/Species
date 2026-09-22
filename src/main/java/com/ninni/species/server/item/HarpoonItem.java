@@ -1,9 +1,9 @@
 package com.ninni.species.server.item;
 
+import com.ninni.species.registry.SpeciesNetwork;
 import com.ninni.species.registry.SpeciesSoundEvents;
 import com.ninni.species.server.entity.mob.update_3.Harpoon;
 import com.ninni.species.server.packet.HarpoonSyncPacket;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -15,16 +15,9 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.network.PacketDistributor;
 
-import javax.annotation.Nullable;
-
 public class HarpoonItem extends Item {
-
     public HarpoonItem(Properties properties) {
         super(properties);
-    }
-
-    public static float getUsingProperty(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed) {
-        return entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1 : 0;
     }
 
     @Override

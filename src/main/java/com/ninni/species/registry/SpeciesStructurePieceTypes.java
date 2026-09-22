@@ -7,11 +7,11 @@ import com.ninni.species.server.structure.SpectraliburChamberGenerator;
 import com.ninni.species.server.structure.WraptorCoopGenerator;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class SpeciesStructurePieceTypes {
-
     public static final DeferredRegister<StructurePieceType> STRUCTURE_PIECE_TYPES = DeferredRegister.create(Registries.STRUCTURE_PIECE, Species.MOD_ID);
 
     public static final DeferredHolder<StructurePieceType, StructurePieceType> WRAPTOR_COOP = register("wraptor_coop", WraptorCoopGenerator.Piece::new);
@@ -26,5 +26,4 @@ public class SpeciesStructurePieceTypes {
     private static DeferredHolder<StructurePieceType, StructurePieceType> register(String id, StructurePieceType.StructureTemplateType type) {
         return register(id, (StructurePieceType) type);
     }
-
 }

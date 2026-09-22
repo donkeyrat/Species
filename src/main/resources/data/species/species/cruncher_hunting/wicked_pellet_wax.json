@@ -1,9 +1,0 @@
-{
-  "entity_type": "species:wicked",
-  "item": {
-    "id": "species:wicked_wax",
-    "Count": 1
-  },
-  "min_tries": 6,
-  "max_tries": 12
-}

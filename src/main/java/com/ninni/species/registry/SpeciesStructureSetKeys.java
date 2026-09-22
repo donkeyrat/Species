@@ -3,14 +3,13 @@ package com.ninni.species.registry;
 import com.ninni.species.Species;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 
 public class SpeciesStructureSetKeys {
+    public static final ResourceKey<StructureSet> WRAPTOR_COOPS = of("wraptor_coops");
 
-    public static final ResourceKey<StructureSet> WRAPTOR_COOPS = create("wraptor_coops");
-
-    public static ResourceKey<StructureSet> create(String name) {
-        return ResourceKey.create(Registries.STRUCTURE_SET, Species.of(name));
+    private static ResourceKey<StructureSet> of(String id) {
+        return ResourceKey.create(Registries.STRUCTURE_SET, ResourceLocation.fromNamespaceAndPath(Species.MOD_ID, id));
     }
-
 }

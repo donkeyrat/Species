@@ -2,7 +2,6 @@ package com.ninni.species.server.item;
 
 import com.ninni.species.registry.SpeciesSoundEvents;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.sounds.SoundEvent;
@@ -22,40 +21,44 @@ import java.util.List;
 
 public class WickedDopeItem extends Item {
 
-    public WickedDopeItem(Properties properties) {
-        super(properties);
+    public WickedDopeItem() {
+        super(new Properties().food(new FoodProperties.Builder().nutrition(3).saturationModifier(2).alwaysEdible().build()));
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
-        if (!player.getActiveEffects().isEmpty()) return super.use(level, player, hand);
 
-        ItemStack stack = player.getItemInHand(hand);
-        level.playSound(null, player.getX(), player.getY(), player.getZ(), SpeciesSoundEvents.WICKED_DOPE_FAIL.get(), player.getSoundSource(), 1.0F, 1.0F);
-        player.getCooldowns().addCooldown(this.asItem(), 60);
-        return InteractionResultHolder.pass(stack);
+        if (player.getActiveEffects().isEmpty()) {
+            ItemStack itemstack = player.getItemInHand(hand);
+            player.displayClientMessage(Component.translatable("item.species.wicked_dope.no_effects").withStyle(Style.EMPTY.withColor(0xe72a8b)), true);
+            level.playSound(null, player.getX(), player.getY(), player.getZ(), SpeciesSoundEvents.WICKED_DOPE_FAIL.get(), player.getSoundSource(), 1.0F, 1.0F);
+            player.getCooldowns().addCooldown(this.asItem(), 60);
+            return InteractionResultHolder.pass(itemstack);
+        }
+
+        return super.use(level, player, hand);
     }
 
     @Override
     public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
         if (entity instanceof Player player && !player.getActiveEffects().isEmpty()) {
             if (!player.isCreative()) player.getCooldowns().addCooldown(this, 20 * 60 * 2);
-            player.getActiveEffects().forEach(instance -> player.addEffect(new MobEffectInstance(instance.getEffect(), instance.getDuration(), instance.getAmplifier() + 1)));
-            level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), SpeciesSoundEvents.WICKED_DOPE_BOOST.get(), entity.getSoundSource(), 1, 1);
+            player.getActiveEffects().forEach(mobEffectInstance -> player.addEffect(new MobEffectInstance(mobEffectInstance.getEffect(), mobEffectInstance.getDuration(), mobEffectInstance.getAmplifier() + 1)));
+            level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), SpeciesSoundEvents.WICKED_DOPE_BOOST.get(), entity.getSoundSource(), 1.0F, 1.0F);
         }
         return super.finishUsingItem(stack, level, entity);
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> list, TooltipFlag flag) {
-        list.add(CommonComponents.EMPTY);
+    public void appendHoverText(ItemStack itemStack, TooltipContext context, List<Component> list, TooltipFlag tooltipFlag) {
+        list.add(Component.literal(""));
         list.add(Component.translatable("item.species.whenEaten").withStyle(ChatFormatting.DARK_PURPLE));
-        list.add(CommonComponents.SPACE.copy().append(Component.translatable("item.species.wicked_dope.desc.effect").withColor(0xe72a8b)));
+        list.add(Component.literal(" ").append(Component.translatable("item.species.wicked_dope.desc.effect").withStyle(Style.EMPTY.withColor(0xe72a8b))));
+        super.appendHoverText(itemStack, context, list, tooltipFlag);
     }
 
     @Override
     public SoundEvent getEatingSound() {
         return SpeciesSoundEvents.WICKED_WAX_EAT.get();
     }
-
 }

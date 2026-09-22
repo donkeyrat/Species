@@ -1,6 +1,5 @@
 package com.ninni.species.client.renderer.entity;
 
-import com.ninni.species.Species;
 import com.ninni.species.client.model.mob.update_1.LimpetModel;
 import com.ninni.species.client.renderer.entity.feature.LimpetBreakingLayer;
 import com.ninni.species.registry.SpeciesEntityModelLayers;
@@ -12,14 +11,15 @@ import net.minecraft.world.entity.player.Player;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
+import static com.ninni.species.Species.MOD_ID;
+
 @OnlyIn(Dist.CLIENT)
 public class LimpetRenderer extends MobRenderer<Limpet, LimpetModel<Limpet>> {
-
-    public static final ResourceLocation TEXTURE_PATH = Species.of("textures/entity/limpet/");
+    public static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/entity/limpet/limpet.png");
+    public static final ResourceLocation GARY_TEXTURE = ResourceLocation.fromNamespaceAndPath(MOD_ID, "textures/entity/limpet/limpet_gary.png");
 
     public LimpetRenderer(EntityRendererProvider.Context context) {
         super(context, new LimpetModel<>(context.bakeLayer(SpeciesEntityModelLayers.LIMPET)), 0.5f);
-        // TODO limpet ore layer? issue is sometimes base texture changes based on ore (eg. uranium)
         this.addLayer(new LimpetBreakingLayer(this, new LimpetModel<>(context.bakeLayer(SpeciesEntityModelLayers.LIMPET))));
     }
 
@@ -31,13 +31,18 @@ public class LimpetRenderer extends MobRenderer<Limpet, LimpetModel<Limpet>> {
 
     @Override
     public ResourceLocation getTextureLocation(Limpet entity) {
-        boolean isGary = entity.getName().getString().equalsIgnoreCase("gary");
-        ResourceLocation ore = entity.getOreData().value().getPath(entity.getOreData());
+        ResourceLocation ore = ResourceLocation.tryParse(entity.getOre());
 
-        if (entity.hasShell() && ore != null) {
-            return ore.withPath(path -> "textures/entity/limpet/ores/" + (isGary ? "gary/" : "") + path + ".png");
+        if (entity.getName().getString().equalsIgnoreCase("gary")) {
+            if (entity.hasShell() && ore != null) {
+                return ResourceLocation.fromNamespaceAndPath(ore.getNamespace(), "textures/entity/limpet/ores/" + ore.getPath() + "_gary.png");
+            }
+            return GARY_TEXTURE;
+        } else {
+            if (entity.hasShell() && ore != null) {
+                return ResourceLocation.fromNamespaceAndPath(ore.getNamespace(), "textures/entity/limpet/ores/" + ore.getPath() + ".png");
+            }
+            return TEXTURE;
         }
-        return TEXTURE_PATH.withSuffix(isGary ? "gary/default.png" : "default.png");
     }
-
 }

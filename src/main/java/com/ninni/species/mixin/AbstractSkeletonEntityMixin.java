@@ -15,13 +15,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(AbstractSkeleton.class)
 public abstract class AbstractSkeletonEntityMixin extends Monster implements RangedAttackMob {
 
-    protected AbstractSkeletonEntityMixin(EntityType<? extends Monster> type, Level level) {
-        super(type, level);
+    protected AbstractSkeletonEntityMixin(EntityType<? extends Monster> p_33002_, Level p_33003_) {
+        super(p_33002_, p_33003_);
     }
 
     @Inject(method = "registerGoals", at = @At("TAIL"))
     private void onInitGoals(CallbackInfo ci) {
-        this.goalSelector.addGoal(2, new AvoidEntityGoal<>(this, Bewereager.class, 6, 1, 1.2F));
+        this.goalSelector.addGoal(2, new AvoidEntityGoal<>(this, Bewereager.class, 6.0F, 1.0, 1.2));
     }
-
 }

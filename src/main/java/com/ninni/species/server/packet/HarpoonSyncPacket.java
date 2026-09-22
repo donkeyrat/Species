@@ -1,15 +1,14 @@
 package com.ninni.species.server.packet;
 
 import com.ninni.species.Species;
-import com.ninni.species.access.HarpooningEntity;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.function.Supplier;
 
 public class HarpoonSyncPacket implements CustomPacketPayload {
 
@@ -35,12 +34,8 @@ public class HarpoonSyncPacket implements CustomPacketPayload {
         return new HarpoonSyncPacket(buf.readInt());
     }
 
-    public static void handle(HarpoonSyncPacket packet, IPayloadContext context) {
-        context.enqueueWork(() -> {
-            Player player = Minecraft.getInstance().player;
-            if (player instanceof HarpooningEntity playerAccess) {
-                playerAccess.setHarpoonId(packet.harpoonId);
-            }
-        });
+    public static void handle(HarpoonSyncPacket msg, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> Species.PROXY.harpoonSync(msg.harpoonId));
+        //ctx.get().setPacketHandled(true);
     }
 }

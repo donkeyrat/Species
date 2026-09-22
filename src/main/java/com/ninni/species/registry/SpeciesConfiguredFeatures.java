@@ -52,7 +52,7 @@ public class SpeciesConfiguredFeatures {
                         BlockStateProvider.simple(Blocks.PACKED_ICE),
                         List.of(Blocks.AIR.defaultBlockState()),
                         BlockTags.FEATURES_CANNOT_REPLACE,
-                        SpeciesTags.Blocks.MAMMUTILATION_REMNANT_INVALID_BLOCKS
+                        SpeciesTags.MAMMUTILATION_REMNANT_INVALID_BLOCKS
                 ),
                 new GeodeLayerSettings(0.7D, 1.2D, 2.2D, 3.2D),
                 new GeodeCrackSettings(0.95D, 2.0D, 2),

@@ -1,7 +1,7 @@
 package com.ninni.species.server.entity.ai.tasks;
 
 import com.google.common.collect.ImmutableMap;
-import com.ninni.species.client.events.ClientEvents;
+import com.ninni.species.Species;
 import com.ninni.species.client.screen.ScreenShakeEvent;
 import com.ninni.species.registry.SpeciesMemoryModuleTypes;
 import com.ninni.species.registry.SpeciesSoundEvents;
@@ -43,7 +43,7 @@ public class RoarAttack extends Behavior<Cruncher> {
 
     @Override
     protected void start(ServerLevel serverLevel, Cruncher livingEntity, long l) {
-        livingEntity.setState(cruncherState);
+        livingEntity.transitionTo(cruncherState);
         livingEntity.playSound(SpeciesSoundEvents.CRUNCHER_ROAR.get(), 3.5F, 1.0F);
         livingEntity.getBrain().setMemoryWithExpiry(SpeciesMemoryModuleTypes.ROAR_CHARGING.get(), Unit.INSTANCE, 12);
     }
@@ -70,7 +70,7 @@ public class RoarAttack extends Behavior<Cruncher> {
             entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 200, 1));
             entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 400));
         }
-        ClientEvents.SCREEN_SHAKE_EVENTS.add(new ScreenShakeEvent(livingEntity.position(), 80, 1.5F, 15, false));
+        Species.PROXY.screenShake(new ScreenShakeEvent(livingEntity.position(), 80, 1.5F, 15, false));
 
         brain.setMemoryWithExpiry(SpeciesMemoryModuleTypes.ROAR_CHARGING.get(), Unit.INSTANCE, 96);
     }
@@ -78,7 +78,7 @@ public class RoarAttack extends Behavior<Cruncher> {
     @Override
     protected void stop(ServerLevel serverLevel, Cruncher livingEntity, long l) {
         if (livingEntity.getState() == cruncherState) {
-            livingEntity.setState(Cruncher.CruncherState.IDLE);
+            livingEntity.transitionTo(Cruncher.CruncherState.IDLE);
             livingEntity.getBrain().setMemoryWithExpiry(SpeciesMemoryModuleTypes.ROAR_COOLDOWN.get(), Unit.INSTANCE, this.cooldown.sample(livingEntity.getRandom()));
         }
     }

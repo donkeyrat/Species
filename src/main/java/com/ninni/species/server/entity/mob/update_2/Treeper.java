@@ -1,9 +1,13 @@
 package com.ninni.species.server.entity.mob.update_2;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.ninni.species.client.events.ClientEvents;
+import com.ninni.species.Species;
 import com.ninni.species.client.screen.ScreenShakeEvent;
-import com.ninni.species.registry.*;
+import com.ninni.species.registry.SpeciesItems;
+import com.ninni.species.registry.SpeciesParticles;
+import com.ninni.species.registry.SpeciesSoundEvents;
+import com.ninni.species.registry.SpeciesTags;
+import com.ninni.species.registry.SpeciesCriterion;
 import com.ninni.species.server.entity.ai.goal.TreeperPlantGoal;
 import com.ninni.species.server.entity.ai.goal.TreeperUprootGoal;
 import com.ninni.species.server.entity.mob.update_3.Quake;
@@ -146,7 +150,7 @@ public class Treeper extends AgeableMob {
     @Override
     protected InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack itemStack = player.getItemInHand(hand);
-        if (itemStack.is(SpeciesTags.Items.BURNS_TREEPER) && !this.isBurned()) {
+        if (itemStack.is(SpeciesTags.BURNS_TREEPER) && !this.isBurned()) {
             SoundEvent soundEvent = itemStack.is(Items.FIRE_CHARGE) ? SoundEvents.FIRECHARGE_USE : SoundEvents.FLINTANDSTEEL_USE;
             this.level().playSound(player, this.getX(), this.getY(), this.getZ(), soundEvent, this.getSoundSource(), 1.0f, this.random.nextFloat() * 0.4f + 0.8f);
             this.level().playSound(player, this.getX(), this.getY(), this.getZ(), SpeciesSoundEvents.TREEPER_BURN.get(), this.getSoundSource(), 1.0f, this.random.nextFloat() * 0.4f + 0.8f);
@@ -157,7 +161,7 @@ public class Treeper extends AgeableMob {
             if (player instanceof ServerPlayer serverPlayer) SpeciesCriterion.BURN_TREEPER_INTO_PLACE.get().trigger(serverPlayer);
             if (!this.isPlanted()) this.plant();
             return InteractionResult.sidedSuccess(this.level().isClientSide);
-        } else if (itemStack.is(SpeciesTags.Items.EXTINGUISHES_TREEPER) && this.isBurned()) {
+        } else if (itemStack.is(SpeciesTags.EXTINGUISHES_TREEPER) && this.isBurned()) {
             this.level().playSound(player, this.getX(), this.getY(), this.getZ(), SoundEvents.FIRE_EXTINGUISH, this.getSoundSource(), 1.0f, this.random.nextFloat() * 0.4f + 0.8f);
             this.setBurned(false);
             if (itemStack.is(Items.WATER_BUCKET)) {
@@ -232,7 +236,7 @@ public class Treeper extends AgeableMob {
         this.setPose(Pose.STANDING);
         this.setPlanted(false);
         this.resetLastPoseChangeTick((this.level()).getGameTime());
-        ClientEvents.SCREEN_SHAKE_EVENTS.add(new ScreenShakeEvent(this.position(), 80, 0.75F, 10, true));
+        Species.PROXY.screenShake(new ScreenShakeEvent(this.position(), 80, 0.75F, 10, true));
     }
 
     public long getPoseTime() {
@@ -418,7 +422,7 @@ public class Treeper extends AgeableMob {
     }
     @SuppressWarnings("unused")
     public static boolean canSpawn(EntityType<Treeper> entity, ServerLevelAccessor world, MobSpawnType spawnReason, BlockPos pos, RandomSource random) {
-        return world.getBlockState(pos.below()).is(SpeciesTags.Blocks.TREEPER_SPAWNABLE_ON);
+        return world.getBlockState(pos.below()).is(SpeciesTags.TREEPER_SPAWNABLE_ON);
     }
 
     public boolean isMultipartEntity() {

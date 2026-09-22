@@ -25,54 +25,53 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(AgeableMob.class)
 public abstract class AgeableMobMixin extends PathfinderMob {
-
     @Shadow public abstract boolean isBaby();
 
-    @Unique private boolean drankYouthPotion;
+    @Unique
+    public boolean potion;
 
-    protected AgeableMobMixin(EntityType<? extends PathfinderMob> type, Level level) {
-        super(type, level);
+    protected AgeableMobMixin(EntityType<? extends PathfinderMob> entityType, Level level) {
+        super(entityType, level);
     }
 
     @Inject(at = @At("TAIL"), method = "addAdditionalSaveData")
-    private void addAdditionalSaveData(CompoundTag compoundTag, CallbackInfo ci) {
-        compoundTag.putBoolean("drank_youth_potion", this.drankYouthPotion);
+    private void S$addAdditionalSaveData(CompoundTag compoundTag, CallbackInfo ci) {
+        compoundTag.putBoolean("YouthPotion", this.potion);
     }
 
     @Inject(at = @At("TAIL"), method = "readAdditionalSaveData")
-    private void readAdditionalSaveData(CompoundTag compoundTag, CallbackInfo ci) {
-        this.drankYouthPotion = compoundTag.getBoolean("drank_youth_potion");
+    private void S$readAdditionalSaveData(CompoundTag compoundTag, CallbackInfo ci) {
+        this.potion = compoundTag.getBoolean("YouthPotion");
     }
 
     @Inject(at = @At("HEAD"), method = "aiStep", cancellable = true)
-    private void aiStep(CallbackInfo ci) {
-        if (!this.drankYouthPotion) return;
-
-        ci.cancel();
-        super.aiStep();
+    private void S$aiStep(CallbackInfo ci) {
+        if (potion) {
+            ci.cancel();
+            super.aiStep();
+        }
     }
 
-    // TODO replace with item action probably
     @Override
     public InteractionResult interactAt(Player player, Vec3 vec3, InteractionHand interactionHand) {
-        if (this.getType().is(SpeciesTags.EntityTypes.ALWAYS_ADULT)) return super.interactAt(player, vec3, interactionHand);
-        if (player.getItemInHand(interactionHand).is(SpeciesItems.YOUTH_POTION.get()) && this.isBaby() && !this.drankYouthPotion) {
-            this.drankYouthPotion = true;
-            this.playSound(SpeciesSoundEvents.YOUTH_POTION_STUMPED.get(), 1, 1);
-            if (this.level() instanceof ServerLevel serverLevel) {
-                double d = this.getRandom().nextGaussian() * 0.02;
-                double e = this.getRandom().nextGaussian() * 0.02;
-                double f = this.getRandom().nextGaussian() * 0.02;
-                serverLevel.sendParticles(SpeciesParticles.YOUTH_POTION.get(), this.getRandomX(1.0D), this.getRandomY() + 0.5D, this.getRandomZ(1.0D), 0, d, e, f, 1);
+        if (!this.getType().is(SpeciesTags.ALWAYS_ADULT)) {
+            if (player.getItemInHand(interactionHand).is(SpeciesItems.YOUTH_POTION.get()) && this.isBaby() && !this.potion) {
+                this.potion = true;
+                this.playSound(SpeciesSoundEvents.YOUTH_POTION_STUMPED.get(), 1, 1);
+                if (this.level() instanceof ServerLevel serverLevel) {
+                    double d = this.getRandom().nextGaussian() * 0.02;
+                    double e = this.getRandom().nextGaussian() * 0.02;
+                    double f = this.getRandom().nextGaussian() * 0.02;
+                    serverLevel.sendParticles(SpeciesParticles.YOUTH_POTION.get(), this.getRandomX(1.0D), this.getRandomY() + 0.5D, this.getRandomZ(1.0D), 0, d, e, f, 1);
+                }
+                return InteractionResult.SUCCESS;
             }
-            return InteractionResult.SUCCESS;
-        }
-        if (this.drankYouthPotion && player.getItemInHand(interactionHand).is(Items.MILK_BUCKET)) {
-            this.drankYouthPotion = false;
-            this.playSound(SoundEvents.GENERIC_DRINK, 1, 1);
-            return InteractionResult.SUCCESS;
+            if (this.potion && player.getItemInHand(interactionHand).is(Items.MILK_BUCKET)) {
+                this.potion = false;
+                this.playSound(SoundEvents.GENERIC_DRINK, 1, 1);
+                return InteractionResult.SUCCESS;
+            }
         }
         return super.interactAt(player, vec3, interactionHand);
     }
-
 }

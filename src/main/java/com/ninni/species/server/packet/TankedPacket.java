@@ -1,7 +1,7 @@
 package com.ninni.species.server.packet;
 
 import com.ninni.species.Species;
-import com.ninni.species.access.TankingAndSnatchingEntity;
+import com.ninni.species.mixin_util.LivingEntityAccess;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -14,6 +14,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public class TankedPacket implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<TankedPacket> TYPE = new CustomPacketPayload.Type<>(
@@ -50,7 +51,7 @@ public class TankedPacket implements CustomPacketPayload {
                 int id = packet.getEntityId();
                 Optional.ofNullable(minecraft.level.getEntity(id))
                         .filter(LivingEntity.class::isInstance)
-                        .map(TankingAndSnatchingEntity.class::cast)
+                        .map(LivingEntityAccess.class::cast)
                         .ifPresent(entity -> {
                             boolean tanked = packet.getFlag();
                             entity.setTanked(tanked);

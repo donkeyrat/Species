@@ -104,7 +104,7 @@ public class Wraptor extends Animal implements Enemy, Shearable {
         this.goalSelector.addGoal(2, new AttackGoal(1.2, false));
         this.goalSelector.addGoal(1, new MateGoal(this, 1.0D));
         this.goalSelector.addGoal(1, new LayGoal(this, 1.0D));
-        this.goalSelector.addGoal(4, new TemptGoal(this, 1.2, Ingredient.of(SpeciesTags.Items.WRAPTOR_BREED_ITEMS), false));
+        this.goalSelector.addGoal(4, new TemptGoal(this, 1.2, Ingredient.of(SpeciesTags.WRAPTOR_BREED_ITEMS), false));
         this.goalSelector.addGoal(5, new FollowParentGoal(this, 1.1));
         this.goalSelector.addGoal(3, new WaterAvoidingRandomStrollGoal(this, 1));
         this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 6.0F));
@@ -320,7 +320,7 @@ public class Wraptor extends Animal implements Enemy, Shearable {
     }
     @Override
     public boolean isFood(ItemStack stack) {
-        return stack.is(SpeciesTags.Items.WRAPTOR_BREED_ITEMS);
+        return stack.is(SpeciesTags.WRAPTOR_BREED_ITEMS);
     }
 
     @Override
@@ -408,7 +408,7 @@ public class Wraptor extends Animal implements Enemy, Shearable {
 
         @Override
         protected boolean isValidTarget(LevelReader world, BlockPos pos) {
-            return world.isEmptyBlock(pos.above()) && world.getBlockState(pos).is(SpeciesTags.Blocks.WRAPTOR_NESTING_BLOCKS);
+            return world.isEmptyBlock(pos.above()) && world.getBlockState(pos).is(SpeciesTags.WRAPTOR_NESTING_BLOCKS);
         }
     }
 
