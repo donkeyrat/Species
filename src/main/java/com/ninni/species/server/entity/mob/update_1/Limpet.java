@@ -168,11 +168,13 @@ public class Limpet extends PathfinderMob {
         Predicate<LimpetOres> filter = data -> {
             boolean result = yLevel <= data.maxSpawnHeight().orElse(maxYLevel)
                     && yLevel > data.minSpawnHeight().orElse(minYLevel);
+            System.out.println(result);
             if (data.location().isPresent()) result = result && data.location().get().matchesBiome(biome);
             return result;
         };
 
         Holder<LimpetOres> data = getRandomVariant(level, filter);
+        System.out.println(data);
         if (data != null) this.setOreData(data);
     }
 

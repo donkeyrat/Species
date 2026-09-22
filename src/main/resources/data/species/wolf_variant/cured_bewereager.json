@@ -1,6 +1,0 @@
-{
-  "angry_texture": "species:entity/bewereager/bewereager_wolf",
-  "tame_texture": "species:entity/bewereager/bewereager_wolf",
-  "wild_texture": "species:entity/bewereager/bewereager_wolf",
-  "biomes": "#species:bewereager_wolf_spawns_in"
-}

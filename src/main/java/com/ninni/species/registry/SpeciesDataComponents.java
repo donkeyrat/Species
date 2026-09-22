@@ -53,18 +53,6 @@ public class SpeciesDataComponents {
         EntityDataComponent.CODEC, EntityDataComponent.STREAM_CODEC
     );
 
-    public static final Supplier<DataComponentType<Integer>> SHOTS_FIRED = DATA_COMPONENTS.registerComponentType("shots_fired", builder -> builder
-            .persistent(Codec.INT)
-            .networkSynchronized(ByteBufCodecs.INT)
-            .cacheEncoding()
-    );
-
-    public static final Supplier<DataComponentType<Boolean>> USING = DATA_COMPONENTS.registerComponentType("using", builder -> builder
-            .persistent(Codec.BOOL)
-            .networkSynchronized(ByteBufCodecs.BOOL)
-            .cacheEncoding()
-    );
-
     public static <T> DeferredHolder<DataComponentType<?>, DataComponentType<T>> register(String name, Codec<T> codec, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec) {
         return DATA_COMPONENTS.registerComponentType(name, builder -> builder
             .persistent(codec)

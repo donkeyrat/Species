@@ -474,7 +474,6 @@ public class Bewereager extends Monster implements OwnableEntity {
             if (this.getOwnerUUID() != null) {
                 wolf.setOwnerUUID(this.getOwnerUUID());
                 wolf.setTame(true, false);
-                wolf.setVariant(wolf.registryAccess().lookupOrThrow(Registries.WOLF_VARIANT).getOrThrow(SpeciesWolfVariants.CURED_BEWEREAGER));
             }
             if (wolf instanceof BewereagerableEntity wolfAccess) {
                 wolfAccess.setCollarColor(this.getCollarColor());
