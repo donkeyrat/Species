@@ -61,7 +61,7 @@ public abstract class ItemInHandRendererMixin {
     @Inject(at = @At("HEAD"), method = "evaluateWhichHandsToRender", cancellable = true)
     private static void evaluateWhichHandsToRender(LocalPlayer player, CallbackInfoReturnable<ItemInHandRenderer.HandRenderSelection> cir) {
         ItemStack stack = player.getUseItem();
-        if (stack.getItem() instanceof CrankbowItem && player.isUsingItem() && (stack.has(DataComponents.CHARGED_PROJECTILES) || player.isCreative())) {
+        if (stack.getItem() instanceof CrankbowItem && player.isUsingItem() && stack.has(DataComponents.CHARGED_PROJECTILES)) {
             cir.setReturnValue(player.getUsedItemHand() == InteractionHand.MAIN_HAND ? ItemInHandRenderer.HandRenderSelection.RENDER_MAIN_HAND_ONLY : ItemInHandRenderer.HandRenderSelection.RENDER_OFF_HAND_ONLY);
         }
     }
